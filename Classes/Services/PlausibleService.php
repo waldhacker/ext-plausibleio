@@ -78,6 +78,7 @@ class PlausibleService implements LoggerAwareInterface
             $this->logger->warning('Something went wrong while fetching analytics. ' . $response->getReasonPhrase());
             return [];
         }
-        return (json_decode((string)$response->getBody(), true, 512, JSON_THROW_ON_ERROR))->results;
+        $responseBody = (string)$response->getBody();
+        return (json_decode($responseBody, false, 512, JSON_THROW_ON_ERROR))->results;
     }
 }

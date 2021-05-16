@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<xliff version="1.0">
+	<file source-language="en" datatype="plaintext" original="messages" date="2019-08-19T13:37:00Z">
+		<body>
+			<trans-unit id="timeframes.d">
+				<source>Last %s days</source>
+			</trans-unit>
+			<trans-unit id="timeframes.mo">
+				<source>Last %s months</source>
+			</trans-unit>
+			<trans-unit id="timeframes.month">
+				<source>This Month</source>
+			</trans-unit>
+			<trans-unit id="timeframes.day">
+				<source>Today</source>
+			</trans-unit>
+			<trans-unit id="timeframeselect_label">
+				<source>Choose Time Frame to Show</source>
+			</trans-unit>
+			<trans-unit id="timeframeselect_aria">
+				<source>Time Frame Selector</source>
+			</trans-unit>
+			<trans-unit id="widgets.visitorsOverTime.label">
+				<source>Visitors over Time (Plausible Analytics)</source>
+			</trans-unit>
+			<trans-unit id="widgets.visitorsOverTime.description">
+				<source>Show page visitors of your page in a line graph with selectable reporting time frame.</source>
+			</trans-unit>
+			<trans-unit id="widgets.browserData.label">
+				<source>Browser Usage and Visitors (Plausible Analytics)</source>
+			</trans-unit>
+			<trans-unit id="widgets.deviceData.label">
+				<source>Device Usage and Visitors (Plausible Analytics)</source>
+			</trans-unit>
+			<trans-unit id="plausible.browserdata.label">
+				<source>Browser Usage and Visitors in the last %s for %s (Plausible Analytics)</source>
+			</trans-unit>
+			<trans-unit id="plausible.devicedata.label">
+				<source>Device Usage and Visitors in the last %s for %s (Plausible Analytics)</source>
+			</trans-unit>
+			<trans-unit id="widgets.browserData.description">
+				<source>Show statistics about visitors and their browsers.</source>
+			</trans-unit>
+			<trans-unit id="widgets.deviceData.description">
+				<source>Show statistics about visitors and their devices.</source>
+			</trans-unit>
+			<trans-unit id="visitors">
+				<source>Visitors</source>
+			</trans-unit>
+		</body>
+	</file>
+</xliff>

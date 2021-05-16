@@ -1,0 +1,67 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  Waldhacker\Plausibleio\:
+    resource: '../Classes/*'
+
+  Waldhacker\Plausibleio\Controller\VisitorTimeSeriesController:
+    public: true
+
+  waldhacker.plausibleio.widget.visitorsovertime:
+    class: 'Waldhacker\Plausibleio\Dashboard\Widget\VisitorsOverTime'
+    arguments:
+      $dataProvider: '@Waldhacker\Plausibleio\Dashboard\DataProvider\TimeSeriesDataProvider'
+      $view: '@dashboard.views.widget'
+      $options:
+        siteId: null
+    tags:
+      - name: dashboard.widget
+        identifier: 'plausible.visitorsovertime'
+        groupNames: 'systemInfo'
+        title: 'LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widgets.visitorsOverTime.label'
+        description: 'LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widgets.visitorsOverTime.description'
+        iconIdentifier: 'content-widget-chart-bar'
+        height: 'large'
+        width: 'medium'
+
+  waldhacker.plausibleio.widget.browser:
+    class: 'Waldhacker\Plausibleio\Dashboard\Widget\BrowserDataWidget'
+    arguments:
+      $dataProvider: '@Waldhacker\Plausibleio\Dashboard\DataProvider\BrowserDataProvider'
+      $view: '@dashboard.views.widget'
+      $options:
+        siteId: null
+        timeFrame: 7d
+    tags:
+      - name: dashboard.widget
+        identifier: 'plausible.browserdata'
+        groupNames: 'systemInfo'
+        title: 'LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widgets.browserData.label'
+        description: 'LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widgets.browserData.description'
+        iconIdentifier: 'content-widget-chart-bar'
+        height: 'medium'
+        width: 'medium'
+
+
+  waldhacker.plausibleio.widget.device:
+    class: 'Waldhacker\Plausibleio\Dashboard\Widget\DeviceDataWidget'
+    arguments:
+      $dataProvider: '@Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider'
+      $view: '@dashboard.views.widget'
+      $options:
+        siteId: null
+        timeFrame: 7d
+    tags:
+      - name: dashboard.widget
+        identifier: 'plausible.devicedata'
+        groupNames: 'systemInfo'
+        title: 'LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widgets.deviceData.label'
+        description: 'LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widgets.deviceData.description'
+        iconIdentifier: 'content-widget-chart-bar'
+        height: 'medium'
+        width: 'medium'
+
+

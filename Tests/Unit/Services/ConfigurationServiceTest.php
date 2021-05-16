@@ -31,7 +31,9 @@ class ConfigurationServiceTest extends UnitTestCase
 
     /**
      * @test
-     * @covers ConfigurationService::getTimeFrames
+     * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::getTimeFrames
+     * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::__construct
+     * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::getLabelForTimeFrameValue
      */
     public function getTimeFramesReturnsDefaultTimeFrame(): void
     {
@@ -50,7 +52,9 @@ class ConfigurationServiceTest extends UnitTestCase
     }
     /**
      * @test
-     * @covers ConfigurationService::getTimeFrames
+     * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::getTimeFrames
+     * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::__construct
+     * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::getLabelForTimeFrameValue
      */
     public function getTimeFramesReturnsConfiguredFramesWithLabels(): void
     {
@@ -79,7 +83,11 @@ class ConfigurationServiceTest extends UnitTestCase
 
     /**
      * @test
-     * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::getTimeFrameValue
+     * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::getDefaultTimeFrameValue
+     * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::__construct
+     * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::getLabelForTimeFrameValue
+     * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::getTimeFrameValues
+     * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::getTimeFrames
      */
     public function getDefaultTimeFrameValue(): void
     {
@@ -89,7 +97,10 @@ class ConfigurationServiceTest extends UnitTestCase
 
     /**
      * @test
-     * @covers ConfigurationService::getTimeFrameValues
+     * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::getTimeFrameValues
+     * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::__construct
+     * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::getLabelForTimeFrameValue
+     * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::getTimeFrames
      */
     public function getTimeFrameValuesReturnsValues(): void
     {

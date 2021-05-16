@@ -16,6 +16,7 @@ class ChartServiceTest extends UnitTestCase
 
     /**
      * @test
+     * @covers \Waldhacker\Plausibleio\Services\ChartService::__construct
      * @covers \Waldhacker\Plausibleio\Services\ChartService::getChartDataForTimeSeries
      */
     public function getChartDataForTimeSeries(): void

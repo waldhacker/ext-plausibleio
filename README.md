@@ -4,11 +4,13 @@ Provides TYPO3 Backend Dashboard Widgets displaying Plausible Analytics Data for
 Plausible Analytics is a privacy-friendly analytics alternative - you can either use their
 service at https://plausible.io or self-host the service on your own platform.
 
+![Image of Dashboards](dashboard.png)
+
 ## Installation
 
 ### With Composer
 
-`composer require waldhacker/plausibleio`
+`composer require waldhacker/typo3-plausibleio`
 
 ### Without Composer
 

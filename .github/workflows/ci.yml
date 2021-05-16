@@ -1,0 +1,68 @@
+name: CI
+
+on: [ push, pull_request ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        typo3: [ '^11.0' ]
+        php: [ '7.4', '8.0' ]
+        mysql: ['5.7']
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Set up MySQL ${{ matrix.mysql }}
+        uses: mirromutth/mysql-action@v1.1
+        with:
+          mysql version: ${{ matrix.mysql }}
+          mysql root password: 'root'
+
+      - name: Set up PHP version ${{ matrix.php }}
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          tools: composer:v2, php-cs-fixer
+
+      - name: Environment Check
+        run: |
+          php --version
+          composer --version
+
+      - name: Validate composer.json and composer.lock
+        run: composer validate
+
+      - name: Install dependencies with typo3/cms-core:${{ matrix.typo3 }}
+        run: |
+          composer require typo3/cms-core:${{ matrix.typo3 }} --no-progress
+          git checkout composer.json
+
+      - name: Info
+        run: composer info
+
+      - name: Lint
+        run: |
+          composer run ci:lint:php
+          composer run ci:lint:yaml
+
+      - name: CGL
+        run: composer run ci:cgl:check
+
+      - name: Psalm
+        run: composer run ci:psalm
+
+      - name: PHPStan
+        run: composer run ci:stan
+
+      - name: Unit Tests with coverage
+        if: matrix.typo3 == '^11.0'
+        run: composer run ci:tests:unit:cover
+
+
+

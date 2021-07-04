@@ -1,9 +1,8 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Waldhacker\Plausibleio\Tests\Unit\Services;
-
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Handler\MockHandler;
@@ -67,7 +66,7 @@ class PlausibleServiceTest extends UnitTestCase
         $set2 = new \stdClass();
         $set2->browser = 'Firefox';
         $set2->visitors = 263;
-        $expected = [$set1,$set2];
+        $expected = [$set1, $set2];
 
         $historyContainer = [];
         $client = $this->createClientWithHistory(

@@ -21,6 +21,7 @@ use TYPO3\CMS\Dashboard\Widgets\WidgetConfigurationInterface;
 use TYPO3\CMS\Dashboard\Widgets\WidgetInterface;
 use TYPO3\CMS\Fluid\View\StandaloneView;
 use Waldhacker\Plausibleio\Dashboard\DataProvider\BrowserDataProvider;
+use Waldhacker\Plausibleio\Services\ConfigurationService;
 
 class BrowserDataWidget implements WidgetInterface
 {
@@ -29,17 +30,20 @@ class BrowserDataWidget implements WidgetInterface
     private array $options;
 
     private BrowserDataProvider $dataProvider;
+    private ConfigurationService $configurationService;
 
     public function __construct(
         WidgetConfigurationInterface $configuration,
         BrowserDataProvider $dataProvider,
         StandaloneView $view,
+        ConfigurationService $configurationService,
         array $options = []
     ) {
         $this->configuration = $configuration;
         $this->view = $view;
         $this->options = $options;
         $this->dataProvider = $dataProvider;
+        $this->configurationService = $configurationService;
     }
 
     public function renderWidgetContent(): string
@@ -55,7 +59,8 @@ class BrowserDataWidget implements WidgetInterface
             'sum' => $sum,
             'options' => $this->options,
             'configuration' => $this->configuration,
-            'label' => 'plausible.browserdata.label'
+            'label' => 'plausible.browserdata.label',
+            'validConfiguration' => $this->configurationService->isValidConfiguration()
         ]);
         return $this->view->render();
     }

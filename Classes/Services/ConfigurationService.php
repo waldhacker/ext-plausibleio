@@ -22,7 +22,8 @@ class ConfigurationService
 
     public function getTimeFrames(): array
     {
-        $timeFrames = array_filter(explode(',', $this->extensionConfiguration->get(self::EXT_KEY, 'timeFrames') ?? ''));
+        $timeFrames = $this->extensionConfiguration->get(self::EXT_KEY, 'timeFrames');
+        $timeFrames = array_filter(explode(',', $timeFrames ?? ''));
         $defaultTimeFrame = $this->extensionConfiguration->get(self::EXT_KEY, 'defaultTimeFrame') ?? '30d';
         if (empty($timeFrames)) {
             $timeFrames = ['30d'];
@@ -44,7 +45,7 @@ class ConfigurationService
     public function getDefaultTimeFrameValue(): string
     {
         return array_filter($this->getTimeFrameValues(), static function ($elm) {
-            return $elm['default'];
+            return $elm['default'] ?? [];
         })['value'] ?? '30d';
     }
 
@@ -52,7 +53,7 @@ class ConfigurationService
     {
         $frames = [];
         foreach ($this->getTimeFrames() as $frame) {
-            $frames[] = $frame['value'];
+            $frames[] = $frame['value'] ?? '';
         }
         return $frames;
     }
@@ -70,6 +71,14 @@ class ConfigurationService
     public function getDefaultSite(): string
     {
         return $this->extensionConfiguration->get(self::EXT_KEY, 'siteId');
+    }
+
+    public function isValidConfiguration(): bool
+    {
+        return $this->extensionConfiguration->get(self::EXT_KEY, 'timeFrames') &&
+               $this->extensionConfiguration->get(self::EXT_KEY, 'siteId') &&
+               $this->extensionConfiguration->get(self::EXT_KEY, 'baseUrl') &&
+               $this->extensionConfiguration->get(self::EXT_KEY, 'apiKey');
     }
 
     private function getLabelForTimeFrameValue(string $timeFrame): string

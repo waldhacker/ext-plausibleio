@@ -40,10 +40,11 @@ class VisitorsOverTime implements WidgetInterface, EventDataInterface, Additiona
 
     public function renderWidgetContent(): string
     {
-        $this->view->setTemplate('Widget/ChartWidget');
+        $this->view->setTemplate('ChartWidget');
         $this->view->assignMultiple(
             [
                 'configuration' => $this->configuration,
+                'validConfiguration' => $this->configurationService->isValidConfiguration(),
             ]
         );
         return $this->view->render();

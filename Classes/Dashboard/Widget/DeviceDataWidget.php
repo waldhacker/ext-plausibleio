@@ -21,6 +21,7 @@ use TYPO3\CMS\Dashboard\Widgets\WidgetConfigurationInterface;
 use TYPO3\CMS\Dashboard\Widgets\WidgetInterface;
 use TYPO3\CMS\Fluid\View\StandaloneView;
 use Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider;
+use Waldhacker\Plausibleio\Services\ConfigurationService;
 
 class DeviceDataWidget implements WidgetInterface
 {
@@ -28,17 +29,20 @@ class DeviceDataWidget implements WidgetInterface
     private StandaloneView $view;
     private array $options;
     private DeviceDataProvider $dataProvider;
+    private ConfigurationService $configurationService;
 
     public function __construct(
         WidgetConfigurationInterface $configuration,
         DeviceDataProvider $dataProvider,
         StandaloneView $view,
+        ConfigurationService $configurationService,
         array $options = []
     ) {
         $this->configuration = $configuration;
         $this->view = $view;
         $this->options = $options;
         $this->dataProvider = $dataProvider;
+        $this->configurationService = $configurationService;
     }
 
     public function renderWidgetContent(): string
@@ -54,7 +58,8 @@ class DeviceDataWidget implements WidgetInterface
             'sum' => $sum,
             'options' => $this->options,
             'configuration' => $this->configuration,
-            'label' => 'plausible.devicedata.label'
+            'label' => 'plausible.devicedata.label',
+            'validConfiguration' => $this->configurationService->isValidConfiguration()
         ]);
         return $this->view->render();
     }

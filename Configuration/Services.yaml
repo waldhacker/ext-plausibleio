@@ -15,12 +15,13 @@ services:
     arguments:
       $dataProvider: '@Waldhacker\Plausibleio\Dashboard\DataProvider\TimeSeriesDataProvider'
       $view: '@dashboard.views.widget'
+      $configurationService: '@Waldhacker\Plausibleio\Services\ConfigurationService'
       $options:
         siteId: null
     tags:
       - name: dashboard.widget
         identifier: 'plausible.visitorsovertime'
-        groupNames: 'systemInfo'
+        groupNames: 'plausibleio'
         title: 'LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widgets.visitorsOverTime.label'
         description: 'LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widgets.visitorsOverTime.description'
         iconIdentifier: 'content-widget-chart-bar'
@@ -32,13 +33,14 @@ services:
     arguments:
       $dataProvider: '@Waldhacker\Plausibleio\Dashboard\DataProvider\BrowserDataProvider'
       $view: '@dashboard.views.widget'
+      $configurationService: '@Waldhacker\Plausibleio\Services\ConfigurationService'
       $options:
         siteId: null
         timeFrame: 7d
     tags:
       - name: dashboard.widget
         identifier: 'plausible.browserdata'
-        groupNames: 'systemInfo'
+        groupNames: 'plausibleio'
         title: 'LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widgets.browserData.label'
         description: 'LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widgets.browserData.description'
         iconIdentifier: 'content-widget-chart-bar'
@@ -51,13 +53,14 @@ services:
     arguments:
       $dataProvider: '@Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider'
       $view: '@dashboard.views.widget'
+      $configurationService: '@Waldhacker\Plausibleio\Services\ConfigurationService'
       $options:
         siteId: null
         timeFrame: 7d
     tags:
       - name: dashboard.widget
         identifier: 'plausible.devicedata'
-        groupNames: 'systemInfo'
+        groupNames: 'plausibleio'
         title: 'LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widgets.deviceData.label'
         description: 'LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widgets.deviceData.description'
         iconIdentifier: 'content-widget-chart-bar'

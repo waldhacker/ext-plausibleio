@@ -47,6 +47,9 @@
 			<trans-unit id="visitors">
 				<source>Visitors</source>
 			</trans-unit>
+			<trans-unit id="widget_group.plausibleio">
+				<source>Site Analytics (Plausible)</source>
+			</trans-unit>
 		</body>
 	</file>
 </xliff>

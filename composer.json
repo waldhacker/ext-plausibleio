@@ -3,19 +3,24 @@
     "type": "typo3-cms-extension",
     "description": "TYPO3 Extension to add dashboard widgets for plausible.io statistics.",
     "license": ["GPL-2.0-or-later"],
-    "homepage": "https://waldhacker.dev/extensions/plausibleio",
+    "homepage": "https://github.com/waldhacker/ext-plausibleio/",
     "support": {
         "issues": "https://github.com/waldhacker/ext-plausibleio/issues"
     },
     "authors": [
         {
+            "name": "Ralf Zimmermann",
+            "email": "hello@waldhacker.dev",
+            "homepage": "https://waldhacker.dev",
+            "role": "Developer"
+        },
+        {
             "name": "Susanne Moog",
             "email": "susanne@waldhacker.dev",
-            "homepage": "https://waldhacker.dev",
+            "homepage": "https://susi.dev",
             "role": "Developer"
         }
     ],
-    "version": "1.0.0",
     "prefer-stable": true,
     "minimum-stability": "dev",
     "require": {

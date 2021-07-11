@@ -1,9 +1,13 @@
 # Changelog
 
 
-## (unreleased)
+## 1.0.0 (2021-07-11)
 
 ### Tasks
+
+* Adjust composer.json. [Susanne Moog]
+
+* Add Docs. [Susanne Moog]
 
 * Show missing configuration error. [Susanne Moog]
 

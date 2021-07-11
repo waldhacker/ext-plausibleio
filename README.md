@@ -24,13 +24,13 @@ The following settings are available:
 
 ```
 Plausible Base URL: If you are using a self-hosted plausible instance, add your domain here (https://<your-custom-domain>/)
-baseUrl = https://anna.susi.dev/
+baseUrl = https://plausible.io/
 
 API Key: You must set a token here - generate on in your Plausible instance -> User Settings -> API keys
 apiKey =
 
 Sites: Enter your Plausible site ID (domains) here - if you have more than one, use a default one here and add multiple widget configurations with different sites via services.yaml
-siteId = susi.dev
+siteId = waldhacker.dev
 
 Time Frames: Comma-separated list of available time frames - see https://plausible.io/docs/stats-api#time-periods for possible options ("custom" is currently not available)
 timeFrames = day,7d,30d,month,6mo,12mo

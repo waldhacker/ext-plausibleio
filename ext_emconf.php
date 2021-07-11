@@ -14,7 +14,7 @@ $EM_CONF[$_EXTKEY] = [
     'constraints'      => [
         'depends' => [
             'typo3' => '11.0.0-11.4.99',
-            'form' => '11.0.0-11.4.99'
+            'dashboard' => '11.0.0-11.4.99',
         ]
     ]
 ];

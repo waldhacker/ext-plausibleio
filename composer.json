@@ -41,7 +41,9 @@
         "vimeo/psalm": "^3.0 | ^4.0",
         "phpunit/phpunit": "^9.4",
         "phpspec/prophecy-phpunit": "^2.0",
-        "typo3/testing-framework": "^6.8"
+        "typo3/testing-framework": "^6.8",
+        "typo3/cms-install": "@dev",
+        "typo3/cms-extensionmanager": "@dev"
     },
     "autoload": {
         "psr-4": {

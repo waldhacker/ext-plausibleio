@@ -7,3 +7,4 @@ composer.lock
 Documentation-GENERATED-temp
 .idea
 /.phpunit.result.cache
+var/

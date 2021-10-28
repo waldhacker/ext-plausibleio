@@ -32,17 +32,35 @@
 			<trans-unit id="widgets.deviceData.label">
 				<source>Device Usage and Visitors (Plausible Analytics)</source>
 			</trans-unit>
+			<trans-unit id="widgets.pageData.label">
+				<source>Visited pages (Plausible Analytics)</source>
+			</trans-unit>
+			<trans-unit id="widgets.countryData.label">
+				<source>Countries (Plausible Analytics)</source>
+			</trans-unit>
 			<trans-unit id="plausible.browserdata.label">
 				<source>Browser Usage and Visitors in the last %s for %s (Plausible Analytics)</source>
 			</trans-unit>
 			<trans-unit id="plausible.devicedata.label">
 				<source>Device Usage and Visitors in the last %s for %s (Plausible Analytics)</source>
 			</trans-unit>
+			<trans-unit id="plausible.pageData.label">
+				<source>Pages views in the last %s for (Plausible Analytics)</source>
+			</trans-unit>
+			<trans-unit id="plausible.countryData.label">
+				<source>Countries of origin of the page views in the last %s for (Plausible Analytics)</source>
+			</trans-unit>
 			<trans-unit id="widgets.browserData.description">
 				<source>Show statistics about visitors and their browsers.</source>
 			</trans-unit>
 			<trans-unit id="widgets.deviceData.description">
 				<source>Show statistics about visitors and their devices.</source>
+			</trans-unit>
+			<trans-unit id="widgets.pageData.description">
+				<source>Show statistics about the number of page views, entries and exits.</source>
+			</trans-unit>
+			<trans-unit id="widgets.countryData.description">
+				<source>Shows the countries of origin of the page views.</source>
 			</trans-unit>
 			<trans-unit id="visitors">
 				<source>Visitors</source>

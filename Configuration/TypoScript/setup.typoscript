@@ -6,5 +6,8 @@ module.tx_dashboard {
     layoutRootPaths {
       110 = EXT:plausibleio/Resources/Private/Layouts/Widgets/
     }
+    partialRootPaths {
+      110 = EXT:plausibleio/Resources/Private/Partials/Widgets/
+    }
   }
 }

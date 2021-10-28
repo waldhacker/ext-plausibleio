@@ -65,7 +65,7 @@ class PlausibleService implements LoggerAwareInterface
         return $this->sendAuthorizedRequest($uri);
     }
 
-    private function sendAuthorizedRequest(string $uri): array
+    public function sendAuthorizedRequest(string $uri): array
     {
         $baseDomain = $this->configurationService->getBaseUrl();
         $uri = $baseDomain . $uri;

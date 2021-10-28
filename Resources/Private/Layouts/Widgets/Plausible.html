@@ -7,13 +7,23 @@
         />
     </span>
 </div>
-<div class="widget-content-main">
-    <f:render section="main" optional="true" />
-</div>
-<f:variable name="footer" value="{f:render(section:'footer', optional: 'true')}" />
-<f:if condition="{footer -> f:spaceless()}">
-    <div class="widget-content-footer">
-        {footer -> f:format.raw()}
-    </div>
+<f:if condition="{validConfiguration} == false">
+    <f:then>
+        <div class="alert alert-warning">
+            Invalid configuration. Please check the settings.
+        </div>
+    </f:then>
+    <f:else>
+        <div class="widget-content-main" style="display: flex; flex-direction: row; justify-content: center;">
+            <f:render section="main" optional="true" />
+        </div>
+
+        <f:variable name="footer" value="{f:render(section:'footer', optional: 'true')}" />
+        <f:if condition="{footer -> f:spaceless()}">
+            <div class="widget-content-footer">
+                {footer -> f:format.raw()}
+            </div>
+        </f:if>
+    </f:else>
 </f:if>
 </html>

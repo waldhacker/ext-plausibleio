@@ -96,9 +96,9 @@ class CountryDataWidget implements WidgetInterface, RequireJsModuleInterface, Ev
     public function getRequireJsModules(): array
     {
         return [
-            'TYPO3/CMS/Plausibleio/topojson.min',
-            'TYPO3/CMS/Plausibleio/datamaps.world.min',
             'TYPO3/CMS/Plausibleio/CountriesLoader',
+            'TYPO3/CMS/Plausibleio/Contrib/topojson.min',
+            'TYPO3/CMS/Plausibleio/Contrib/datamaps.world.min',
         ];
     }
 }

@@ -1,8 +1,21 @@
+require.config({
+  paths: {
+    'datamaps': 'TYPO3/CMS/Plausibleio/Contrib/datamaps.world.min',
+  },
+  map: {
+    '*': {
+      'd3': 'TYPO3/CMS/Plausibleio/Contrib/d3.min',
+      'topojson': 'TYPO3/CMS/Plausibleio/Contrib/topojson.min',
+    },
+  }
+});
+
 define([
   'TYPO3/CMS/Core/Ajax/AjaxRequest',
   'TYPO3/CMS/Core/Event/RegularEvent',
-  'TYPO3/CMS/Plausibleio/datamaps.world.min',
-], function (AjaxRequest, RegularEvent, Datamap) {
+  'datamaps',
+  'd3',
+], function (AjaxRequest, RegularEvent, Datamap, D3) {
   let CountriesLoader = {
     selector: ".dashboard-item",
     contentSelector: ".widget-content"
@@ -33,7 +46,7 @@ define([
 
         // create color palette function
         // color can be whatever you wish
-        var paletteScale = d3.scale.linear()
+        var paletteScale = D3.scale.linear()
           .domain([minValue, maxValue])
           .range(["#EFEFFF", "#02386F"]); // blue color
 
@@ -75,7 +88,7 @@ define([
               // tooltip content
               return ['<div class="hoverinfo">',
                 '<strong>', geo.properties.name, '</strong>',
-                '<br>Count: <strong>', data.numberOfThings, '</strong>',
+                '<br><strong>', data.numberOfThings, '</strong> Visitors',
                 '</div>'].join('');
             }
           }

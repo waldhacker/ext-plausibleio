@@ -73,6 +73,9 @@
         "ci:lint:yaml": [
             "php build/yaml-lint.php Configuration/"
         ],
+        "ci:lint:assets": [
+            "cd build && yarn install && yarn lint"
+        ],
         "ci:stan": [
             "phpstan analyze --configuration build/phpstan.neon"
         ],

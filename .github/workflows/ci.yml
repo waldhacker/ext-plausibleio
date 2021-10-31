@@ -50,6 +50,7 @@ jobs:
         run: |
           composer run ci:lint:php
           composer run ci:lint:yaml
+          composer run ci:lint:assets
 
       - name: CGL
         run: composer run ci:cgl:check

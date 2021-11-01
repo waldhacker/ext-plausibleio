@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 /*
  * This file is part of the TYPO3 CMS project.
@@ -17,8 +17,6 @@ declare(strict_types = 1);
 
 namespace Waldhacker\Plausibleio\Dashboard\Widget;
 
-use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Dashboard\Widgets\WidgetConfigurationInterface;
 use TYPO3\CMS\Dashboard\Widgets\WidgetInterface;
 use TYPO3\CMS\Fluid\View\StandaloneView;
@@ -59,7 +57,7 @@ class PageDataWidget implements WidgetInterface
             $sum += $item->visitors;
         }
 
-        return array('items' => $items, 'sum' => $sum);
+        return ['items' => $items, 'sum' => $sum];
     }
 
     private function getEntryPages(): array
@@ -74,7 +72,7 @@ class PageDataWidget implements WidgetInterface
             $sum += $item->visitors;
         }
 
-        return array('items' => $items, 'sum' => $sum);
+        return ['items' => $items, 'sum' => $sum];
     }
 
     private function getExitPages(): array

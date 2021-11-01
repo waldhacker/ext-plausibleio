@@ -18,7 +18,6 @@ class PageDataProvider
         $this->configurationService = $configurationService;
     }
 
-
     private function getPageData(string $property, ?string $timeFrame = null, ?string $site = null): array
     {
         $timeFrame = $timeFrame ?? $this->configurationService->getDefaultTimeFrameValue();

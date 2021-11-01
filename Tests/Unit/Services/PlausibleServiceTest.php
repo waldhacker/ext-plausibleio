@@ -131,7 +131,6 @@ class PlausibleServiceTest extends UnitTestCase
      * @test
      * @covers \Waldhacker\Plausibleio\Services\PlausibleService::__construct
      * @covers \Waldhacker\Plausibleio\Services\PlausibleService::sendAuthorizedRequest
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::getDeviceData
      */
     public function nonOkStatusCodeIsLoggedAsWarning(): void
     {
@@ -145,7 +144,15 @@ class PlausibleServiceTest extends UnitTestCase
         $loggerProphecy = $this->prophesize(LoggerInterface::class);
         $plausibleService->setLogger($loggerProphecy->reveal());
 
-        $result = $plausibleService->getDeviceData('30d', 'example.com');
+        //$result = $plausibleService->getDeviceData('30d', 'example.com');
+        $endpoint = 'api/v1/stats/breakdown?';
+        $params = [
+            'site_id' => 'example.com',
+            'period' => '30d',
+            'property' => 'visit:device',
+            'metrics' => 'visitors',
+        ];
+        $result = $plausibleService->sendAuthorizedRequest($endpoint, $params);
 
         self::assertSame([], $result);
         $loggerProphecy->warning('Something went wrong while fetching analytics. Bad Request')->shouldHaveBeenCalled();

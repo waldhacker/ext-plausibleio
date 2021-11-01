@@ -41,48 +41,12 @@ class PlausibleService implements LoggerAwareInterface
         $this->configurationService = $configurationService;
     }
 
-    public function getVisitors(string $timeFrame, string $site): array
+    public function sendAuthorizedRequest(string $endpoint, array $params): array
     {
-        $timeSeriesApi = 'api/v1/stats/timeseries?';
-        $params = [
-            'site_id' => $site,
-            'period' => $timeFrame,
-        ];
-
-        $uri = $timeSeriesApi . http_build_query($params);
-        return $this->sendAuthorizedRequest($uri);
-    }
-
-    public function getBrowserData(string $timeFrame, string $site): array
-    {
-        $browserDataApi = 'api/v1/stats/breakdown?';
-        $params = [
-            'site_id' => $site,
-            'period' => $timeFrame,
-            'property' => 'visit:browser',
-            'metrics' => 'visitors',
-        ];
-        $uri = $browserDataApi . http_build_query($params);
-        return $this->sendAuthorizedRequest($uri);
-    }
-
-    public function getDeviceData(string $timeFrame, string $site): array
-    {
-        $deviceDataApi = 'api/v1/stats/breakdown?';
-        $params = [
-            'site_id' => $site,
-            'period' => $timeFrame,
-            'property' => 'visit:device',
-            'metrics' => 'visitors',
-        ];
-        $uri = $deviceDataApi . http_build_query($params);
-        return $this->sendAuthorizedRequest($uri);
-    }
-
-    public function sendAuthorizedRequest(string $uri): array
-    {
+        $uri = $endpoint . http_build_query($params);
         $baseDomain = $this->configurationService->getBaseUrl();
         $uri = $baseDomain . $uri;
+
         $dataRequest = $this
             ->factory
             ->createRequest('GET', $uri)
@@ -93,6 +57,7 @@ class PlausibleService implements LoggerAwareInterface
             return [];
         }
         $responseBody = (string)$response->getBody();
+
         return (json_decode($responseBody, false, 512, JSON_THROW_ON_ERROR))->results;
     }
 }

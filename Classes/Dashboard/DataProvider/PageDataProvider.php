@@ -37,16 +37,14 @@ class PageDataProvider
         $timeFrame = $timeFrame ?? $this->configurationService->getDefaultTimeFrameValue();
         $site = $site ?? $this->configurationService->getDefaultSite();
 
-        $deviceDataApi = 'api/v1/stats/breakdown?';
+        $endpoint = 'api/v1/stats/breakdown?';
         $params = [
             'site_id' => $site,
             'period' => $timeFrame,
             'property' => $property
         ];
 
-        $uri = $deviceDataApi . http_build_query($params);
-
-        return $this->plausibleService->sendAuthorizedRequest($uri);
+        return $this->plausibleService->sendAuthorizedRequest($endpoint, $params);
     }
 
     public function getTopPageData(?string $timeFrame = null, ?string $site = null): array

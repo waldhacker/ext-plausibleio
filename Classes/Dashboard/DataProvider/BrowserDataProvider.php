@@ -34,9 +34,17 @@ class BrowserDataProvider
 
     public function getBrowserData(?string $timeFrame = null, ?string $site = null): array
     {
-        return $this->plausibleService->getBrowserData(
-            $timeFrame ?? $this->configurationService->getDefaultTimeFrameValue(),
-            $site ?? $this->configurationService->getDefaultSite()
-        );
+        $timeFrame = $timeFrame ?? $this->configurationService->getDefaultTimeFrameValue();
+        $site = $site ?? $this->configurationService->getDefaultSite();
+
+        $endpoint = 'api/v1/stats/breakdown?';
+        $params = [
+            'site_id' => $site,
+            'period' => $timeFrame,
+            'property' => 'visit:browser',
+            'metrics' => 'visitors',
+        ];
+
+        return $this->plausibleService->sendAuthorizedRequest($endpoint, $params);
     }
 }

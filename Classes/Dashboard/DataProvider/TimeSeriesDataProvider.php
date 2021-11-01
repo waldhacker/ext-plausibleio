@@ -41,12 +41,23 @@ class TimeSeriesDataProvider implements ChartDataProviderInterface
         $this->languageService->includeLLFile('EXT:' . self::EXT_KEY . '/Resources/Private/Language/locallang.xlf');
     }
 
+    public function getVisitors(string $timeFrame, string $site): array
+    {
+        $endpoint = 'api/v1/stats/timeseries?';
+        $params = [
+            'site_id' => $site,
+            'period' => $timeFrame,
+        ];
+
+        return $this->plausibleService->sendAuthorizedRequest($endpoint, $params);
+    }
+
     public function getChartData(?string $timeFrame = null, ?string $site = null): array
     {
         $timeFrame = $timeFrame ?? $this->configurationService->getDefaultTimeFrameValue();
         $site = $site ?? $this->configurationService->getDefaultSite();
 
-        $results = $this->plausibleService->getVisitors($timeFrame, $site);
+        $results = $this->getVisitors($timeFrame, $site);
 
         $r = random_int(1, 255);
         $g = random_int(1, 255);

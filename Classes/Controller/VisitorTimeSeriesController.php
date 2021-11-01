@@ -27,7 +27,6 @@ use Waldhacker\Plausibleio\Services\ConfigurationService;
 class VisitorTimeSeriesController
 {
     private ResponseFactoryInterface $responseFactory;
-    //private ChartService $chartService;
     private TimeSeriesDataProvider $timeSeriesDataProvider;
     private ConfigurationService $configurationService;
 

@@ -30,8 +30,11 @@ class TimeSeriesDataProvider implements ChartDataProviderInterface
     private LanguageService $languageService;
     private const EXT_KEY = 'plausibleio';
 
-    public function __construct(PlausibleService $plausibleService, LanguageService $languageService, ConfigurationService $configurationService)
-    {
+    public function __construct(
+        PlausibleService $plausibleService,
+        LanguageService $languageService,
+        ConfigurationService $configurationService
+    ) {
         $this->plausibleService = $plausibleService;
         $this->configurationService = $configurationService;
         $this->languageService = $languageService;

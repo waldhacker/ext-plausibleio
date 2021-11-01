@@ -21,22 +21,23 @@ namespace Waldhacker\Plausibleio\Controller;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Waldhacker\Plausibleio\Services\ChartService;
+use Waldhacker\Plausibleio\Dashboard\DataProvider\TimeSeriesDataProvider;
 use Waldhacker\Plausibleio\Services\ConfigurationService;
 
 class VisitorTimeSeriesController
 {
     private ResponseFactoryInterface $responseFactory;
-    private ChartService $chartService;
+    //private ChartService $chartService;
+    private TimeSeriesDataProvider $timeSeriesDataProvider;
     private ConfigurationService $configurationService;
 
     public function __construct(
-        ChartService $chartService,
+        TimeSeriesDataProvider $timeSeriesDataProvider,
         ConfigurationService $configurationService,
         ResponseFactoryInterface $responseFactory
     ) {
         $this->responseFactory = $responseFactory;
-        $this->chartService = $chartService;
+        $this->timeSeriesDataProvider = $timeSeriesDataProvider;
         $this->configurationService = $configurationService;
     }
 
@@ -48,7 +49,7 @@ class VisitorTimeSeriesController
             $timeFrame = $this->configurationService->getDefaultTimeFrameValue();
         }
 
-        $chartData = $this->chartService->getChartDataForTimeSeries($timeFrame, $site);
+        $chartData = $this->timeSeriesDataProvider->getChartData($timeFrame, $site);
 
         $response = $this->responseFactory->createResponse(200)
             ->withHeader('Content-Type', 'application/json');

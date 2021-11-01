@@ -1,24 +1,23 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 /*
- * This file is part of the TYPO3 CMS project.
+ * This file is part of the plausibleio extension for TYPO3
+ * - (c) 2021 waldhacker UG (haftungsbeschränkt)
  *
  * It is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License, either version 2
  * of the License, or any later version.
  *
  * For the full copyright and license information, please read the
- * LICENSE.txt file that was distributed with this source code.
+ * LICENSE file that was distributed with this source code.
  *
  * The TYPO3 project - inspiring people to share!
  */
 
 namespace Waldhacker\Plausibleio\Dashboard\Widget;
 
-use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Dashboard\Widgets\WidgetConfigurationInterface;
 use TYPO3\CMS\Dashboard\Widgets\WidgetInterface;
 use TYPO3\CMS\Fluid\View\StandaloneView;
@@ -59,7 +58,7 @@ class PageDataWidget implements WidgetInterface
             $sum += $item->visitors;
         }
 
-        return array('items' => $items, 'sum' => $sum);
+        return ['items' => $items, 'sum' => $sum];
     }
 
     private function getEntryPages(): array
@@ -74,7 +73,7 @@ class PageDataWidget implements WidgetInterface
             $sum += $item->visitors;
         }
 
-        return array('items' => $items, 'sum' => $sum);
+        return ['items' => $items, 'sum' => $sum];
     }
 
     private function getExitPages(): array

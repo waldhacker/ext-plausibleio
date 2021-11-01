@@ -1,16 +1,3 @@
-require.config({
-  paths: {
-//    'datamaps': 'TYPO3/CMS/Plausibleio/Contrib/datamaps.world.min',
-    'datamaps': '../../typo3conf/ext/plausibleio/Resources/Public/JavaScript/Contrib/datamaps.world.min',
-  },
-  map: {
-    '*': {
-      'd3': 'TYPO3/CMS/Plausibleio/Contrib/d3.min',
-      'topojson': 'TYPO3/CMS/Plausibleio/Contrib/topojson.min',
-    },
-  }
-});
-
 define([
   'TYPO3/CMS/Core/Ajax/AjaxRequest',
   'TYPO3/CMS/Core/Event/RegularEvent',

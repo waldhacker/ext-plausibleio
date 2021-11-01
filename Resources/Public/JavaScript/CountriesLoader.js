@@ -1,6 +1,7 @@
 require.config({
   paths: {
-    'datamaps': 'TYPO3/CMS/Plausibleio/Contrib/datamaps.world.min',
+//    'datamaps': 'TYPO3/CMS/Plausibleio/Contrib/datamaps.world.min',
+    'datamaps': '../../typo3conf/ext/plausibleio/Resources/Public/JavaScript/Contrib/datamaps.world.min',
   },
   map: {
     '*': {
@@ -41,8 +42,8 @@ define([
         var onlyValues = config.data.map(function (obj) {
           return obj[1];
         });
-        var minValue = Math.min.apply(null, onlyValues),
-          maxValue = Math.max.apply(null, onlyValues);
+        var minValue = Math.min.apply(null, onlyValues);
+        var maxValue = Math.max.apply(null, onlyValues);
 
         // create color palette function
         // color can be whatever you wish
@@ -56,10 +57,12 @@ define([
         var dataset = {};
 
         // fill dataset in appropriate format
-        config.data.forEach(function (item) { //
+        config.data.forEach(function (item) {
           // item example value ["USA", 70]
-          var iso = item[0],
-            value = item[1];
+          var iso = item[0];
+          var value = item[1];
+          if (value >= 1000)
+            D3.format(".2s")(item[1]);
           dataset[iso] = {numberOfThings: value, fillColor: paletteScale(value)};
         });
 

@@ -154,6 +154,23 @@ module.exports = function (grunt) {
         cache: './.cache/grunt-newer/'
       }
     },
+    npmcopy: {
+      options: {
+        clean: false,
+        report: false,
+        srcPrefix: "node_modules/"
+      },
+      all: {
+        options: {
+          destPrefix: "<%= paths.resources %>Public/JavaScript/Contrib"
+        },
+        files: {
+          'd3.min.js': 'd3/d3.min.js',
+          'datamaps.world.min.js': 'datamaps/dist/datamaps.world.min.js',
+          'topojson.min.js': 'topojson/dist/topojson.min.js'
+        }
+      }
+    },
     terser: {
       options: {
         output: {
@@ -202,6 +219,7 @@ module.exports = function (grunt) {
       }
     },
     concurrent: {
+      npmcopy: ['npmcopy:all'],
       lint: ['eslint', 'stylelint', 'lintspaces'],
       compile_assets: ['scripts', 'css'],
     },
@@ -210,6 +228,7 @@ module.exports = function (grunt) {
   // Register tasks
   grunt.loadNpmTasks('grunt-sass');
   grunt.loadNpmTasks('grunt-contrib-watch');
+  grunt.loadNpmTasks('grunt-npmcopy');
   grunt.loadNpmTasks('grunt-terser');
   grunt.loadNpmTasks('grunt-postcss');
   grunt.loadNpmTasks('grunt-contrib-copy');
@@ -225,7 +244,7 @@ module.exports = function (grunt) {
   grunt.registerTask('css', ['formatsass', 'newer:sass', 'newer:postcss']);
   grunt.registerTask('compile-typescript', ['eslint', 'exec:ts']);
   grunt.registerTask('scripts', ['compile-typescript', 'newer:copy:ts_files']);
-  grunt.registerTask('update', ['exec:yarn-install']);
+  grunt.registerTask('update', ['exec:yarn-install', 'concurrent:npmcopy']);
   grunt.registerTask('clear-build', function () {
     grunt.option('force');
     grunt.file.delete('.cache');

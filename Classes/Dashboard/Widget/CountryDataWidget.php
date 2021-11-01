@@ -17,6 +17,8 @@ declare(strict_types=1);
 
 namespace Waldhacker\Plausibleio\Dashboard\Widget;
 
+use TYPO3\CMS\Core\Page\PageRenderer;
+use TYPO3\CMS\Core\Utility\PathUtility;
 use TYPO3\CMS\Dashboard\Widgets\EventDataInterface;
 use TYPO3\CMS\Dashboard\Widgets\RequireJsModuleInterface;
 use TYPO3\CMS\Dashboard\Widgets\WidgetConfigurationInterface;
@@ -27,6 +29,7 @@ use Waldhacker\Plausibleio\Services\ConfigurationService;
 
 class CountryDataWidget implements WidgetInterface, RequireJsModuleInterface, EventDataInterface
 {
+    private PageRenderer $pageRenderer;
     private WidgetConfigurationInterface $configuration;
     private StandaloneView $view;
     private array $options;
@@ -36,12 +39,14 @@ class CountryDataWidget implements WidgetInterface, RequireJsModuleInterface, Ev
     private string $mapElementId = '';
 
     public function __construct(
+        PageRenderer $pageRenderer,
         WidgetConfigurationInterface $configuration,
         CountryDataProvider $dataProvider,
         StandaloneView $view,
         ConfigurationService $configurationService,
         array $options = []
     ) {
+        $this->pageRenderer = $pageRenderer;
         $this->configuration = $configuration;
         $this->view = $view;
         $this->options = $options;
@@ -49,6 +54,7 @@ class CountryDataWidget implements WidgetInterface, RequireJsModuleInterface, Ev
         $this->configurationService = $configurationService;
 
         $this->mapElementId = 'plausibleWidgetWorldMap-' . bin2hex(random_bytes(8));
+        $this->preparePageRenderer();
     }
 
     public function renderWidgetContent(): string
@@ -98,5 +104,23 @@ class CountryDataWidget implements WidgetInterface, RequireJsModuleInterface, Ev
             'TYPO3/CMS/Plausibleio/Contrib/topojson.min',
             'TYPO3/CMS/Plausibleio/Contrib/datamaps.world.min',
         ];
+    }
+
+    private function preparePageRenderer(): void
+    {
+        $publicResourcesPath = PathUtility::getPublicResourceWebPath('EXT:plausibleio/Resources/Public/');
+        $this->pageRenderer->addRequireJsConfiguration(
+            [
+                'paths' => [
+                    'datamaps' => $publicResourcesPath . 'JavaScript/Contrib/datamaps.world.min',
+                ],
+                'map' => [
+                    '*' => [
+                        'd3' => 'TYPO3/CMS/Plausibleio/Contrib/d3.min',
+                        'topojson' => 'TYPO3/CMS/Plausibleio/Contrib/topojson.min',
+                    ],
+                ],
+            ]
+        );
     }
 }

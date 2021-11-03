@@ -18,6 +18,10 @@
     height: 85%;
 }
 
+.widget-content-title .input-group {
+    width: auto;
+}
+
 .chartOverview {
     display: flex;
     flex-wrap: wrap;

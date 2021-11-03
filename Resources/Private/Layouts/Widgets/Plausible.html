@@ -1,11 +1,27 @@
 <html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers" data-namespace-typo3-fluid="true">
 <div class="widget-content-title">
-    <span>
-        <f:translate
-            key="LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:{label}"
-            arguments="{timeFrame: options.timeFrame, site: options.siteId}"
-        />
-    </span>
+    <div style="display: flex; justify-content: space-between;">
+        <span>
+            <f:translate
+                key="LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:{label}"
+                arguments="{timeFrame: options.timeFrame, site: options.siteId}"
+            />
+        </span>
+        <div class="input-group">
+            <select class="form-select" data-widget-type="plausible-timeframe" aria-label="{f:translate(key: 'LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:timeframeselect_aria')}">
+                <f:for each="{timeSelectorConfig.items}" as="item">
+                    <f:if condition="{timeSelectorConfig.default}=={item.value}">
+                        <f:then>
+                            <option value="{item.value}" selected="selected">{item.label}</option>
+                        </f:then>
+                        <f:else>
+                            <option value="{item.value}">{item.label}</option>
+                        </f:else>
+                    </f:if>
+                </f:for>
+            </select>
+        </div>
+    </div>
 </div>
 <f:if condition="{validConfiguration} == false">
     <f:then>

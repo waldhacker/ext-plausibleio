@@ -48,7 +48,7 @@
 				<source>Pages views in the last %s for (Plausible Analytics)</source>
 			</trans-unit>
 			<trans-unit id="plausible.countryData.label">
-				<source>Countries of origin of the page views in the last %s for (Plausible Analytics)</source>
+				<source>Countries of origin of the page views (Plausible Analytics)</source>
 			</trans-unit>
 			<trans-unit id="widgets.browserData.description">
 				<source>Show statistics about visitors and their browsers.</source>

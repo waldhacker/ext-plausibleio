@@ -4,36 +4,44 @@ define([
   'datamaps',
   'd3',
   "TYPO3/CMS/Plausibleio/Contrib/d3-format",
-], function (AjaxRequest, RegularEvent, Datamap, D3, D3Format) {
-/* The configuration of requirejs is done in  */
-/* CountryDataWidget->preparePageRenderer     */
+  "TYPO3/CMS/Plausibleio/PlausibleWidgets"
+], function (AjaxRequest, RegularEvent, Datamap, D3, D3Format, PW) {
+  /* The configuration of requirejs is done in
+   * CountryDataWidget->preparePageRenderer
+   */
 
-  let CountriesLoader = {
-    selector: ".dashboard-item",
-    contentSelector: ".widget-content"
-  };
+  class CountriesLoader {
+    constructor() {
+      this.options = {
+        dashboardItemSelector: '.dashboard-item',
+        widgetContentSelector: '.widget-content',
+        visitorsCountryEndpoint: TYPO3.settings.ajaxUrls.plausible_countrymap,
+      };
 
-  // widgetRefresh
+      this.initialize();
+    }
 
-  CountriesLoader.init = function () {
-    new RegularEvent('widgetContentRendered', function (e) {
-      e.preventDefault();
-      const config = e.detail;
+    requestUpdatedData(evt, map) {
+      new AjaxRequest(this.options.visitorsCountryEndpoint)
+        .withQueryArguments({
+          timeFrame: evt.target.value
+        })
+        .get()
+        .then(async (response) => {
+          const data = await response.resolve();
+          this.setMapData(map, data);
+        });
+    }
 
-//      if (config === undefined || config.widgetId == "" || config.widgetId == undefined) {
-      if (config === undefined) {
-          return;
-      }
-
-      let mapElement = e.target.querySelector("[data-widget-type='countryMap']"); //document.getElementById(config.widgetId);
-      if (mapElement) {
+    setMapData(map, data) {
+      if (map) {
         /* Highmap code taken from: */
         /* https://github.com/markmarkoh/datamaps/blob/master/README.md#getting-started */
 
         // We need to colorize every country based on "numberOfWhatever"
         // colors should be uniq for every value.
         // For this purpose we create palette(using min/max series-value)
-        var onlyValues = config.data.map(function (obj) {
+        var onlyValues = data.map(function (obj) {
           return obj[1];
         });
         var minValue = Math.min.apply(null, onlyValues);
@@ -51,7 +59,7 @@ define([
         var dataset = {};
 
         // fill dataset in appropriate format
-        config.data.forEach(function (item) {
+        data.forEach(function (item) {
           // item example value ["USA", 70]
           var iso = item[0];
           var value = item[1];
@@ -59,41 +67,68 @@ define([
           dataset[iso] = {numberOfThings: value, fillColor: paletteScale(value)};
         });
 
-        // render map
-        new Datamap({
-          element: mapElement,
-          projection: 'mercator', // big world map
-          // countries don't listed in dataset will be painted with this color
-          fills: {defaultFill: '#F5F5F5'},
-          data: dataset,
-          geographyConfig: {
-            borderColor: '#DEDEDE',
-            highlightBorderWidth: 1,
-            // don't change color on mouse hover
-            highlightFillColor: function (geo) {
-              return geo['fillColor'] || '#F5F5F5';
-            },
-            // only change border
-            highlightBorderColor: '#B7B7B7',
-            // show desired information in tooltip
-            popupTemplate: function (geo, data) {
-              // don't show tooltip if country don't present in dataset
-              if (!data) {
-                return;
-              }
-              // tooltip content
-              return ['<div class="hoverinfo">',
-                '<strong>', geo.properties.name, '</strong>',
-                '<br><strong>', data.numberOfThings, '</strong> Visitors',
-                '</div>'].join('');
-            }
-          }
-        });
+        map.updateChoropleth(null, {reset: true}); // reset all countries to default color
+        map.updateChoropleth(dataset);
       }
+    }
 
-    }).delegateTo(document, CountriesLoader.selector);
-  };
+    initialize() {
+      let that = this;
 
-  CountriesLoader.init();
-  return CountriesLoader;
+      new RegularEvent('widgetContentRendered', function (e) {
+        e.preventDefault();
+        const config = e.detail;
+
+        if (config === undefined) {
+          return;
+        }
+
+        let mapElement = e.target.querySelector("[data-widget-type='countryMap']");
+        if (mapElement) {
+          // render map
+          let map = new Datamap({
+            element: mapElement,
+            projection: 'mercator', // big world map
+            // countries don't listed in dataset will be painted with this color
+            fills: {defaultFill: '#F5F5F5'},
+            //data: dataset,
+            geographyConfig: {
+              borderColor: '#DEDEDE',
+              highlightBorderWidth: 1,
+              // don't change color on mouse hover
+              highlightFillColor: function (geo) {
+                return geo['fillColor'] || '#F5F5F5';
+              },
+              // only change border
+              highlightBorderColor: '#B7B7B7',
+              // show desired information in tooltip
+              popupTemplate: function (geo, data) {
+                // don't show tooltip if country don't present in dataset
+                if (!data) {
+                  return;
+                }
+                // tooltip content
+                return ['<div class="hoverinfo">',
+                  '<strong>', geo.properties.name, '</strong>',
+                  '<br><strong>', data.numberOfThings, '</strong> Visitors',
+                  '</div>'].join('');
+              }
+            }
+          });
+
+          that.setMapData(map, config.data);
+
+          let timeFrameSelect = e.target.querySelector("[data-widget-type='plausible-timeframe']");
+          timeFrameSelect.addEventListener('change', function (e) {
+            that.requestUpdatedData(e, map);
+          });
+          PW.registerTimeSelector(timeFrameSelect);
+
+        }
+
+      }).delegateTo(document, this.options.dashboardItemSelector);
+    }
+  }
+
+  return new CountriesLoader();
 });

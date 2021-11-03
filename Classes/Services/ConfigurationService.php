@@ -24,6 +24,7 @@ use TYPO3\CMS\Core\Localization\LanguageService;
 class ConfigurationService
 {
     private const EXT_KEY = 'plausibleio';
+    private const DEFAULT_TIME_FRAME = '30d';
     private ExtensionConfiguration $extensionConfiguration;
     private LanguageService $languageService;
 
@@ -38,9 +39,9 @@ class ConfigurationService
     {
         $timeFrames = $this->extensionConfiguration->get(self::EXT_KEY, 'timeFrames');
         $timeFrames = array_filter(explode(',', $timeFrames ?? ''));
-        $defaultTimeFrame = $this->extensionConfiguration->get(self::EXT_KEY, 'defaultTimeFrame') ?? '30d';
+        //$defaultTimeFrame = $this->extensionConfiguration->get(self::EXT_KEY, 'defaultTimeFrame') ?? DEFAULT_TIME_FRAME;
         if (empty($timeFrames)) {
-            $timeFrames = ['30d'];
+            $timeFrames = [DEFAULT_TIME_FRAME];
         }
         $availableFrames = [];
         foreach ($timeFrames as $timeFrame) {
@@ -49,7 +50,7 @@ class ConfigurationService
                 $availableFrames[] = [
                     'value' => $timeFrame,
                     'label' => $label,
-                    'default' => $defaultTimeFrame === $timeFrame
+                    //'default' => $defaultTimeFrame === $timeFrame
                 ];
             }
         }
@@ -58,9 +59,12 @@ class ConfigurationService
 
     public function getDefaultTimeFrameValue(): string
     {
+        /*
         return array_filter($this->getTimeFrameValues(), static function ($elm) {
             return $elm['default'] ?? [];
-        })['value'] ?? '30d';
+        })['value'] ?? DEFAULT_TIME_FRAME;
+        */
+        return $this->extensionConfiguration->get(self::EXT_KEY, 'defaultTimeFrame') ?? DEFAULT_TIME_FRAME;;
     }
 
     public function getTimeFrameValues(): array

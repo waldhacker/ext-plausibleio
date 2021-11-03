@@ -9,6 +9,8 @@ services:
 
   Waldhacker\Plausibleio\Controller\VisitorTimeSeriesController:
     public: true
+  Waldhacker\Plausibleio\Controller\CountryMapController:
+    public: true
 
   waldhacker.plausibleio.widget.country:
     class: 'Waldhacker\Plausibleio\Dashboard\Widget\CountryDataWidget'

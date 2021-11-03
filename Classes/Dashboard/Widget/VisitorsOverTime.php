@@ -98,7 +98,7 @@ class VisitorsOverTime implements WidgetInterface, EventDataInterface, Additiona
         return [
             'TYPO3/CMS/Dashboard/Contrib/chartjs',
             'TYPO3/CMS/Dashboard/ChartInitializer',
-            'TYPO3/CMS/Plausibleio/Contrib/d3.min',
+            'TYPO3/CMS/Plausibleio/Contrib/d3-format',
             'TYPO3/CMS/Plausibleio/VisitorLoader',
         ];
     }

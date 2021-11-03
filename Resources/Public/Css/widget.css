@@ -11,7 +11,12 @@
  *
  * The TYPO3 project - inspiring people to share!
  */
+
 .widget-table{width:100%}
+
+.widget-chart {
+    height: 85%;
+}
 
 .chartOverview {
     display: flex;
@@ -34,7 +39,7 @@
 
 .chartOverviewItem .chartOverviewItemValue {
     width: 100%;
-    font-size: large;
+    font-size: 1rem;
     font-weight: bold;
 }
 

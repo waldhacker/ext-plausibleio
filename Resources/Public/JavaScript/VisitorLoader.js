@@ -21,8 +21,8 @@ define([
   "TYPO3/CMS/Dashboard/Contrib/chartjs",
   "TYPO3/CMS/Core/Ajax/AjaxRequest",
   "TYPO3/CMS/Core/Event/RegularEvent",
-  "TYPO3/CMS/Plausibleio/Contrib/d3.min",
-], function (require, exports, lit_1, chartjs_1, AjaxRequest, RegularEvent, D3) {
+  "TYPO3/CMS/Plausibleio/Contrib/d3-format",
+], function (require, exports, lit_1, chartjs_1, AjaxRequest, RegularEvent, D3Format) {
     "use strict";
     chartjs_1 = __importDefault(chartjs_1);
 
@@ -56,9 +56,11 @@ define([
             new RegularEvent('widgetContentRendered', function (evt) {
                 evt.preventDefault();
                 const config = evt.detail;
+
                 if (undefined === config || undefined === config.graphConfig) {
                     return;
                 }
+
                 let visitorsWidgetChart = null;
                 chartjs_1.default.helpers.each(chartjs_1.default.instances, function (instance) {
                     const widgetKey = instance.canvas.closest(that.options.dashboardItemSelector).dataset.widgetKey;
@@ -66,28 +68,23 @@ define([
                         visitorsWidgetChart = instance;
                     }
                 });
+
                 if (!visitorsWidgetChart) {
                     return;
                 }
 
                 that.renderTimeSelector(visitorsWidgetChart, config);
                 that.renderOverviewData(visitorsWidgetChart, config);
-
             }).delegateTo(document, this.options.dashboardItemSelector);
         }
 
         formatSIPrefix(n) {
-          // 2300 -> 2.3k
-          // D3 has a bug in the version used (for Datamap),
-          // so that even numbers that do not require a
-          // prefix (< 1000) have a decimal place with 0.
-          if (n >= 1000)
-            n = D3.format(".2s")(n);
+          n = D3Format.format(".2~s")(n); // 2400 -> 2.4k
           return n;
         }
 
         renderOverviewData(visitorsWidgetChart, config) {
-          let parent = visitorsWidgetChart.canvas.parentNode.parentNode;
+          let parent = visitorsWidgetChart.canvas.closest(this.options.widgetContentSelector);
 
           parent.querySelector('#' + 'uniqueVisitors').innerHTML = this.formatSIPrefix(config.uniqueVisitors);
           parent.querySelector('#' + 'totalPageviews').innerHTML = this.formatSIPrefix(config.totalPageviews);

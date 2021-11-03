@@ -3,7 +3,8 @@ define([
   'TYPO3/CMS/Core/Event/RegularEvent',
   'datamaps',
   'd3',
-], function (AjaxRequest, RegularEvent, Datamap, D3) {
+  "TYPO3/CMS/Plausibleio/Contrib/d3-format",
+], function (AjaxRequest, RegularEvent, Datamap, D3, D3Format) {
 /* The configuration of requirejs is done in  */
 /* CountryDataWidget->preparePageRenderer     */
 
@@ -12,16 +13,19 @@ define([
     contentSelector: ".widget-content"
   };
 
+  // widgetRefresh
+
   CountriesLoader.init = function () {
     new RegularEvent('widgetContentRendered', function (e) {
       e.preventDefault();
       const config = e.detail;
 
-      if (config === undefined || config.widgetId == "" || config.widgetId == undefined) {
-        return;
+//      if (config === undefined || config.widgetId == "" || config.widgetId == undefined) {
+      if (config === undefined) {
+          return;
       }
 
-      let mapElement = document.getElementById(config.widgetId);
+      let mapElement = e.target.querySelector("[data-widget-type='countryMap']"); //document.getElementById(config.widgetId);
       if (mapElement) {
         /* Highmap code taken from: */
         /* https://github.com/markmarkoh/datamaps/blob/master/README.md#getting-started */
@@ -51,8 +55,7 @@ define([
           // item example value ["USA", 70]
           var iso = item[0];
           var value = item[1];
-          if (value >= 1000)
-            D3.format(".2s")(item[1]);
+          value = D3Format.format(".2~s")(value); // 2400 -> 2.4k
           dataset[iso] = {numberOfThings: value, fillColor: paletteScale(value)};
         });
 
@@ -88,7 +91,7 @@ define([
         });
       }
 
-    }).delegateTo(document, CountriesLoader.selector)
+    }).delegateTo(document, CountriesLoader.selector);
   };
 
   CountriesLoader.init();

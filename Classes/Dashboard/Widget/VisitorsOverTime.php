@@ -66,6 +66,8 @@ class VisitorsOverTime implements WidgetInterface, EventDataInterface, Additiona
 
     public function getEventData(): array
     {
+        $overViewData = $this->dataProvider->getOverview();
+
         return [
             'selectorConfig' => $this->configurationService->getTimeFrames(),
             'site' => $this->options['siteId'] ?? $this->configurationService->getDefaultSite(),
@@ -76,12 +78,19 @@ class VisitorsOverTime implements WidgetInterface, EventDataInterface, Additiona
                 ],
                 'data' => $this->dataProvider->getChartData(),
             ],
+            'uniqueVisitors' => $overViewData['visitors'],
+            'totalPageviews' => $overViewData['pageviews'],
+            'visitDuration' => $overViewData['visit_duration'],
+            'currentVisitors' => $this->dataProvider->getCurrentVisitors(),
         ];
     }
 
     public function getCssFiles(): array
     {
-        return ['EXT:dashboard/Resources/Public/Css/Contrib/chart.css'];
+        return [
+            'EXT:dashboard/Resources/Public/Css/Contrib/chart.css',
+            'EXT:plausibleio/Resources/Public/Css/widget.css',
+        ];
     }
 
     public function getRequireJsModules(): array
@@ -89,6 +98,7 @@ class VisitorsOverTime implements WidgetInterface, EventDataInterface, Additiona
         return [
             'TYPO3/CMS/Dashboard/Contrib/chartjs',
             'TYPO3/CMS/Dashboard/ChartInitializer',
+            'TYPO3/CMS/Plausibleio/Contrib/d3.min',
             'TYPO3/CMS/Plausibleio/VisitorLoader',
         ];
     }

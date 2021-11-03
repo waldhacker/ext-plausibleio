@@ -41,7 +41,11 @@ class PlausibleService implements LoggerAwareInterface
         $this->configurationService = $configurationService;
     }
 
-    public function sendAuthorizedRequest(string $endpoint, array $params): array
+    /**
+     * @return mixed Endpoint /api/v1/stats/realtime/visitors returns an int,
+     *               /api/v1/stats/aggregate an object and the rest an array.
+     */
+    public function sendAuthorizedRequest(string $endpoint, array $params)
     {
         $uri = $endpoint . http_build_query($params);
         $baseDomain = $this->configurationService->getBaseUrl();
@@ -57,6 +61,8 @@ class PlausibleService implements LoggerAwareInterface
             return [];
         }
         $responseBody = (string)$response->getBody();
+        if (is_numeric($responseBody)) // endpoint /api/v1/stats/realtime/visitors returns only a number
+            $responseBody = '{"results":' . $responseBody . '}';
 
         return (json_decode($responseBody, false, 512, JSON_THROW_ON_ERROR))->results;
     }

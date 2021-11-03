@@ -41,7 +41,46 @@ class TimeSeriesDataProvider implements ChartDataProviderInterface
         $this->languageService->includeLLFile('EXT:' . self::EXT_KEY . '/Resources/Private/Language/locallang.xlf');
     }
 
-    public function getVisitors(string $timeFrame, string $site): array
+    public function getOverview(?string $timeFrame = null, ?string $site = null): array
+    {
+        $timeFrame = $timeFrame ?? $this->configurationService->getDefaultTimeFrameValue();
+        $site = $site ?? $this->configurationService->getDefaultSite();
+        $result = [];
+
+        $endpoint = '/api/v1/stats/aggregate?';
+        $params = [
+            'site_id' => $site,
+            'period' => $timeFrame,
+            'metrics' => 'visitors,visit_duration,pageviews,bounce_rate',
+        ];
+
+        $data = $this->plausibleService->sendAuthorizedRequest($endpoint, $params);
+        if (is_object($data)) // api/v1/stats/aggregate returns an object
+            $result = [
+                'bounce_rate' => $data->bounce_rate->value,
+                'pageviews' => $data->pageviews->value,
+                'visit_duration' => $data->visit_duration->value,
+                'visitors' => $data->visitors->value,
+            ];
+
+        return $result;
+    }
+
+    public function getCurrentVisitors(?string $site = null): int
+    {
+        $site = $site ?? $this->configurationService->getDefaultSite();
+
+        $endpoint = '/api/v1/stats/realtime/visitors?';
+        $params = [
+            'site_id' => $site,
+        ];
+
+        $result =  $this->plausibleService->sendAuthorizedRequest($endpoint, $params);
+
+        return $result==null ? 0 : $result;
+    }
+
+    private function getVisitors(string $timeFrame, string $site): array
     {
         $endpoint = 'api/v1/stats/timeseries?';
         $params = [

@@ -1,14 +1,45 @@
 /*!
  * This file is part of the plausibleio extension for TYPO3
  * - (c) 2021 waldhacker UG (haftungsbeschränkt)
- * 
+ *
  * It is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License, either version 2
  * of the License, or any later version.
- * 
+ *
  * For the full copyright and license information, please read the
  * LICENSE file that was distributed with this source code.
- * 
+ *
  * The TYPO3 project - inspiring people to share!
  */
 .widget-table{width:100%}
+
+.chartOverview {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.chartOverviewItem {
+    padding-left: 2rem;
+    padding-right: 2rem;
+    margin-bottom: 1rem;
+    width: auto;
+}
+
+.chartOverviewItem .chartOverviewItemCaption {
+    white-space: nowrap;
+    font-size: small;
+    font-weight: bold;
+    color: #666666;
+}
+
+.chartOverviewItem .chartOverviewItemValue {
+    width: 100%;
+    font-size: large;
+    font-weight: bold;
+}
+
+.chartOverview .border-l {
+    border-left-style: solid;
+    border-left-width: 1px;
+    border-color: #d1d5db;
+}

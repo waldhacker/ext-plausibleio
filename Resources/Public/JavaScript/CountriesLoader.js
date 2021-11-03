@@ -4,6 +4,9 @@ define([
   'datamaps',
   'd3',
 ], function (AjaxRequest, RegularEvent, Datamap, D3) {
+/* The configuration of requirejs is done in  */
+/* CountryDataWidget->preparePageRenderer     */
+
   let CountriesLoader = {
     selector: ".dashboard-item",
     contentSelector: ".widget-content"

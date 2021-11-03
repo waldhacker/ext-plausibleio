@@ -14,9 +14,18 @@
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-define(["require", "exports", "lit", "TYPO3/CMS/Dashboard/Contrib/chartjs", "TYPO3/CMS/Core/Ajax/AjaxRequest", "TYPO3/CMS/Core/Event/RegularEvent"], function (require, exports, lit_1, chartjs_1, AjaxRequest, RegularEvent) {
+define([
+  "require",
+  "exports",
+  "lit",
+  "TYPO3/CMS/Dashboard/Contrib/chartjs",
+  "TYPO3/CMS/Core/Ajax/AjaxRequest",
+  "TYPO3/CMS/Core/Event/RegularEvent",
+  "TYPO3/CMS/Plausibleio/Contrib/d3.min",
+], function (require, exports, lit_1, chartjs_1, AjaxRequest, RegularEvent, D3) {
     "use strict";
     chartjs_1 = __importDefault(chartjs_1);
+
     class VisitorLoader {
         constructor() {
             this.options = {
@@ -27,6 +36,7 @@ define(["require", "exports", "lit", "TYPO3/CMS/Dashboard/Contrib/chartjs", "TYP
             };
             this.initialize();
         }
+
         requestUpdatedData(evt, chart) {
             new AjaxRequest(this.options.visitorTimeSeriesEndpoint)
                 .withQueryArguments({
@@ -40,6 +50,7 @@ define(["require", "exports", "lit", "TYPO3/CMS/Dashboard/Contrib/chartjs", "TYP
                 chart.update();
             });
         }
+
         initialize() {
             let that = this;
             new RegularEvent('widgetContentRendered', function (evt) {
@@ -58,9 +69,35 @@ define(["require", "exports", "lit", "TYPO3/CMS/Dashboard/Contrib/chartjs", "TYP
                 if (!visitorsWidgetChart) {
                     return;
                 }
+
                 that.renderTimeSelector(visitorsWidgetChart, config);
+                that.renderOverviewData(visitorsWidgetChart, config);
+
             }).delegateTo(document, this.options.dashboardItemSelector);
         }
+
+        formatSIPrefix(n) {
+          // 2300 -> 2.3k
+          // D3 has a bug in the version used (for Datamap),
+          // so that even numbers that do not require a
+          // prefix (< 1000) have a decimal place with 0.
+          if (n >= 1000)
+            n = D3.format(".2s")(n);
+          return n;
+        }
+
+        renderOverviewData(visitorsWidgetChart, config) {
+          let parent = visitorsWidgetChart.canvas.parentNode.parentNode;
+
+          parent.querySelector('#' + 'uniqueVisitors').innerHTML = this.formatSIPrefix(config.uniqueVisitors);
+          parent.querySelector('#' + 'totalPageviews').innerHTML = this.formatSIPrefix(config.totalPageviews);
+          parent.querySelector('#' + 'currentVisitors').innerHTML = this.formatSIPrefix(config.currentVisitors);
+
+          var minutes = Math.floor(config.visitDuration / 60); // full minutes
+          var seconds = config.visitDuration - minutes * 60; // remaining seconds
+          parent.querySelector('#' + 'visitDuration').innerHTML = (minutes>0 ? minutes + 'm ' : '') +  (seconds>0 ? seconds + 's' : '');
+        }
+
         renderTimeSelector(visitorsWidgetChart, config) {
             const widgetContentArea = visitorsWidgetChart.canvas.closest(this.options.widgetContentSelector);
             const newChild = document.createElement('div');
@@ -86,5 +123,6 @@ define(["require", "exports", "lit", "TYPO3/CMS/Dashboard/Contrib/chartjs", "TYP
             lit_1.render(template, targetElement);
         }
     }
+
     return new VisitorLoader();
 });

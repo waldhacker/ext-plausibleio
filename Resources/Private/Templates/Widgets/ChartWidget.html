@@ -1,11 +1,24 @@
 <html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers" data-namespace-typo3-fluid="true">
 <f:layout name="Widget/Widget" />
 <f:section name="main">
-    <f:if condition="{validConfiguration} == false">
-        <div class="alert alert-warning">
-            Invalid configuration. Please check the settings.
+    <div class="chartOverview">
+        <div class="chartOverviewItem">
+            <div class="chartOverviewItemCaption">Unique visitors</div>
+            <div id="uniqueVisitors" class="chartOverviewItemValue"></div>
         </div>
-    </f:if>
+        <div class="chartOverviewItem border-l">
+            <div class="chartOverviewItemCaption">Total pageviews</div>
+            <div id="totalPageviews" class="chartOverviewItemValue"></div>
+        </div>
+        <div class="chartOverviewItem border-l">
+            <div class="chartOverviewItemCaption">Visit duration</div>
+            <div id="visitDuration" class="chartOverviewItemValue"></div>
+        </div>
+        <div class="chartOverviewItem border-l">
+            <div class="chartOverviewItemCaption">Current visitors</div>
+            <div id="currentVisitors" class="chartOverviewItemValue"></div>
+        </div>
+    </div>
     <div class="widget-chart">
         <canvas></canvas>
     </div>

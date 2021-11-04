@@ -24,7 +24,7 @@ define([
     requestUpdatedData(evt, map) {
       new AjaxRequest(this.options.visitorsCountryEndpoint)
         .withQueryArguments({
-          timeFrame: evt.target.value
+          timeFrame: evt.detail.timeFrame
         })
         .get()
         .then(async (response) => {
@@ -77,13 +77,9 @@ define([
 
       new RegularEvent('widgetContentRendered', function (e) {
         e.preventDefault();
-        const config = e.detail;
+        let widget = e.target;
 
-        if (config === undefined) {
-          return;
-        }
-
-        let mapElement = e.target.querySelector("[data-widget-type='countryMap']");
+        let mapElement = widget.querySelector("[data-widget-type='countryMap']");
         if (mapElement) {
           // render map
           let map = new Datamap({
@@ -104,7 +100,7 @@ define([
               // show desired information in tooltip
               popupTemplate: function (geo, data) {
                 // don't show tooltip if country don't present in dataset
-                if (!data) {
+                if (!data.hasOwnProperty('numberOfThings')) {
                   return;
                 }
                 // tooltip content
@@ -116,14 +112,14 @@ define([
             }
           });
 
-          that.setMapData(map, config.data);
-
-          let timeFrameSelect = e.target.querySelector("[data-widget-type='plausible-timeframe']");
-          timeFrameSelect.addEventListener('change', function (e) {
+          widget.addEventListener('timeframechange', function (e) {
             that.requestUpdatedData(e, map);
           });
+
+          let timeFrameSelect = e.target.querySelector("[data-widget-type='plausible-timeframe']");
           PW.registerTimeSelector(timeFrameSelect);
 
+          PW.dispatchTimeFrameChange(widget, timeFrameSelect.value); // request and render data
         }
 
       }).delegateTo(document, this.options.dashboardItemSelector);

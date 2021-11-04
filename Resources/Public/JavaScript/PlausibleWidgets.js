@@ -3,26 +3,38 @@ define([], function () {
   class PlausibleWidgets {
     constructor() {
       this.options = {
-        dashboardItemSelector: '.dashboard-item',
-        widgetContentSelector: '.widget-content',
+        dashBoardGridSelector: ".dashboard-grid",
+        dashboardItemSelector: ".dashboard-item",
+        widgetContentSelector: ".widget-content",
+        timeFrameSelector: "[data-widget-type='plausible-timeframe']",
       };
     }
 
     registerTimeSelector(selectElement) {
+      let that = this;
+
       if (selectElement) {
         selectElement.addEventListener('change', function (e) {
-          let dashboard = selectElement.closest(".dashboard-grid");
-          let widgetsTimeFrameSelects = dashboard.querySelectorAll("[data-widget-type='plausible-timeframe']");
+          let callingSelect = e.target;
+          let dashboard = callingSelect.closest(that.options.dashBoardGridSelector);
+          let widgetsTimeFrameSelects = dashboard.querySelectorAll(that.options.timeFrameSelector);
           widgetsTimeFrameSelects.forEach(function (select) {
-            // To prevent endless recursion, Bubbles is checked.
-            // Only the change triggered by the user is bubbles=true.
-            if (select != selectElement && e.bubbles == true) {
-              select.value = selectElement.value;
-              select.dispatchEvent(new Event('change', {"bubbles": false}));
+            if (select != callingSelect) {
+              select.value = callingSelect.value;
             }
+          });
+
+          let widgets = dashboard.querySelectorAll(that.options.dashboardItemSelector);
+          widgets.forEach(function (widget) {
+            that.dispatchTimeFrameChange(widget, callingSelect.value);
           });
         });
       }
+    }
+
+    dispatchTimeFrameChange(widget, timeFrame) {
+      let event = new CustomEvent("timeframechange", {detail: {timeFrame: timeFrame}});
+      widget.dispatchEvent(event);
     }
   }
 

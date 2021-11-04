@@ -78,11 +78,14 @@ class CountryDataWidget implements WidgetInterface, RequireJsModuleInterface, Ev
 
     public function getEventData(): array
     {
+        /*
         $data = $this->dataProvider->getCountryDataForDataMap($this->options['timeFrame'], $this->options['siteId']);
         return [
             'widgetId' => $this->mapElementId,
             'data' => $data,
         ];
+        */
+        return [];
     }
 
     public function getRequireJsModules(): array

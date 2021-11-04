@@ -60,7 +60,7 @@ class CountryDataWidget implements WidgetInterface, RequireJsModuleInterface, Ev
     {
         $timeSelectorConfig = [
             'items' => $this->configurationService->getTimeFrames(),
-            'default' => array_key_exists('timeFrame', $this->options) ? $this->options['timeFrame'] : $this->configurationService->getDefaultTimeFrameValue(),
+            'selected' => $this->configurationService->getDefaultTimeFrameValue(),
         ];
 
         $this->view->setTemplate('CountryMap');

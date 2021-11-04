@@ -39,13 +39,13 @@
 				<source>Countries (Plausible Analytics)</source>
 			</trans-unit>
 			<trans-unit id="plausible.browserdata.label">
-				<source>Browser Usage and Visitors in the last %s for %s (Plausible Analytics)</source>
+				<source>Browser Usage and Visitors (Plausible Analytics)</source>
 			</trans-unit>
 			<trans-unit id="plausible.devicedata.label">
-				<source>Device Usage and Visitors in the last %s for %s (Plausible Analytics)</source>
+				<source>Device Usage and Visitors (Plausible Analytics)</source>
 			</trans-unit>
 			<trans-unit id="plausible.pageData.label">
-				<source>Pages views in the last %s for (Plausible Analytics)</source>
+				<source>Pages views (Plausible Analytics)</source>
 			</trans-unit>
 			<trans-unit id="plausible.countryData.label">
 				<source>Countries of origin of the page views (Plausible Analytics)</source>

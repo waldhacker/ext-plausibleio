@@ -10,7 +10,7 @@
         <div class="input-group">
             <select class="form-select" data-widget-type="plausible-timeframe" aria-label="{f:translate(key: 'LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:timeframeselect_aria')}">
                 <f:for each="{timeSelectorConfig.items}" as="item">
-                    <f:if condition="{timeSelectorConfig.default}=={item.value}">
+                    <f:if condition="{timeSelectorConfig.selected}=={item.value}">
                         <f:then>
                             <option value="{item.value}" selected="selected">{item.label}</option>
                         </f:then>

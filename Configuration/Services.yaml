@@ -20,7 +20,6 @@ services:
       $configurationService: '@Waldhacker\Plausibleio\Services\ConfigurationService'
       $options:
         siteId: null
-        timeFrame: 7d
     tags:
       - name: dashboard.widget
         identifier: 'plausible.countrydata'
@@ -39,7 +38,6 @@ services:
       $configurationService: '@Waldhacker\Plausibleio\Services\ConfigurationService'
       $options:
         siteId: null
-        timeFrame: 7d
     tags:
       - name: dashboard.widget
         identifier: 'plausible.pagedata'
@@ -76,7 +74,6 @@ services:
       $configurationService: '@Waldhacker\Plausibleio\Services\ConfigurationService'
       $options:
         siteId: null
-        timeFrame: 7d
     tags:
       - name: dashboard.widget
         identifier: 'plausible.browserdata'
@@ -96,7 +93,6 @@ services:
       $configurationService: '@Waldhacker\Plausibleio\Services\ConfigurationService'
       $options:
         siteId: null
-        timeFrame: 7d
     tags:
       - name: dashboard.widget
         identifier: 'plausible.devicedata'

@@ -9,4 +9,8 @@ return [
         'path' => '/plausibleio/countrymap',
         'target' => \Waldhacker\Plausibleio\Controller\CountryMapController::class,
     ],
+    'plausible_page' => [
+        'path' => '/plausibleio/page',
+        'target' => \Waldhacker\Plausibleio\Controller\PageController::class,
+    ],
 ];

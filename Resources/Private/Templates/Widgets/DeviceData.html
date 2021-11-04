@@ -6,7 +6,7 @@
             Invalid configuration. Please check the settings.
         </div>
     </f:if>
-    <div style="flex-basis: 100%;">
+    <div class="barchart">
         <f:if condition="{items}">
             <f:for each="{items}" as="item">
                 <f:variable name="percentage" value="{item.visitors/sum*100}" />

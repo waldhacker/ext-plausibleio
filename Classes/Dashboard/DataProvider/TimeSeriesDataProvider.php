@@ -98,9 +98,6 @@ class TimeSeriesDataProvider implements ChartDataProviderInterface
 
         $results = $this->getVisitors($timeFrame, $site);
 
-        $r = random_int(1, 255);
-        $g = random_int(1, 255);
-        $b = random_int(1, 255);
         $labels = [];
         $data = [];
         foreach ($results as $datum) {
@@ -114,7 +111,7 @@ class TimeSeriesDataProvider implements ChartDataProviderInterface
                     'label' => $this->languageService->getLL('visitors'),
                     'data' => $data,
                     'fill' => false,
-                    'borderColor' => "rgb($r, $g, $b)",
+                    'borderColor' => "#85bcee",
                     'tension' => 0.5,
                 ],
             ],

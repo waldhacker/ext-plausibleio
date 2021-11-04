@@ -1,7 +1,7 @@
 <html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers" data-namespace-typo3-fluid="true">
 <f:layout name="Plausible" />
 <f:section name="main">
-    <div style="flex-basis: 100%;">
+    <div class="barchart">
         <f:if condition="{items}">
             <f:for each="{items}" as="item">
                 <f:variable name="percentage" value="{item.visitors/sum*100}" />

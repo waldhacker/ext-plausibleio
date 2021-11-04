@@ -21,22 +21,22 @@ namespace Waldhacker\Plausibleio\Controller;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Waldhacker\Plausibleio\Dashboard\DataProvider\TimeSeriesDataProvider;
+use Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider;
 use Waldhacker\Plausibleio\Services\ConfigurationService;
 
-class VisitorTimeSeriesController
+class PageController
 {
     private ResponseFactoryInterface $responseFactory;
-    private TimeSeriesDataProvider $timeSeriesDataProvider;
+    private PageDataProvider $pageDataProvider;
     private ConfigurationService $configurationService;
 
     public function __construct(
-        TimeSeriesDataProvider $timeSeriesDataProvider,
+        PageDataProvider $pageDataProvider,
         ConfigurationService $configurationService,
         ResponseFactoryInterface $responseFactory
     ) {
         $this->responseFactory = $responseFactory;
-        $this->timeSeriesDataProvider = $timeSeriesDataProvider;
+        $this->pageDataProvider = $pageDataProvider;
         $this->configurationService = $configurationService;
     }
 
@@ -48,12 +48,19 @@ class VisitorTimeSeriesController
             $timeFrame = $this->configurationService->getDefaultTimeFrameValue();
         }
 
-        $chartData = $this->timeSeriesDataProvider->getChartData($timeFrame, $site);
-        $overviewData = $this->timeSeriesDataProvider->getOverview($timeFrame, $site);
-        $overviewData['current_visitors'] = $this->timeSeriesDataProvider->getCurrentVisitors();
         $data = [
-            'chartData' => $chartData,
-            'overViewData' => $overviewData,
+            [
+                'tab' => 'toppage',
+                'data'=> $this->pageDataProvider->getTopPageData($timeFrame, $site),
+            ],
+            [
+                'tab' => 'entrypage',
+                'data' => $this->pageDataProvider->getEntryPageData($timeFrame, $site),
+            ],
+            [
+                'tab' => 'exitpage',
+                'data' => $this->pageDataProvider->getExitPageData($timeFrame, $site),
+            ],
         ];
 
         $response = $this->responseFactory->createResponse(200)

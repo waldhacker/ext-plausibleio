@@ -11,26 +11,27 @@
         </f:else>
     </f:if>
 
-    <div role="tabpanel" style="flex-basis: 100%;">
-        <ul class="nav nav-tabs t3js-tabs" role="tablist" id="tabs-tab" data-store-last-tab="1">
-            <f:for each="{tabs}" as="tab" iteration="iteration">
-                <li role="presentation" class="t3js-tabmenu-item">
-                    <a href="#{id}-{iteration.cycle}" title="" aria-controls="{id}-{iteration.cycle}" role="tab" data-bs-toggle="tab" aria-selected="{f:if(condition: '{iteration.cycle} == {defaultTabIndex}', then: 'true', else: 'false')}" class="{f:if(condition: '{iteration.cycle} == {defaultTabIndex}', then: 'active')}">
-                        {tab.label}
-                    </a>
-                </li>
-            </f:for>
-        </ul>
-        <div class="tab-content" style="flex-basis: 100%;">
-            <f:for each="{tabs}" as="tab" iteration="iteration">
-                <div role="tabpanel" class="tab-pane {f:if(condition: '{iteration.cycle} == {defaultTabIndex}', then: 'active')}" id="{id}-{iteration.cycle}">
-                    <div class="panel panel-tab">
-                        <div class="panel-body">
-                            <f:render partial="{tab.partial}" arguments="{tab.data}"/>
+    <div class="tabs" data-widget-type="{widgetType}">
+        <div role="tabpanel">
+            <ul class="nav nav-tabs t3js-tabs" role="tablist" id="tabs-tab" data-store-last-tab="1">
+                <f:for each="{tabs}" as="tab" iteration="iteration">
+                    <li role="presentation" class="t3js-tabmenu-item">
+                        <a href="#{id}-{iteration.cycle}" title="" aria-controls="{id}-{iteration.cycle}" role="tab" data-bs-toggle="tab" aria-selected="{f:if(condition: '{iteration.cycle} == {defaultTabIndex}', then: 'true', else: 'false')}" class="{f:if(condition: '{iteration.cycle} == {defaultTabIndex}', then: 'active')}">
+                            {tab.label}
+                        </a>
+                    </li>
+                </f:for>
+            </ul>
+            <div class="tab-content" style="flex-basis: 100%;">
+                <f:for each="{tabs}" as="tab" iteration="iteration">
+                    <div role="tabpanel" class="tab-pane {f:if(condition: '{iteration.cycle} == {defaultTabIndex}', then: 'active')}" id="{id}-{iteration.cycle}">
+                        <div class="panel panel-tab">
+                            <div class="panel-body" data-widget-type="{tab.id}">
+                            </div>
                         </div>
                     </div>
-                </div>
-            </f:for>
+                </f:for>
+            </div>
         </div>
     </div>
 </f:section>

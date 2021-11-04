@@ -22,33 +22,93 @@
     width: auto;
 }
 
-.chartOverview {
+.widget-content-main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.widget-content-main .tabs {
+    width: 100%;
+}
+
+.widget-content-main .barchart {
+    width: 100%;
+}
+
+.widget-content-main .chartOverview {
     display: flex;
     flex-wrap: wrap;
 }
 
-.chartOverviewItem {
+.widget-content-main .chartOverviewItem {
     padding-left: 2rem;
     padding-right: 2rem;
     margin-bottom: 1rem;
     width: auto;
 }
 
-.chartOverviewItem .chartOverviewItemCaption {
+.widget-content-main .chartOverviewItem .chartOverviewItemCaption {
     white-space: nowrap;
     font-size: small;
     font-weight: bold;
     color: #666666;
 }
 
-.chartOverviewItem .chartOverviewItemValue {
+.widget-content-main .chartOverviewItem .chartOverviewItemValue {
     width: 100%;
     font-size: 1rem;
     font-weight: bold;
 }
 
-.chartOverview .border-l {
+.widget-content-main .chartOverview .border-l {
     border-left-style: solid;
     border-left-width: 1px;
     border-color: #d1d5db;
+}
+
+.widget-content-main .barchart {
+    position: relative;
+}
+
+.widget-content-main .barchart .bar {
+    display: flex;
+    background-color: white;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 0.25rem;
+    margin-bottom: 0.25rem;
+}
+
+.widget-content-main .barchart .bar DIV {
+    position: relative;
+    width: 100%;
+    max-width: calc(100% - 5rem);
+}
+
+.widget-content-main .barchart .bar DIV DIV {
+    position: absolute;
+    height: 100%;
+    left: 0;
+    top: 0;
+    background-color: #85bcee;
+}
+
+.widget-content-main .barchart .bar DIV SPAN {
+    display: flex;
+    position: relative;
+    z-index: 10;
+    padding-bottom: .375rem;
+    padding-top: .375rem;
+    padding-left: .5rem;
+    padding-right: .5rem;
+}
+
+.widget-content-main .barchart .bar > SPAN {
+    text-align: right;
+    width: 5rem;
+    padding-bottom: .375rem;
+    padding-top: .375rem;
+    padding-left: .5rem;
+    padding-right: .5rem;
 }

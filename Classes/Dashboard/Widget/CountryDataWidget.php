@@ -19,6 +19,7 @@ namespace Waldhacker\Plausibleio\Dashboard\Widget;
 
 use TYPO3\CMS\Core\Page\PageRenderer;
 use TYPO3\CMS\Core\Utility\PathUtility;
+use TYPO3\CMS\Dashboard\Widgets\AdditionalCssInterface;
 use TYPO3\CMS\Dashboard\Widgets\EventDataInterface;
 use TYPO3\CMS\Dashboard\Widgets\RequireJsModuleInterface;
 use TYPO3\CMS\Dashboard\Widgets\WidgetConfigurationInterface;
@@ -27,7 +28,7 @@ use TYPO3\CMS\Fluid\View\StandaloneView;
 use Waldhacker\Plausibleio\Dashboard\DataProvider\CountryDataProvider;
 use Waldhacker\Plausibleio\Services\ConfigurationService;
 
-class CountryDataWidget implements WidgetInterface, RequireJsModuleInterface, EventDataInterface
+class CountryDataWidget implements WidgetInterface, RequireJsModuleInterface, AdditionalCssInterface, EventDataInterface
 {
     private PageRenderer $pageRenderer;
     private WidgetConfigurationInterface $configuration;
@@ -88,6 +89,13 @@ class CountryDataWidget implements WidgetInterface, RequireJsModuleInterface, Ev
         return [];
     }
 
+    public function getCssFiles(): array
+    {
+        return [
+            'EXT:plausibleio/Resources/Public/Css/widget.css',
+        ];
+    }
+
     public function getRequireJsModules(): array
     {
         return [
@@ -95,6 +103,7 @@ class CountryDataWidget implements WidgetInterface, RequireJsModuleInterface, Ev
             'TYPO3/CMS/Plausibleio/CountriesLoader',
             'TYPO3/CMS/Plausibleio/Contrib/topojson.min',
             'TYPO3/CMS/Plausibleio/Contrib/datamaps.world.min',
+            'TYPO3/CMS/Plausibleio/Contrib/d3-format',
         ];
     }
 

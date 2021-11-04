@@ -18,13 +18,15 @@ declare(strict_types=1);
 
 namespace Waldhacker\Plausibleio\Dashboard\Widget;
 
+use TYPO3\CMS\Dashboard\Widgets\AdditionalCssInterface;
+use TYPO3\CMS\Dashboard\Widgets\RequireJsModuleInterface;
 use TYPO3\CMS\Dashboard\Widgets\WidgetConfigurationInterface;
 use TYPO3\CMS\Dashboard\Widgets\WidgetInterface;
 use TYPO3\CMS\Fluid\View\StandaloneView;
 use Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider;
 use Waldhacker\Plausibleio\Services\ConfigurationService;
 
-class PageDataWidget implements WidgetInterface
+class PageDataWidget implements WidgetInterface, AdditionalCssInterface, RequireJsModuleInterface
 {
     private WidgetConfigurationInterface $configuration;
     private StandaloneView $view;
@@ -96,23 +98,26 @@ class PageDataWidget implements WidgetInterface
         $tabsData = [
             [
                 'label' => 'Top Pages',
-                'partial' => 'TopPage',
-                'data' => $this->getTopPages(),
+                'id' => 'toppage',
             ],
             [
                 'label' => 'Entry Pages',
-                'partial' => 'EntryPage',
-                'data' => $this->getEntryPages(),
+                'id' => 'entrypage',
             ],
             [
                 'label' => 'Exit Pages',
-                'partial' => 'ExitPage',
-                'data' => $this->getExitPages(),
+                'id' => 'exitpage',
             ],
+        ];
+        $timeSelectorConfig = [
+            'items' => $this->configurationService->getTimeFrames(),
+            'selected' => $this->configurationService->getDefaultTimeFrameValue(),
         ];
 
         $this->view->setTemplate('BaseTabs');
         $this->view->assignMultiple([
+                                        'widgetType' => 'pageChart',
+                                        'timeSelectorConfig' => $timeSelectorConfig,
                                         'tabs' => $tabsData,
                                         'id' => 'plausibleWidgteTab-' . bin2hex(random_bytes(8)),
                                         'options' => $this->options,
@@ -122,5 +127,21 @@ class PageDataWidget implements WidgetInterface
                                     ]);
 
         return $this->view->render();
+    }
+
+    public function getCssFiles(): array
+    {
+        return [
+            'EXT:plausibleio/Resources/Public/Css/widget.css',
+        ];
+    }
+
+    public function getRequireJsModules(): array
+    {
+        return [
+            'TYPO3/CMS/Plausibleio/Contrib/d3-format',
+            'TYPO3/CMS/Plausibleio/PageLoader',
+            'TYPO3/CMS/Plausibleio/PlausibleWidgets',
+        ];
     }
 }

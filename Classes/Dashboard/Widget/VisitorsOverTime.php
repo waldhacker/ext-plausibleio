@@ -54,11 +54,18 @@ class VisitorsOverTime implements WidgetInterface, EventDataInterface, Additiona
 
     public function renderWidgetContent(): string
     {
+        $timeSelectorConfig = [
+            'items' => $this->configurationService->getTimeFrames(),
+            'selected' => $this->configurationService->getDefaultTimeFrameValue(),
+        ];
+
         $this->view->setTemplate('ChartWidget');
         $this->view->assignMultiple(
             [
+                'timeSelectorConfig' => $timeSelectorConfig,
                 'configuration' => $this->configuration,
                 'validConfiguration' => $this->configurationService->isValidConfiguration(),
+                'label' => 'widgets.visitorsOverTime.label',
             ]
         );
         return $this->view->render();
@@ -66,8 +73,6 @@ class VisitorsOverTime implements WidgetInterface, EventDataInterface, Additiona
 
     public function getEventData(): array
     {
-        $overViewData = $this->dataProvider->getOverview();
-
         return [
             'selectorConfig' => $this->configurationService->getTimeFrames(),
             'site' => $this->options['siteId'] ?? $this->configurationService->getDefaultSite(),
@@ -76,12 +81,7 @@ class VisitorsOverTime implements WidgetInterface, EventDataInterface, Additiona
                 'options' => [
                     'maintainAspectRatio' => false,
                 ],
-                'data' => $this->dataProvider->getChartData(),
             ],
-            'uniqueVisitors' => $overViewData['visitors'],
-            'totalPageviews' => $overViewData['pageviews'],
-            'visitDuration' => $overViewData['visit_duration'],
-            'currentVisitors' => $this->dataProvider->getCurrentVisitors(),
         ];
     }
 

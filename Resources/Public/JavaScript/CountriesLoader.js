@@ -1,10 +1,10 @@
 define([
-  'TYPO3/CMS/Core/Ajax/AjaxRequest',
-  'TYPO3/CMS/Core/Event/RegularEvent',
-  'datamaps',
-  'd3',
+  "TYPO3/CMS/Core/Ajax/AjaxRequest",
+  "TYPO3/CMS/Core/Event/RegularEvent",
+  "datamaps",
+  "d3",
   "TYPO3/CMS/Plausibleio/Contrib/d3-format",
-  "TYPO3/CMS/Plausibleio/PlausibleWidgets"
+  "TYPO3/CMS/Plausibleio/PlausibleWidgets",
 ], function (AjaxRequest, RegularEvent, Datamap, D3, D3Format, PW) {
   /* The configuration of requirejs is done in
    * CountryDataWidget->preparePageRenderer
@@ -112,8 +112,8 @@ define([
             }
           });
 
-          widget.addEventListener('timeframechange', function (e) {
-            that.requestUpdatedData(e, map);
+          widget.addEventListener('timeframechange', function (evt) {
+            that.requestUpdatedData(evt, map);
           });
 
           let timeFrameSelect = e.target.querySelector("[data-widget-type='plausible-timeframe']");

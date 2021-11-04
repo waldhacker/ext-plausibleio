@@ -54,11 +54,25 @@ class PageDataProvider
 
     public function getEntryPageData(?string $timeFrame = null, ?string $site = null): array
     {
-        return $this->getPageData('visit:entry_page', $timeFrame, $site);
+        $map = [];
+        $result = $this->getPageData('visit:entry_page', $timeFrame, $site);
+
+        foreach ($result as $item) {
+            $map[] = ['page' => $item->entry_page, 'visitors' => $item->visitors];
+        }
+
+        return $map;
     }
 
     public function getExitPageData(?string $timeFrame = null, ?string $site = null): array
     {
-        return $this->getPageData('visit:exit_pag', $timeFrame, $site);
+        $map = [];
+        $result = $this->getPageData('visit:exit_page', $timeFrame, $site);
+
+        foreach ($result as $item) {
+            $map[] = ['page' => $item->exit_page, 'visitors' => $item->visitors];
+        }
+
+        return $map;
     }
 }

@@ -11,6 +11,8 @@ services:
     public: true
   Waldhacker\Plausibleio\Controller\CountryMapController:
     public: true
+  Waldhacker\Plausibleio\Controller\PageController:
+    public: true
 
   waldhacker.plausibleio.widget.country:
     class: 'Waldhacker\Plausibleio\Dashboard\Widget\CountryDataWidget'

@@ -1,4 +1,7 @@
-define([], function () {
+define([
+  "lit",
+  "TYPO3/CMS/Plausibleio/Contrib/d3-format"
+], function (lit, D3Format) {
 
   class PlausibleWidgets {
     constructor() {
@@ -34,7 +37,43 @@ define([], function () {
 
     dispatchTimeFrameChange(widget, timeFrame) {
       let event = new CustomEvent("timeframechange", {detail: {timeFrame: timeFrame}});
-      widget.dispatchEvent(event);
+      if (widget)
+        widget.dispatchEvent(event);
+    }
+
+    renderBarChart(parentElement, data, clear = false) {
+      var visitorsSum = 0;
+
+      if (!parentElement) {
+        console.error("No parent element was specified for the bar chart.")
+        return;
+      }
+
+      data.forEach(function (item) {
+        visitorsSum += item.visitors;
+      });
+
+      let template = lit.html`
+        ${data.map((item) => {
+        let percentage = item.visitors / visitorsSum * 100;
+        return lit.html`
+          <div class="bar">
+            <div>
+              <div style="width: ${percentage}%; "></div>
+              <span >${item.label}</span>
+            </div>
+            <span>${D3Format.format(".2~s")(item.visitors)}</span>
+          </div>`
+      })}
+    `;
+
+      if (clear)
+        parentElement.innerHTML = "";
+      let newChild = document.createElement('div');
+      newChild.classList.add('barchart');
+      let targetElement = parentElement.appendChild(newChild);
+
+      lit.render(template, targetElement);
     }
   }
 

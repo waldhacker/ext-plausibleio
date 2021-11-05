@@ -26,11 +26,11 @@
 			<trans-unit id="widgets.visitorsOverTime.description">
 				<source>Show page visitors of your page in a line graph with selectable reporting time frame.</source>
 			</trans-unit>
-			<trans-unit id="widgets.browserData.label">
-				<source>Browser Usage and Visitors (Plausible Analytics)</source>
+			<trans-unit id="widgets.sourceData.label">
+				<source>Sources (Plausible Analytics)</source>
 			</trans-unit>
 			<trans-unit id="widgets.deviceData.label">
-				<source>Device Usage and Visitors (Plausible Analytics)</source>
+				<source>Device usage and Visitors (Plausible Analytics)</source>
 			</trans-unit>
 			<trans-unit id="widgets.pageData.label">
 				<source>Visited pages (Plausible Analytics)</source>
@@ -38,11 +38,11 @@
 			<trans-unit id="widgets.countryData.label">
 				<source>Countries (Plausible Analytics)</source>
 			</trans-unit>
-			<trans-unit id="plausible.browserdata.label">
-				<source>Browser Usage and Visitors (Plausible Analytics)</source>
+			<trans-unit id="plausible.sourceData.label">
+				<source>Sources (Plausible Analytics)</source>
 			</trans-unit>
 			<trans-unit id="plausible.devicedata.label">
-				<source>Device Usage and Visitors (Plausible Analytics)</source>
+				<source>Device usage (Plausible Analytics)</source>
 			</trans-unit>
 			<trans-unit id="plausible.pageData.label">
 				<source>Pages views (Plausible Analytics)</source>
@@ -50,8 +50,8 @@
 			<trans-unit id="plausible.countryData.label">
 				<source>Countries of origin of the page views (Plausible Analytics)</source>
 			</trans-unit>
-			<trans-unit id="widgets.browserData.description">
-				<source>Show statistics about visitors and their browsers.</source>
+			<trans-unit id="widgets.sourceData.description">
+				<source>Show statistics about sources of the page views.</source>
 			</trans-unit>
 			<trans-unit id="widgets.deviceData.description">
 				<source>Show statistics about visitors and their devices.</source>

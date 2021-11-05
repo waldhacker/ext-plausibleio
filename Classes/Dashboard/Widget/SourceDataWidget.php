@@ -23,25 +23,30 @@ use TYPO3\CMS\Dashboard\Widgets\RequireJsModuleInterface;
 use TYPO3\CMS\Dashboard\Widgets\WidgetConfigurationInterface;
 use TYPO3\CMS\Dashboard\Widgets\WidgetInterface;
 use TYPO3\CMS\Fluid\View\StandaloneView;
-use Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider;
+use Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider;
 use Waldhacker\Plausibleio\Services\ConfigurationService;
+use Waldhacker\Plausibleio\Services\PlausibleService;
 
-class PageDataWidget implements WidgetInterface, AdditionalCssInterface, RequireJsModuleInterface
+class SourceDataWidget implements WidgetInterface, AdditionalCssInterface, RequireJsModuleInterface
 {
     private WidgetConfigurationInterface $configuration;
+    private PlausibleService $plausibleService;
     private StandaloneView $view;
     private array $options;
-    private PageDataProvider $dataProvider;
+
+    private SourceDataProvider $dataProvider;
     private ConfigurationService $configurationService;
 
     public function __construct(
         WidgetConfigurationInterface $configuration,
-        PageDataProvider $dataProvider,
+        PlausibleService $plausibleService,
+        SourceDataProvider $dataProvider,
         StandaloneView $view,
         ConfigurationService $configurationService,
         array $options = []
     ) {
         $this->configuration = $configuration;
+        $this->plausibleService = $plausibleService;
         $this->view = $view;
         $this->options = $options;
         $this->dataProvider = $dataProvider;
@@ -50,36 +55,41 @@ class PageDataWidget implements WidgetInterface, AdditionalCssInterface, Require
 
     public function renderWidgetContent(): string
     {
-        $tabsData = [
-            [
-                'label' => 'Top Pages',
-                'id' => 'toppage',
-            ],
-            [
-                'label' => 'Entry Pages',
-                'id' => 'entrypage',
-            ],
-            [
-                'label' => 'Exit Pages',
-                'id' => 'exitpage',
-            ],
-        ];
         $timeSelectorConfig = [
             'items' => $this->configurationService->getTimeFrames(),
             'selected' => $this->configurationService->getDefaultTimeFrameValue(),
         ];
 
+        $tabsData = [
+            [
+                'label' => 'All',
+                'id' => 'allsources',
+            ],
+            [
+                'label' => 'Medium',
+                'id' => 'mediumsource',
+            ],
+            [
+                'label' => 'Source',
+                'id' => 'sourcesource',
+            ],
+            [
+                'label' => 'Campaign',
+                'id' => 'campaignsource',
+            ],
+        ];
+
         $this->view->setTemplate('BaseTabs');
         $this->view->assignMultiple([
-                                        'widgetType' => 'pageChart',
-                                        'timeSelectorConfig' => $timeSelectorConfig,
-                                        'tabs' => $tabsData,
-                                        'id' => 'plausibleWidgteTab-' . bin2hex(random_bytes(8)),
-                                        'options' => $this->options,
-                                        'configuration' => $this->configuration,
-                                        'label' => 'plausible.pageData.label',
-                                        'validConfiguration' => $this->configurationService->isValidConfiguration(),
-                                    ]);
+            'widgetType' => 'sourceChart',
+            'timeSelectorConfig' => $timeSelectorConfig,
+            'tabs' => $tabsData,
+            'id' => $this->plausibleService->getRandomId('plausibleWidgteTab'),
+            'options' => $this->options,
+            'configuration' => $this->configuration,
+            'label' => 'plausible.sourceData.label',
+            'validConfiguration' => $this->configurationService->isValidConfiguration(),
+        ]);
 
         return $this->view->render();
     }
@@ -95,7 +105,7 @@ class PageDataWidget implements WidgetInterface, AdditionalCssInterface, Require
     {
         return [
             'TYPO3/CMS/Plausibleio/Contrib/d3-format',
-            'TYPO3/CMS/Plausibleio/PageLoader',
+            'TYPO3/CMS/Plausibleio/SourceLoader',
             'TYPO3/CMS/Plausibleio/PlausibleWidgets',
         ];
     }

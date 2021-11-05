@@ -21,7 +21,7 @@ namespace Waldhacker\Plausibleio\Dashboard\DataProvider;
 use Waldhacker\Plausibleio\Services\ConfigurationService;
 use Waldhacker\Plausibleio\Services\PlausibleService;
 
-class DeviceDataProvider
+class SourceDataProvider
 {
     private PlausibleService $plausibleService;
     private ConfigurationService $configurationService;
@@ -32,7 +32,7 @@ class DeviceDataProvider
         $this->configurationService = $configurationService;
     }
 
-    private function getData(string $property, ?string $timeFrame = null, ?string $site = null): array
+    public function getData(string $property, ?string $timeFrame = null, ?string $site = null): array
     {
         $timeFrame = $timeFrame ?? $this->configurationService->getDefaultTimeFrameValue();
         $site = $site ?? $this->configurationService->getDefaultSite();
@@ -48,37 +48,49 @@ class DeviceDataProvider
         return $this->plausibleService->sendAuthorizedRequest($endpoint, $params);
     }
 
-    public function getBrowserData(?string $timeFrame = null, ?string $site = null): array
+    public function getAllSourcesData(?string $timeFrame = null, ?string $site = null): array
     {
         $map = [];
-        $result = $this->getData('visit:browser', $timeFrame, $site);
+        $result = $this->getData('visit:source', $timeFrame, $site);
 
         foreach ($result as $item) {
-            $map[] = ['label' => $item->browser, 'visitors' => $item->visitors];
+            $map[] = ['label' => $item->source, 'visitors' => $item->visitors];
         }
 
         return $map;
     }
 
-    public function getOSData(?string $timeFrame = null, ?string $site = null): array
+    public function getMediumData(?string $timeFrame = null, ?string $site = null): array
     {
         $map = [];
-        $result = $this->getData('visit:os', $timeFrame, $site);
+        $result = $this->getData('visit:utm_medium', $timeFrame, $site);
 
         foreach ($result as $item) {
-            $map[] = ['label' => $item->os, 'visitors' => $item->visitors];
+            $map[] = ['label' => $item->utm_medium, 'visitors' => $item->visitors];
         }
 
         return $map;
     }
 
-    public function getDeviceData(?string $timeFrame = null, ?string $site = null): array
+    public function getSourceData(?string $timeFrame = null, ?string $site = null): array
     {
         $map = [];
-        $result = $this->getData('visit:device', $timeFrame, $site);
+        $result = $this->getData('visit:utm_source', $timeFrame, $site);
 
         foreach ($result as $item) {
-            $map[] = ['label' => $item->device, 'visitors' => $item->visitors];
+            $map[] = ['label' => $item->utm_source, 'visitors' => $item->visitors];
+        }
+
+        return $map;
+    }
+
+    public function getCampaignData(?string $timeFrame = null, ?string $site = null): array
+    {
+        $map = [];
+        $result = $this->getData('visit:utm_campaign', $timeFrame, $site);
+
+        foreach ($result as $item) {
+            $map[] = ['label' => $item->utm_campaign, 'visitors' => $item->visitors];
         }
 
         return $map;

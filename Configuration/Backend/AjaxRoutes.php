@@ -13,4 +13,12 @@ return [
         'path' => '/plausibleio/page',
         'target' => \Waldhacker\Plausibleio\Controller\PageController::class,
     ],
+    'plausible_device' => [
+        'path' => '/plausibleio/device',
+        'target' => \Waldhacker\Plausibleio\Controller\DeviceController::class,
+    ],
+    'plausible_source' => [
+        'path' => '/plausibleio/source',
+        'target' => \Waldhacker\Plausibleio\Controller\SourceController::class,
+    ],
 ];

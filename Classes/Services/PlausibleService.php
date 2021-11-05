@@ -41,6 +41,11 @@ class PlausibleService implements LoggerAwareInterface
         $this->configurationService = $configurationService;
     }
 
+    public function getRandomId(string $prefix): string
+    {
+        return $prefix . "-" . bin2hex(random_bytes(8));
+    }
+
     /**
      * @return mixed Endpoint /api/v1/stats/realtime/visitors returns an int,
      *               /api/v1/stats/aggregate an object and the rest an array.

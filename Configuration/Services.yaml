@@ -13,6 +13,10 @@ services:
     public: true
   Waldhacker\Plausibleio\Controller\PageController:
     public: true
+  Waldhacker\Plausibleio\Controller\DeviceController:
+    public: true
+  Waldhacker\Plausibleio\Controller\SourceController:
+    public: true
 
   waldhacker.plausibleio.widget.country:
     class: 'Waldhacker\Plausibleio\Dashboard\Widget\CountryDataWidget'
@@ -69,19 +73,19 @@ services:
         width: 'medium'
 
   waldhacker.plausibleio.widget.browser:
-    class: 'Waldhacker\Plausibleio\Dashboard\Widget\BrowserDataWidget'
+    class: 'Waldhacker\Plausibleio\Dashboard\Widget\SourceDataWidget'
     arguments:
-      $dataProvider: '@Waldhacker\Plausibleio\Dashboard\DataProvider\BrowserDataProvider'
+      $dataProvider: '@Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider'
       $view: '@dashboard.views.widget'
       $configurationService: '@Waldhacker\Plausibleio\Services\ConfigurationService'
       $options:
         siteId: null
     tags:
       - name: dashboard.widget
-        identifier: 'plausible.browserdata'
+        identifier: 'plausible.sourcedata'
         groupNames: 'plausibleio'
-        title: 'LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widgets.browserData.label'
-        description: 'LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widgets.browserData.description'
+        title: 'LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widgets.sourceData.label'
+        description: 'LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widgets.sourceData.description'
         iconIdentifier: 'content-widget-chart-bar'
         height: 'medium'
         width: 'medium'

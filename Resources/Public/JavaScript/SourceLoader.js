@@ -2,15 +2,16 @@ define([
   "TYPO3/CMS/Core/Ajax/AjaxRequest",
   "TYPO3/CMS/Core/Event/RegularEvent",
   "lit",
+  "TYPO3/CMS/Plausibleio/Contrib/d3-format",
   "TYPO3/CMS/Plausibleio/PlausibleWidgets",
-], function (AjaxRequest, RegularEvent, lit, PW) {
+], function (AjaxRequest, RegularEvent, lit, D3Format, PW) {
 
-  class PageLoader {
+  class SourceLoader {
     constructor() {
       this.options = {
         dashboardItemSelector: '.dashboard-item',
         widgetContentSelector: '.widget-content',
-        pageEndpoint: TYPO3.settings.ajaxUrls.plausible_page,
+        pageEndpoint: TYPO3.settings.ajaxUrls.plausible_source,
       };
 
       this.initialize();
@@ -43,7 +44,7 @@ define([
         e.preventDefault();
         let widget = e.target;
 
-        let pageChartElement = widget.querySelector("[data-widget-type='pageChart']");
+        let pageChartElement = widget.querySelector("[data-widget-type='sourceChart']");
         if (pageChartElement) {
           widget.addEventListener('timeframechange', function (evt) {
             that.requestUpdatedData(evt, pageChartElement);
@@ -59,5 +60,5 @@ define([
     }
   }
 
-  return new PageLoader();
+  return new SourceLoader();
 });

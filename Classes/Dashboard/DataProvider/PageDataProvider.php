@@ -49,7 +49,14 @@ class PageDataProvider
 
     public function getTopPageData(?string $timeFrame = null, ?string $site = null): array
     {
-        return $this->getPageData('event:page', $timeFrame, $site);
+        $map = [];
+        $result = $this->getPageData('event:page', $timeFrame, $site);
+
+        foreach ($result as $item) {
+            $map[] = ['label' => $item->page, 'visitors' => $item->visitors];
+        }
+
+        return $map;
     }
 
     public function getEntryPageData(?string $timeFrame = null, ?string $site = null): array
@@ -58,7 +65,7 @@ class PageDataProvider
         $result = $this->getPageData('visit:entry_page', $timeFrame, $site);
 
         foreach ($result as $item) {
-            $map[] = ['page' => $item->entry_page, 'visitors' => $item->visitors];
+            $map[] = ['label' => $item->entry_page, 'visitors' => $item->visitors];
         }
 
         return $map;
@@ -70,7 +77,7 @@ class PageDataProvider
         $result = $this->getPageData('visit:exit_page', $timeFrame, $site);
 
         foreach ($result as $item) {
-            $map[] = ['page' => $item->exit_page, 'visitors' => $item->visitors];
+            $map[] = ['label' => $item->exit_page, 'visitors' => $item->visitors];
         }
 
         return $map;

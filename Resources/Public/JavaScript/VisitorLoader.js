@@ -11,19 +11,20 @@
  *
  * The TYPO3 project - inspiring people to share!
  */
+
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 define([
-  "require",
-  "exports",
-  "TYPO3/CMS/Dashboard/Contrib/chartjs",
-  "TYPO3/CMS/Core/Ajax/AjaxRequest",
-  "TYPO3/CMS/Core/Event/RegularEvent",
-  "TYPO3/CMS/Plausibleio/Contrib/d3-format",
-  "TYPO3/CMS/Plausibleio/PlausibleWidgets",
+  'require',
+  'exports',
+  'TYPO3/CMS/Dashboard/Contrib/chartjs',
+  'TYPO3/CMS/Core/Ajax/AjaxRequest',
+  'TYPO3/CMS/Core/Event/RegularEvent',
+  'TYPO3/CMS/Plausibleio/Contrib/d3-format',
+  'TYPO3/CMS/Plausibleio/PlausibleWidgets',
 ], function (require, exports, chartjs_1, AjaxRequest, RegularEvent, D3Format, PW) {
-    "use strict";
+    'use strict';
     chartjs_1 = __importDefault(chartjs_1);
 
     class VisitorLoader {
@@ -45,9 +46,11 @@ define([
                 .get()
                 .then(async (response) => {
                 const data = await response.resolve();
-                chart.data.labels = data.chartData.labels;
-                chart.data.datasets = data.chartData.datasets;
-                chart.update();
+                if  (chart && data) {
+                  chart.data.labels = data.chartData.labels;
+                  chart.data.datasets = data.chartData.datasets;
+                  chart.update();
+                }
 
                 this.renderOverviewData(widget, data.overViewData);
             });
@@ -58,7 +61,7 @@ define([
             new RegularEvent('widgetContentRendered', function (evt) {
               evt.preventDefault();
 
-              if(!evt.target.querySelector("[data-widget-type='visitorsChart']"))
+              if(!evt.target.querySelector('[data-widget-type="visitorsChart"]'))
                 return;
 
               let visitorsWidgetChart = null;
@@ -79,26 +82,31 @@ define([
                    that.requestUpdatedData(e, widget, visitorsWidgetChart);
                 });
 
-                let timeFrameSelect = widget.querySelector("[data-widget-type='plausible-timeframe']");
+                let timeFrameSelect = widget.querySelector('[data-widget-type="plausible-timeframe"]');
                 PW.registerTimeSelector(timeFrameSelect);
 
-                PW.dispatchTimeFrameChange(widget, timeFrameSelect.value); // request and render data
+                // request and render data
+                PW.dispatchTimeFrameChange(widget, timeFrameSelect.value);
             }).delegateTo(document, this.options.dashboardItemSelector);
         }
 
         formatSIPrefix(n) {
-          n = D3Format.format(".2~s")(n); // 2400 -> 2.4k
+          n = D3Format.format('.2~s')(n); // 2400 -> 2.4k
           return n;
         }
 
         renderOverviewData(widget, data) {
-          widget.querySelector("[data-widget-type='uniqueVisitors']").innerHTML = this.formatSIPrefix(data.visitors);
-          widget.querySelector("[data-widget-type='totalPageviews']").innerHTML = this.formatSIPrefix(data.pageviews);
-          widget.querySelector("[data-widget-type='currentVisitors']").innerHTML = this.formatSIPrefix(data.current_visitors);
+          if (widget && data) {
+            widget.querySelector('[data-widget-type="uniqueVisitors"]').innerHTML = this.formatSIPrefix(data.visitors);
+            widget.querySelector('[data-widget-type="totalPageviews"]').innerHTML = this.formatSIPrefix(data.pageviews);
+            widget.querySelector('[data-widget-type="currentVisitors"]').innerHTML = this.formatSIPrefix(data.current_visitors);
 
-          var minutes = Math.floor(data.visit_duration / 60); // full minutes
-          var seconds = data.visit_duration - minutes * 60; // remaining seconds
-          widget.querySelector("[data-widget-type='visitDuration']").innerHTML = (minutes>0 ? minutes + 'm ' : '') +  (seconds>0 ? seconds + 's' : '');
+            // full minutes
+            var minutes = Math.floor(data.visit_duration / 60);
+            // remaining seconds
+            var seconds = data.visit_duration - minutes * 60;
+            widget.querySelector('[data-widget-type="visitDuration"]').innerHTML = (minutes > 0 ? minutes + 'm ' : '') + (seconds > 0 ? seconds + 's' : '');
+          }
         }
     }
 

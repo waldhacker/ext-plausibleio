@@ -1,10 +1,24 @@
+/*
+ * This file is part of the plausibleio extension for TYPO3
+ * - (c) 2021 waldhacker UG (haftungsbeschränkt)
+ *
+ * It is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License, either version 2
+ * of the License, or any later version.
+ *
+ * For the full copyright and license information, please read the
+ * LICENSE file that was distributed with this source code.
+ *
+ * The TYPO3 project - inspiring people to share!
+ */
+
 define([
-  "TYPO3/CMS/Core/Ajax/AjaxRequest",
-  "TYPO3/CMS/Core/Event/RegularEvent",
-  "datamaps",
-  "d3",
-  "TYPO3/CMS/Plausibleio/Contrib/d3-format",
-  "TYPO3/CMS/Plausibleio/PlausibleWidgets",
+  'TYPO3/CMS/Core/Ajax/AjaxRequest',
+  'TYPO3/CMS/Core/Event/RegularEvent',
+  'datamaps',
+  'd3',
+  'TYPO3/CMS/Plausibleio/Contrib/d3-format',
+  'TYPO3/CMS/Plausibleio/PlausibleWidgets',
 ], function (AjaxRequest, RegularEvent, Datamap, D3, D3Format, PW) {
   /* The configuration of requirejs is done in
    * CountryDataWidget->preparePageRenderer
@@ -34,11 +48,11 @@ define([
     }
 
     setMapData(map, data) {
-      if (map) {
+      if (map && data && data.length) {
         /* Highmap code taken from: */
         /* https://github.com/markmarkoh/datamaps/blob/master/README.md#getting-started */
 
-        // We need to colorize every country based on "numberOfWhatever"
+        // We need to colorize every country based on 'numberOfWhatever'
         // colors should be uniq for every value.
         // For this purpose we create palette(using min/max series-value)
         var onlyValues = data.map(function (obj) {
@@ -51,19 +65,19 @@ define([
         // color can be whatever you wish
         var paletteScale = D3.scale.linear()
           .domain([minValue, maxValue])
-          .range(["#EFEFFF", "#02386F"]); // blue color
+          .range(['#e0f3f8', '#4575b4']); // blue color
 
         // Datamaps expect data in format:
-        // { "USA": { "fillColor": "#42a844", numberOfWhatever: 75},
-        //   "FRA": { "fillColor": "#8dc386", numberOfWhatever: 43 } }
+        // { 'USA': { 'fillColor': '#42a844', numberOfWhatever: 75},
+        //   'FRA': { 'fillColor': '#8dc386', numberOfWhatever: 43 } }
         var dataset = {};
 
         // fill dataset in appropriate format
         data.forEach(function (item) {
-          // item example value ["USA", 70]
+          // item example value ['USA', 70]
           var iso = item[0];
           var value = item[1];
-          value = D3Format.format(".2~s")(value); // 2400 -> 2.4k
+          value = D3Format.format('.2~s')(value); // 2400 -> 2.4k
           dataset[iso] = {numberOfThings: value, fillColor: paletteScale(value)};
         });
 
@@ -79,7 +93,7 @@ define([
         e.preventDefault();
         let widget = e.target;
 
-        let mapElement = widget.querySelector("[data-widget-type='countryMap']");
+        let mapElement = widget.querySelector('[data-widget-type="countryMap"]');
         if (mapElement) {
           // render map
           let map = new Datamap({
@@ -116,10 +130,11 @@ define([
             that.requestUpdatedData(evt, map);
           });
 
-          let timeFrameSelect = e.target.querySelector("[data-widget-type='plausible-timeframe']");
+          let timeFrameSelect = e.target.querySelector('[data-widget-type="plausible-timeframe"]');
           PW.registerTimeSelector(timeFrameSelect);
 
-          PW.dispatchTimeFrameChange(widget, timeFrameSelect.value); // request and render data
+          // request and render data
+          PW.dispatchTimeFrameChange(widget, timeFrameSelect.value);
         }
 
       }).delegateTo(document, this.options.dashboardItemSelector);

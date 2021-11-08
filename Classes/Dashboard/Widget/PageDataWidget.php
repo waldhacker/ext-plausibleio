@@ -25,10 +25,12 @@ use TYPO3\CMS\Dashboard\Widgets\WidgetInterface;
 use TYPO3\CMS\Fluid\View\StandaloneView;
 use Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider;
 use Waldhacker\Plausibleio\Services\ConfigurationService;
+use Waldhacker\Plausibleio\Services\PlausibleService;
 
 class PageDataWidget implements WidgetInterface, AdditionalCssInterface, RequireJsModuleInterface
 {
     private WidgetConfigurationInterface $configuration;
+    private PlausibleService $plausibleService;
     private StandaloneView $view;
     private array $options;
     private PageDataProvider $dataProvider;
@@ -36,12 +38,14 @@ class PageDataWidget implements WidgetInterface, AdditionalCssInterface, Require
 
     public function __construct(
         WidgetConfigurationInterface $configuration,
+        PlausibleService $plausibleService,
         PageDataProvider $dataProvider,
         StandaloneView $view,
         ConfigurationService $configurationService,
         array $options = []
     ) {
         $this->configuration = $configuration;
+        $this->plausibleService = $plausibleService;
         $this->view = $view;
         $this->options = $options;
         $this->dataProvider = $dataProvider;
@@ -74,7 +78,7 @@ class PageDataWidget implements WidgetInterface, AdditionalCssInterface, Require
                                         'widgetType' => 'pageChart',
                                         'timeSelectorConfig' => $timeSelectorConfig,
                                         'tabs' => $tabsData,
-                                        'id' => 'plausibleWidgteTab-' . bin2hex(random_bytes(8)),
+                                        'id' => $this->plausibleService->getRandomId('plausibleWidgteTab'),
                                         'options' => $this->options,
                                         'configuration' => $this->configuration,
                                         'label' => 'plausible.pageData.label',
@@ -94,9 +98,10 @@ class PageDataWidget implements WidgetInterface, AdditionalCssInterface, Require
     public function getRequireJsModules(): array
     {
         return [
+            //'TYPO3/CMS/Backend/Tabs',
             'TYPO3/CMS/Plausibleio/Contrib/d3-format',
-            'TYPO3/CMS/Plausibleio/PageLoader',
             'TYPO3/CMS/Plausibleio/PlausibleWidgets',
+            'TYPO3/CMS/Plausibleio/PageLoader',
         ];
     }
 }

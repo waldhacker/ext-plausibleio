@@ -67,6 +67,12 @@
     border-color: #d1d5db;
 }
 
+.widget-content-main .countryMap {
+    position: relative;
+    width: 500px;
+    height: 500px;
+}
+
 .widget-content-main .barchart {
     position: relative;
 }
@@ -91,7 +97,7 @@
     height: 100%;
     left: 0;
     top: 0;
-    background-color: #85bcee;
+    background-color: #85bcee; /* Bar chart bar color */
 }
 
 .widget-content-main .barchart .bar DIV SPAN {

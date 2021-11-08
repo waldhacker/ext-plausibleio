@@ -1,15 +1,29 @@
+/*
+ * This file is part of the plausibleio extension for TYPO3
+ * - (c) 2021 waldhacker UG (haftungsbeschränkt)
+ *
+ * It is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License, either version 2
+ * of the License, or any later version.
+ *
+ * For the full copyright and license information, please read the
+ * LICENSE file that was distributed with this source code.
+ *
+ * The TYPO3 project - inspiring people to share!
+ */
+
 define([
-  "lit",
-  "TYPO3/CMS/Plausibleio/Contrib/d3-format"
+  'lit',
+  'TYPO3/CMS/Plausibleio/Contrib/d3-format'
 ], function (lit, D3Format) {
 
   class PlausibleWidgets {
     constructor() {
       this.options = {
-        dashBoardGridSelector: ".dashboard-grid",
-        dashboardItemSelector: ".dashboard-item",
-        widgetContentSelector: ".widget-content",
-        timeFrameSelector: "[data-widget-type='plausible-timeframe']",
+        dashBoardGridSelector: '.dashboard-grid',
+        dashboardItemSelector: '.dashboard-item',
+        widgetContentSelector: '.widget-content',
+        timeFrameSelector: '[data-widget-type="plausible-timeframe"]',
       };
     }
 
@@ -36,7 +50,7 @@ define([
     }
 
     dispatchTimeFrameChange(widget, timeFrame) {
-      let event = new CustomEvent("timeframechange", {detail: {timeFrame: timeFrame}});
+      let event = new CustomEvent('timeframechange', {detail: {timeFrame: timeFrame}});
       if (widget)
         widget.dispatchEvent(event);
     }
@@ -45,7 +59,7 @@ define([
       var visitorsSum = 0;
 
       if (!parentElement) {
-        console.error("No parent element was specified for the bar chart.")
+        console.error('No parent element was specified for the bar chart.')
         return;
       }
 
@@ -62,13 +76,13 @@ define([
               <div style="width: ${percentage}%; "></div>
               <span >${item.label}</span>
             </div>
-            <span>${D3Format.format(".2~s")(item.visitors)}</span>
+            <span>${D3Format.format('.2~s')(item.visitors)}</span>
           </div>`
       })}
     `;
 
       if (clear)
-        parentElement.innerHTML = "";
+        parentElement.innerHTML = '';
       let newChild = document.createElement('div');
       newChild.classList.add('barchart');
       let targetElement = parentElement.appendChild(newChild);

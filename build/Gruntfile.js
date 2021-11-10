@@ -166,6 +166,7 @@ module.exports = function (grunt) {
         },
         files: {
           'd3.min.js': 'd3/d3.min.js',
+          'd3-format.js': 'd3-format/dist/d3-format.min.js',
           'datamaps.world.min.js': 'datamaps/dist/datamaps.world.min.js',
           'topojson.min.js': 'topojson/dist/topojson.min.js'
         }
@@ -243,7 +244,7 @@ module.exports = function (grunt) {
   grunt.registerTask('lint', ['concurrent:lint']);
   grunt.registerTask('css', ['formatsass', 'newer:sass', 'newer:postcss']);
   grunt.registerTask('compile-typescript', ['eslint', 'exec:ts']);
-  grunt.registerTask('scripts', ['compile-typescript', 'newer:copy:ts_files']);
+  grunt.registerTask('scripts', [/* 'compile-typescript', 'newer:copy:ts_files' */]);
   grunt.registerTask('update', ['exec:yarn-install', 'concurrent:npmcopy']);
   grunt.registerTask('clear-build', function () {
     grunt.option('force');

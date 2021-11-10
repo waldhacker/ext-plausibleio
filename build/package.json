@@ -11,7 +11,6 @@
     "node": ">=14.15.0 <17.0.0",
     "yarn": "^1.22.0"
   },
-  "dependencies": {},
   "devDependencies": {
     "@types/jqueryui": "^1.12.13",
     "@types/node": "^16.11.6",
@@ -20,6 +19,7 @@
     "@typescript-eslint/typescript-estree": "^4.2.0",
     "autoprefixer": "^9.8.6",
     "d3": "^3.5.6",
+    "d3-format": "^3.0.1",
     "datamaps": "^0.5.9",
     "eslint": "^7.9.0",
     "grunt": "^1.4.1",

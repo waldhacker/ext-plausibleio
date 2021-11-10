@@ -1,3 +1,103 @@
-.widget-table {
-    width: 100%;
+.widget-chart {
+    height: 85%;
+}
+
+.widget-content-title {
+    .input-group {
+        width: auto;
+    }
+}
+
+.widget-content-main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    .tabs {
+        width: 100%;
+    }
+
+    .barchart {
+        width: 100%;
+        position: relative;
+
+        .bar {
+            display: flex;
+            background-color: white;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 0.25rem;
+            margin-bottom: 0.25rem;
+
+            div {
+                position: relative;
+                width: 100%;
+                max-width: calc(100% - 5rem);
+
+                div {
+                    position: absolute;
+                    height: 100%;
+                    left: 0;
+                    top: 0;
+                    background-color: #85bcee; /* Bar chart bar color */
+                }
+
+                span {
+                    display: flex;
+                    position: relative;
+                    z-index: 10;
+                    padding-bottom: 0.375rem;
+                    padding-top: 0.375rem;
+                    padding-left: 0.5rem;
+                    padding-right: 0.5rem;
+                }
+            }
+
+            > span {
+                text-align: right;
+                width: 5rem;
+                padding-bottom: 0.375rem;
+                padding-top: 0.375rem;
+                padding-left: 0.5rem;
+                padding-right: 0.5rem;
+            }
+        }
+    }
+
+    .chartOverview {
+        display: flex;
+        flex-wrap: wrap;
+
+        .border-l {
+            border-left-style: solid;
+            border-left-width: 1px;
+            border-color: #d1d5db;
+        }
+    }
+
+    .chartOverviewItem {
+        padding-left: 2rem;
+        padding-right: 2rem;
+        margin-bottom: 1rem;
+        width: auto;
+
+        .chartOverviewItemCaption {
+            white-space: nowrap;
+            font-size: small;
+            font-weight: bold;
+            color: #666;
+        }
+
+        .chartOverviewItemValue {
+            width: 100%;
+            font-size: 1rem;
+            font-weight: bold;
+        }
+    }
+
+    .countryMap {
+        position: relative;
+        width: 500px;
+        height: 500px;
+    }
 }

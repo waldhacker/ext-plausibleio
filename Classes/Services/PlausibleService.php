@@ -43,7 +43,7 @@ class PlausibleService implements LoggerAwareInterface
 
     public function getRandomId(string $prefix): string
     {
-        return $prefix . "-" . bin2hex(random_bytes(8));
+        return $prefix . '-' . bin2hex(random_bytes(8));
     }
 
     /**
@@ -65,9 +65,12 @@ class PlausibleService implements LoggerAwareInterface
             $this->logger->warning('Something went wrong while fetching analytics. ' . $response->getReasonPhrase());
             return [];
         }
+
+        // endpoint /api/v1/stats/realtime/visitors returns only a number
         $responseBody = (string)$response->getBody();
-        if (is_numeric($responseBody)) // endpoint /api/v1/stats/realtime/visitors returns only a number
+        if (is_numeric($responseBody)) {
             $responseBody = '{"results":' . $responseBody . '}';
+        }
 
         return (json_decode($responseBody, false, 512, JSON_THROW_ON_ERROR))->results;
     }

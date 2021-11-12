@@ -45,7 +45,7 @@
     "stylefmt": "^6.0.3",
     "stylelint": "^13.12.0",
     "terser": "^5.3.2",
-    "topojson": "^3.0.2",
+    "topojson-client": "^3.1.0",
     "typescript": "~4.0.3"
   },
   "scripts": {

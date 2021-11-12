@@ -168,7 +168,7 @@ module.exports = function (grunt) {
           'd3.min.js': 'd3/d3.min.js',
           'd3-format.js': 'd3-format/dist/d3-format.min.js',
           'datamaps.world.min.js': 'datamaps/dist/datamaps.world.min.js',
-          'topojson.min.js': 'topojson/dist/topojson.min.js'
+          'topojson-client.min.js': 'topojson-client/dist/topojson-client.min.js'
         }
       }
     },

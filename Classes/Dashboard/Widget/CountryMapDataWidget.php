@@ -86,7 +86,7 @@ class CountryMapDataWidget implements WidgetInterface, RequireJsModuleInterface,
     {
         return [
             'TYPO3/CMS/Plausibleio/CountryMapDataWidget',
-            'TYPO3/CMS/Plausibleio/Contrib/topojson.min',
+            'TYPO3/CMS/Plausibleio/Contrib/topojson-client.min',
             'TYPO3/CMS/Plausibleio/Contrib/datamaps.world.min',
             'TYPO3/CMS/Plausibleio/Contrib/d3-format',
             'TYPO3/CMS/Plausibleio/WidgetService',
@@ -103,7 +103,7 @@ class CountryMapDataWidget implements WidgetInterface, RequireJsModuleInterface,
             'map' => [
                 '*' => [
                     'd3' => 'TYPO3/CMS/Plausibleio/Contrib/d3.min',
-                    'topojson' => 'TYPO3/CMS/Plausibleio/Contrib/topojson.min',
+                    'topojson' => 'TYPO3/CMS/Plausibleio/Contrib/topojson-client.min',
                 ],
             ],
             'shim' => [

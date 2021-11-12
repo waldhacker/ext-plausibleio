@@ -13,18 +13,18 @@
  */
 
 define([
+  'd3',
+  'datamaps',
   'TYPO3/CMS/Core/Ajax/AjaxRequest',
   'TYPO3/CMS/Core/Event/RegularEvent',
-  'datamaps',
-  'd3',
   'TYPO3/CMS/Plausibleio/Contrib/d3-format',
-  'TYPO3/CMS/Plausibleio/PlausibleWidgets',
-], function (AjaxRequest, RegularEvent, Datamap, D3, D3Format, PW) {
+  'TYPO3/CMS/Plausibleio/WidgetService',
+], function (D3, Datamap, AjaxRequest, RegularEvent, D3Format, WidgetService) {
   /* The configuration of requirejs is done in
    * CountryDataWidget->preparePageRenderer
    */
 
-  class CountriesLoader {
+  class CountryDataWidget {
     constructor() {
       this.options = {
         dashboardItemSelector: '[data-widget-key="plausible.countrydata"]',
@@ -131,15 +131,15 @@ define([
           });
 
           let timeFrameSelect = e.target.querySelector('[data-widget-type="plausible-timeframe"]');
-          PW.registerTimeSelector(timeFrameSelect);
+          WidgetService.registerTimeSelector(timeFrameSelect);
 
           // request and render data
-          PW.dispatchTimeFrameChange(widget, timeFrameSelect.value);
+          WidgetService.dispatchTimeFrameChange(widget, timeFrameSelect.value);
         }
 
       }).delegateTo(document, this.options.dashboardItemSelector);
     }
   }
 
-  return new CountriesLoader();
+  return new CountryDataWidget();
 });

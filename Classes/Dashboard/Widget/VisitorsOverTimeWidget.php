@@ -28,7 +28,7 @@ use TYPO3\CMS\Dashboard\Widgets\WidgetInterface;
 use TYPO3\CMS\Fluid\View\StandaloneView;
 use Waldhacker\Plausibleio\Services\ConfigurationService;
 
-class VisitorsOverTime implements WidgetInterface, EventDataInterface, AdditionalCssInterface, RequireJsModuleInterface
+class VisitorsOverTimeWidget implements WidgetInterface, EventDataInterface, AdditionalCssInterface, RequireJsModuleInterface
 {
     private PageRenderer $pageRenderer;
     private ChartDataProviderInterface $dataProvider;
@@ -101,7 +101,8 @@ class VisitorsOverTime implements WidgetInterface, EventDataInterface, Additiona
             'TYPO3/CMS/Dashboard/Contrib/chartjs',
             'TYPO3/CMS/Dashboard/ChartInitializer',
             'TYPO3/CMS/Plausibleio/Contrib/d3-format',
-            'TYPO3/CMS/Plausibleio/VisitorLoader',
+            'TYPO3/CMS/Plausibleio/VisitorsOverTimeWidget',
+            'TYPO3/CMS/Plausibleio/WidgetService',
         ];
     }
 
@@ -113,7 +114,7 @@ class VisitorsOverTime implements WidgetInterface, EventDataInterface, Additiona
                 'shim' => [
                     'TYPO3/CMS/Dashboard/WidgetContentCollector' => [
                         'deps' => [
-                            'TYPO3/CMS/Plausibleio/VisitorLoader',
+                            'TYPO3/CMS/Plausibleio/VisitorsOverTimeWidget',
                         ],
                     ],
                 ],

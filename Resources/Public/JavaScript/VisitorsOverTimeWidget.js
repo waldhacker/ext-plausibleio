@@ -18,16 +18,16 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 define([
   'require',
   'exports',
-  'TYPO3/CMS/Dashboard/Contrib/chartjs',
   'TYPO3/CMS/Core/Ajax/AjaxRequest',
   'TYPO3/CMS/Core/Event/RegularEvent',
+  'TYPO3/CMS/Dashboard/Contrib/chartjs',
   'TYPO3/CMS/Plausibleio/Contrib/d3-format',
-  'TYPO3/CMS/Plausibleio/PlausibleWidgets',
-], function (require, exports, chartjs_1, AjaxRequest, RegularEvent, D3Format, PW) {
+  'TYPO3/CMS/Plausibleio/WidgetService',
+], function (require, exports, AjaxRequest, RegularEvent, chartjs_1, D3Format, WidgetService) {
     'use strict';
     chartjs_1 = __importDefault(chartjs_1);
 
-    class VisitorLoader {
+    class VisitorsOverTimeWidget {
         constructor() {
             this.options = {
                 dashboardItemSelector: '[data-widget-key="plausible.visitorsovertime"]',
@@ -83,10 +83,10 @@ define([
                 });
 
                 let timeFrameSelect = widget.querySelector('[data-widget-type="plausible-timeframe"]');
-                PW.registerTimeSelector(timeFrameSelect);
+                WidgetService.registerTimeSelector(timeFrameSelect);
 
                 // request and render data
-                PW.dispatchTimeFrameChange(widget, timeFrameSelect.value);
+                WidgetService.dispatchTimeFrameChange(widget, timeFrameSelect.value);
             }).delegateTo(document, this.options.dashboardItemSelector);
         }
 
@@ -110,5 +110,5 @@ define([
         }
     }
 
-    return new VisitorLoader();
+    return new VisitorsOverTimeWidget();
 });

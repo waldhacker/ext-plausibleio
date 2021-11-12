@@ -55,7 +55,7 @@ services:
         width: 'medium'
 
   waldhacker.plausibleio.widget.visitorsovertime:
-    class: 'Waldhacker\Plausibleio\Dashboard\Widget\VisitorsOverTime'
+    class: 'Waldhacker\Plausibleio\Dashboard\Widget\VisitorsOverTimeWidget'
     arguments:
       $dataProvider: '@Waldhacker\Plausibleio\Dashboard\DataProvider\TimeSeriesDataProvider'
       $view: '@dashboard.views.widget'

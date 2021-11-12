@@ -110,8 +110,8 @@ class SourceDataWidget implements WidgetInterface, AdditionalCssInterface, Requi
     {
         return [
             'TYPO3/CMS/Plausibleio/Contrib/d3-format',
-            'TYPO3/CMS/Plausibleio/SourceLoader',
-            'TYPO3/CMS/Plausibleio/PlausibleWidgets',
+            'TYPO3/CMS/Plausibleio/SourceDataWidget',
+            'TYPO3/CMS/Plausibleio/WidgetService',
         ];
     }
 
@@ -122,8 +122,7 @@ class SourceDataWidget implements WidgetInterface, AdditionalCssInterface, Requi
                 'shim' => [
                     'TYPO3/CMS/Dashboard/WidgetContentCollector' => [
                         'deps' => [
-                            'TYPO3/CMS/Plausibleio/PlausibleWidgets',
-                            'TYPO3/CMS/Plausibleio/SourceLoader',
+                            'TYPO3/CMS/Plausibleio/SourceDataWidget',
                         ],
                     ],
                 ],

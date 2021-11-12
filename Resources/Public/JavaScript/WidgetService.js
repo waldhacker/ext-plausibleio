@@ -17,7 +17,7 @@ define([
   'TYPO3/CMS/Plausibleio/Contrib/d3-format'
 ], function (lit, D3Format) {
 
-  class PlausibleWidgets {
+  class WidgetService {
     constructor() {
       this.options = {
         dashBoardGridSelector: '.dashboard-grid',
@@ -93,5 +93,5 @@ define([
     }
   }
 
-  return new PlausibleWidgets();
+  return new WidgetService();
 });

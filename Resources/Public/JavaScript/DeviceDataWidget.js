@@ -13,17 +13,19 @@
  */
 
 define([
+  'lit',
   'TYPO3/CMS/Core/Ajax/AjaxRequest',
   'TYPO3/CMS/Core/Event/RegularEvent',
-  'TYPO3/CMS/Plausibleio/PlausibleWidgets',
-], function (AjaxRequest, RegularEvent, PW) {
+  'TYPO3/CMS/Plausibleio/Contrib/d3-format',
+  'TYPO3/CMS/Plausibleio/WidgetService',
+], function (lit, AjaxRequest, RegularEvent, D3Format, WidgetService) {
 
-  class PageLoader {
+  class DeviceDataWidget {
     constructor() {
       this.options = {
-        dashboardItemSelector: '.dashboard-item',
+        dashboardItemSelector: '[data-widget-key="plausible.devicedata"]',
         widgetContentSelector: '.widget-content',
-        pageEndpoint: TYPO3.settings.ajaxUrls.plausible_page,
+        pageEndpoint: TYPO3.settings.ajaxUrls.plausible_device,
       };
 
       this.initialize();
@@ -46,32 +48,34 @@ define([
         data.forEach(function (tabData) {
           let tab = chartDiv.querySelector('[data-widget-type="' + tabData.tab + '"]');
           if (tab)
-            PW.renderBarChart(tab, tabData.data, true);
+            WidgetService.renderBarChart(tab, tabData.data, true);
         });
       }
     }
-    
+
     initialize() {
       let that = this;
+
       new RegularEvent('widgetContentRendered', function (e) {
         e.preventDefault();
         let widget = e.target;
 
-        let pageChartElement = widget.querySelector('[data-widget-type="pageChart"]');
+        let pageChartElement = widget.querySelector('[data-widget-type="deviceChart"]');
         if (pageChartElement) {
           widget.addEventListener('timeframechange', function (evt) {
             that.requestUpdatedData(evt, pageChartElement);
           });
 
           let timeFrameSelect = e.target.querySelector('[data-widget-type="plausible-timeframe"]');
-          PW.registerTimeSelector(timeFrameSelect);
+          WidgetService.registerTimeSelector(timeFrameSelect);
 
           // request and render data
-          PW.dispatchTimeFrameChange(widget, timeFrameSelect.value);
+          WidgetService.dispatchTimeFrameChange(widget, timeFrameSelect.value);
         }
+
       }).delegateTo(document, this.options.dashboardItemSelector);
     }
   }
 
-  return new PageLoader();
+  return new DeviceDataWidget();
 });

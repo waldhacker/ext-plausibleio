@@ -105,8 +105,8 @@ class DeviceDataWidget implements WidgetInterface, AdditionalCssInterface, Requi
     {
         return [
             'TYPO3/CMS/Plausibleio/Contrib/d3-format',
-            'TYPO3/CMS/Plausibleio/DeviceLoader',
-            'TYPO3/CMS/Plausibleio/PlausibleWidgets',
+            'TYPO3/CMS/Plausibleio/DeviceDataWidget',
+            'TYPO3/CMS/Plausibleio/WidgetService',
         ];
     }
 
@@ -117,8 +117,7 @@ class DeviceDataWidget implements WidgetInterface, AdditionalCssInterface, Requi
                 'shim' => [
                     'TYPO3/CMS/Dashboard/WidgetContentCollector' => [
                         'deps' => [
-                            'TYPO3/CMS/Plausibleio/PlausibleWidgets',
-                            'TYPO3/CMS/Plausibleio/DeviceLoader',
+                            'TYPO3/CMS/Plausibleio/DeviceDataWidget',
                         ],
                     ],
                 ],

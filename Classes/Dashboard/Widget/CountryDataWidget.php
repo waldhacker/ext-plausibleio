@@ -99,11 +99,11 @@ class CountryDataWidget implements WidgetInterface, RequireJsModuleInterface, Ad
     public function getRequireJsModules(): array
     {
         return [
-            'TYPO3/CMS/Plausibleio/PlausibleWidgets',
-            'TYPO3/CMS/Plausibleio/CountriesLoader',
+            'TYPO3/CMS/Plausibleio/CountryDataWidget',
             'TYPO3/CMS/Plausibleio/Contrib/topojson.min',
             'TYPO3/CMS/Plausibleio/Contrib/datamaps.world.min',
             'TYPO3/CMS/Plausibleio/Contrib/d3-format',
+            'TYPO3/CMS/Plausibleio/WidgetService',
         ];
     }
 
@@ -124,8 +124,7 @@ class CountryDataWidget implements WidgetInterface, RequireJsModuleInterface, Ad
                 'shim' => [
                     'TYPO3/CMS/Dashboard/WidgetContentCollector' => [
                         'deps' => [
-                            'TYPO3/CMS/Plausibleio/PlausibleWidgets',
-                            'TYPO3/CMS/Plausibleio/CountriesLoader',
+                            'TYPO3/CMS/Plausibleio/CountryDataWidget',
                         ],
                     ],
                 ],

@@ -105,8 +105,8 @@ class PageDataWidget implements WidgetInterface, AdditionalCssInterface, Require
         return [
             //'TYPO3/CMS/Backend/Tabs',
             'TYPO3/CMS/Plausibleio/Contrib/d3-format',
-            'TYPO3/CMS/Plausibleio/PlausibleWidgets',
-            'TYPO3/CMS/Plausibleio/PageLoader',
+            'TYPO3/CMS/Plausibleio/PageDataWidget',
+            'TYPO3/CMS/Plausibleio/WidgetService',
         ];
     }
 
@@ -117,8 +117,7 @@ class PageDataWidget implements WidgetInterface, AdditionalCssInterface, Require
                 'shim' => [
                     'TYPO3/CMS/Dashboard/WidgetContentCollector' => [
                         'deps' => [
-                            'TYPO3/CMS/Plausibleio/PlausibleWidgets',
-                            'TYPO3/CMS/Plausibleio/PageLoader',
+                            'TYPO3/CMS/Plausibleio/PageDataWidget',
                         ],
                     ],
                 ],

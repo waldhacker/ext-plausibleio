@@ -54,8 +54,19 @@ class VisitorsOverTimeDataProvider implements ChartDataProviderInterface
             'metrics' => 'visitors,visit_duration,pageviews,bounce_rate',
         ];
 
+        // api/v1/stats/aggregate returns an object
         $data = $this->plausibleService->sendAuthorizedRequest($endpoint, $params);
-        if (is_object($data)) { // api/v1/stats/aggregate returns an object
+        if (
+            is_object($data)
+            && property_exists($data, 'bounce_rate')
+            && property_exists($data->bounce_rate, 'value')
+            && property_exists($data, 'pageviews')
+            && property_exists($data->pageviews, 'value')
+            && property_exists($data, 'visit_duration')
+            && property_exists($data->visit_duration, 'value')
+            && property_exists($data, 'visitors')
+            && property_exists($data->visitors, 'value')
+        ) {
             $result = [
                 'bounce_rate' => $data->bounce_rate->value,
                 'pageviews' => $data->pageviews->value,

@@ -283,7 +283,12 @@ class CountryMapDataProvider
     {
         $result = [];
         foreach ($data as $item) {
-            if (!isset(self::ISO3166_1_ALPHA_2_TO_ISO3166_1_ALPHA_3_MAP[$item->country])) {
+            if (
+                !is_object($item)
+                || !property_exists($item, 'country')
+                || !property_exists($item, 'visitors')
+                || !isset(self::ISO3166_1_ALPHA_2_TO_ISO3166_1_ALPHA_3_MAP[$item->country])
+            ) {
                 continue;
             }
 
@@ -311,7 +316,7 @@ class CountryMapDataProvider
         return $this->plausibleService->sendAuthorizedRequest($endpoint, $params);
     }
 
-    public function getCountryDataForDataMap($timeFrame = null, $site = null): array
+    public function getCountryDataForDataMap(?string $timeFrame = null, ?string $site = null): array
     {
         return $this->plausibleToDataMap($this->getCountryData($timeFrame, $site));
     }

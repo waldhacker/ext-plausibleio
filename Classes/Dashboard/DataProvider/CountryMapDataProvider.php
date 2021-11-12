@@ -47,7 +47,7 @@ class CountryMapDataProvider
             }
 
             try {
-                $iso3166Data = (new ISO3166)->alpha2($item->country);
+                $iso3166Data = (new ISO3166())->alpha2($item->country);
             } catch (DomainException $e) {
                 continue;
             }

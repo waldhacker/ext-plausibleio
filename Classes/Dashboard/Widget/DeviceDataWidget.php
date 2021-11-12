@@ -18,6 +18,7 @@ declare(strict_types=1);
 
 namespace Waldhacker\Plausibleio\Dashboard\Widget;
 
+use TYPO3\CMS\Core\Page\PageRenderer;
 use TYPO3\CMS\Dashboard\Widgets\AdditionalCssInterface;
 use TYPO3\CMS\Dashboard\Widgets\RequireJsModuleInterface;
 use TYPO3\CMS\Dashboard\Widgets\WidgetConfigurationInterface;
@@ -29,6 +30,7 @@ use Waldhacker\Plausibleio\Services\PlausibleService;
 
 class DeviceDataWidget implements WidgetInterface, AdditionalCssInterface, RequireJsModuleInterface
 {
+    private PageRenderer $pageRenderer;
     private WidgetConfigurationInterface $configuration;
     private PlausibleService $plausibleService;
     private StandaloneView $view;
@@ -37,6 +39,7 @@ class DeviceDataWidget implements WidgetInterface, AdditionalCssInterface, Requi
     private ConfigurationService $configurationService;
 
     public function __construct(
+        PageRenderer $pageRenderer,
         WidgetConfigurationInterface $configuration,
         PlausibleService $plausibleService,
         DeviceDataProvider $dataProvider,
@@ -44,12 +47,14 @@ class DeviceDataWidget implements WidgetInterface, AdditionalCssInterface, Requi
         ConfigurationService $configurationService,
         array $options = []
     ) {
+        $this->pageRenderer = $pageRenderer;
         $this->configuration = $configuration;
         $this->plausibleService = $plausibleService;
         $this->view = $view;
         $this->options = $options;
         $this->dataProvider = $dataProvider;
         $this->configurationService = $configurationService;
+        $this->preparePageRenderer();
     }
 
     public function renderWidgetContent(): string
@@ -103,5 +108,21 @@ class DeviceDataWidget implements WidgetInterface, AdditionalCssInterface, Requi
             'TYPO3/CMS/Plausibleio/DeviceLoader',
             'TYPO3/CMS/Plausibleio/PlausibleWidgets',
         ];
+    }
+
+    private function preparePageRenderer(): void
+    {
+        $this->pageRenderer->addRequireJsConfiguration(
+            [
+                'shim' => [
+                    'TYPO3/CMS/Dashboard/WidgetContentCollector' => [
+                        'deps' => [
+                            'TYPO3/CMS/Plausibleio/PlausibleWidgets',
+                            'TYPO3/CMS/Plausibleio/DeviceLoader',
+                        ],
+                    ],
+                ],
+            ]
+        );
     }
 }

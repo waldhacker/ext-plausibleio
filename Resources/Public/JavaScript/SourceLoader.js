@@ -23,7 +23,7 @@ define([
   class SourceLoader {
     constructor() {
       this.options = {
-        dashboardItemSelector: '.dashboard-item',
+        dashboardItemSelector: '[data-widget-key="plausible.sourcedata"]',
         widgetContentSelector: '.widget-content',
         pageEndpoint: TYPO3.settings.ajaxUrls.plausible_source,
       };

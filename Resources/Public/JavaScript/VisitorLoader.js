@@ -30,7 +30,7 @@ define([
     class VisitorLoader {
         constructor() {
             this.options = {
-                dashboardItemSelector: '.dashboard-item',
+                dashboardItemSelector: '[data-widget-key="plausible.visitorsovertime"]',
                 widgetContentSelector: '.widget-content',
                 contentFooterClass: 'widget-content-footer',
                 visitorTimeSeriesEndpoint: TYPO3.settings.ajaxUrls.plausible_visitortimeseries

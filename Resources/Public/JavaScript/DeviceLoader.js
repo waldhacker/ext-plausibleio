@@ -23,7 +23,7 @@ define([
   class DeviceLoader {
     constructor() {
       this.options = {
-        dashboardItemSelector: '.dashboard-item',
+        dashboardItemSelector: '[data-widget-key="plausible.devicedata"]',
         widgetContentSelector: '.widget-content',
         pageEndpoint: TYPO3.settings.ajaxUrls.plausible_device,
       };

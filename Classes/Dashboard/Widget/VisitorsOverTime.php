@@ -30,6 +30,7 @@ use Waldhacker\Plausibleio\Services\ConfigurationService;
 
 class VisitorsOverTime implements WidgetInterface, EventDataInterface, AdditionalCssInterface, RequireJsModuleInterface
 {
+    private PageRenderer $pageRenderer;
     private ChartDataProviderInterface $dataProvider;
     private StandaloneView $view;
     private WidgetConfigurationInterface $configuration;
@@ -37,19 +38,20 @@ class VisitorsOverTime implements WidgetInterface, EventDataInterface, Additiona
     private ConfigurationService $configurationService;
 
     public function __construct(
+        PageRenderer $pageRenderer,
         WidgetConfigurationInterface $configuration,
         ChartDataProviderInterface $dataProvider,
         StandaloneView $view,
         ConfigurationService $configurationService,
-        PageRenderer $pageRenderer,
         array $options = []
     ) {
-        $pageRenderer->addInlineLanguageLabelFile('EXT:plausibleio/Resources/Private/Language/locallang.xlf');
+        $this->pageRenderer = $pageRenderer;
         $this->dataProvider = $dataProvider;
         $this->view = $view;
         $this->configuration = $configuration;
         $this->options = $options;
         $this->configurationService = $configurationService;
+        $this->preparePageRenderer();
     }
 
     public function renderWidgetContent(): string
@@ -101,5 +103,21 @@ class VisitorsOverTime implements WidgetInterface, EventDataInterface, Additiona
             'TYPO3/CMS/Plausibleio/Contrib/d3-format',
             'TYPO3/CMS/Plausibleio/VisitorLoader',
         ];
+    }
+
+    private function preparePageRenderer(): void
+    {
+        $this->pageRenderer->addInlineLanguageLabelFile('EXT:plausibleio/Resources/Private/Language/locallang.xlf');
+        $this->pageRenderer->addRequireJsConfiguration(
+            [
+                'shim' => [
+                    'TYPO3/CMS/Dashboard/WidgetContentCollector' => [
+                        'deps' => [
+                            'TYPO3/CMS/Plausibleio/VisitorLoader',
+                        ],
+                    ],
+                ],
+            ]
+        );
     }
 }

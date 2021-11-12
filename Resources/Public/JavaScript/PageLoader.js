@@ -15,9 +15,8 @@
 define([
   'TYPO3/CMS/Core/Ajax/AjaxRequest',
   'TYPO3/CMS/Core/Event/RegularEvent',
-  'lit',
   'TYPO3/CMS/Plausibleio/PlausibleWidgets',
-], function (AjaxRequest, RegularEvent, lit, PW) {
+], function (AjaxRequest, RegularEvent, PW) {
 
   class PageLoader {
     constructor() {
@@ -54,13 +53,10 @@ define([
     
     initialize() {
       let that = this;
-console.log('-regPage');
-console.log(document.querySelector('[data-widget-type="pageChart"]'));
       new RegularEvent('widgetContentRendered', function (e) {
         e.preventDefault();
         let widget = e.target;
-console.log('regPage');
-console.log(document.querySelector('[data-widget-type="pageChart"]'));
+
         let pageChartElement = widget.querySelector('[data-widget-type="pageChart"]');
         if (pageChartElement) {
           widget.addEventListener('timeframechange', function (evt) {

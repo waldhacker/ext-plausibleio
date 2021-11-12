@@ -121,6 +121,14 @@ class CountryDataWidget implements WidgetInterface, RequireJsModuleInterface, Ad
                         'topojson' => 'TYPO3/CMS/Plausibleio/Contrib/topojson.min',
                     ],
                 ],
+                'shim' => [
+                    'TYPO3/CMS/Dashboard/WidgetContentCollector' => [
+                        'deps' => [
+                            'TYPO3/CMS/Plausibleio/PlausibleWidgets',
+                            'TYPO3/CMS/Plausibleio/CountriesLoader',
+                        ],
+                    ],
+                ],
             ]
         );
     }

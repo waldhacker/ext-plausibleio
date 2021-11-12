@@ -18,6 +18,7 @@ declare(strict_types=1);
 
 namespace Waldhacker\Plausibleio\Dashboard\Widget;
 
+use TYPO3\CMS\Core\Page\PageRenderer;
 use TYPO3\CMS\Dashboard\Widgets\AdditionalCssInterface;
 use TYPO3\CMS\Dashboard\Widgets\RequireJsModuleInterface;
 use TYPO3\CMS\Dashboard\Widgets\WidgetConfigurationInterface;
@@ -29,6 +30,7 @@ use Waldhacker\Plausibleio\Services\PlausibleService;
 
 class PageDataWidget implements WidgetInterface, AdditionalCssInterface, RequireJsModuleInterface
 {
+    private PageRenderer $pageRenderer;
     private WidgetConfigurationInterface $configuration;
     private PlausibleService $plausibleService;
     private StandaloneView $view;
@@ -37,6 +39,7 @@ class PageDataWidget implements WidgetInterface, AdditionalCssInterface, Require
     private ConfigurationService $configurationService;
 
     public function __construct(
+        PageRenderer $pageRenderer,
         WidgetConfigurationInterface $configuration,
         PlausibleService $plausibleService,
         PageDataProvider $dataProvider,
@@ -44,12 +47,14 @@ class PageDataWidget implements WidgetInterface, AdditionalCssInterface, Require
         ConfigurationService $configurationService,
         array $options = []
     ) {
+        $this->pageRenderer = $pageRenderer;
         $this->configuration = $configuration;
         $this->plausibleService = $plausibleService;
         $this->view = $view;
         $this->options = $options;
         $this->dataProvider = $dataProvider;
         $this->configurationService = $configurationService;
+        $this->preparePageRenderer();
     }
 
     public function renderWidgetContent(): string
@@ -103,5 +108,21 @@ class PageDataWidget implements WidgetInterface, AdditionalCssInterface, Require
             'TYPO3/CMS/Plausibleio/PlausibleWidgets',
             'TYPO3/CMS/Plausibleio/PageLoader',
         ];
+    }
+
+    private function preparePageRenderer(): void
+    {
+        $this->pageRenderer->addRequireJsConfiguration(
+            [
+                'shim' => [
+                    'TYPO3/CMS/Dashboard/WidgetContentCollector' => [
+                        'deps' => [
+                            'TYPO3/CMS/Plausibleio/PlausibleWidgets',
+                            'TYPO3/CMS/Plausibleio/PageLoader',
+                        ],
+                    ],
+                ],
+            ]
+        );
     }
 }

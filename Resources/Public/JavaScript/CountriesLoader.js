@@ -27,7 +27,7 @@ define([
   class CountriesLoader {
     constructor() {
       this.options = {
-        dashboardItemSelector: '.dashboard-item',
+        dashboardItemSelector: '[data-widget-key="plausible.countrydata"]',
         widgetContentSelector: '.widget-content',
         visitorsCountryEndpoint: TYPO3.settings.ajaxUrls.plausible_countrymap,
       };

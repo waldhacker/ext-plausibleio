@@ -81,8 +81,10 @@ define([
       })}
     `;
 
-      if (clear)
+      if (clear) {
         parentElement.innerHTML = '';
+      }
+
       let newChild = document.createElement('div');
       newChild.classList.add('barchart');
       let targetElement = parentElement.appendChild(newChild);

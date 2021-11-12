@@ -30,7 +30,8 @@
         "psr/http-factory": "*",
         "psr/http-client": "*",
         "psr/log": "*",
-        "ext-json": "*"
+        "ext-json": "*",
+        "league/iso3166": "^4.0"
     },
     "require-dev": {
         "roave/security-advisories": "dev-latest",

@@ -21,22 +21,22 @@ namespace Waldhacker\Plausibleio\Controller;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider;
+use Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider;
 use Waldhacker\Plausibleio\Services\ConfigurationService;
 
-class DeviceController
+class SourceDataWidgetController
 {
     private ResponseFactoryInterface $responseFactory;
-    private DeviceDataProvider $deviceDataProvider;
+    private SourceDataProvider $dataProvider;
     private ConfigurationService $configurationService;
 
     public function __construct(
-        DeviceDataProvider $deviceDataProvider,
+        SourceDataProvider $sourceDataProvider,
         ConfigurationService $configurationService,
         ResponseFactoryInterface $responseFactory
     ) {
         $this->responseFactory = $responseFactory;
-        $this->deviceDataProvider = $deviceDataProvider;
+        $this->dataProvider = $sourceDataProvider;
         $this->configurationService = $configurationService;
     }
 
@@ -50,16 +50,20 @@ class DeviceController
 
         $data = [
             [
-                'tab' => 'browser',
-                'data'=> $this->deviceDataProvider->getBrowserData($timeFrame, $site),
+                'tab' => 'allsources',
+                'data'=> $this->dataProvider->getAllSourcesData($timeFrame, $site),
             ],
             [
-                'tab' => 'device',
-                'data' => $this->deviceDataProvider->getDeviceData($timeFrame, $site),
+                'tab' => 'mediumsource',
+                'data' => $this->dataProvider->getMediumData($timeFrame, $site),
             ],
             [
-                'tab' => 'operatingsystem',
-                'data' => $this->deviceDataProvider->getOSData($timeFrame, $site),
+                'tab' => 'sourcesource',
+                'data' => $this->dataProvider->getSourceData($timeFrame, $site),
+            ],
+            [
+                'tab' => 'campaignsource',
+                'data' => $this->dataProvider->getCampaignData($timeFrame, $site),
             ],
         ];
 

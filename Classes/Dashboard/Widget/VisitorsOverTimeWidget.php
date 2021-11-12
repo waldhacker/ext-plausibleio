@@ -27,56 +27,58 @@ use TYPO3\CMS\Dashboard\Widgets\WidgetConfigurationInterface;
 use TYPO3\CMS\Dashboard\Widgets\WidgetInterface;
 use TYPO3\CMS\Fluid\View\StandaloneView;
 use Waldhacker\Plausibleio\Services\ConfigurationService;
+use Waldhacker\Plausibleio\Services\PlausibleService;
 
 class VisitorsOverTimeWidget implements WidgetInterface, EventDataInterface, AdditionalCssInterface, RequireJsModuleInterface
 {
     private PageRenderer $pageRenderer;
-    private ChartDataProviderInterface $dataProvider;
     private StandaloneView $view;
     private WidgetConfigurationInterface $configuration;
-    private array $options;
+    private ChartDataProviderInterface $dataProvider;
+    private PlausibleService $plausibleService;
     private ConfigurationService $configurationService;
+    private array $options;
 
     public function __construct(
         PageRenderer $pageRenderer,
+        StandaloneView $view,
         WidgetConfigurationInterface $configuration,
         ChartDataProviderInterface $dataProvider,
-        StandaloneView $view,
+        PlausibleService $plausibleService,
         ConfigurationService $configurationService,
         array $options = []
     ) {
         $this->pageRenderer = $pageRenderer;
-        $this->dataProvider = $dataProvider;
         $this->view = $view;
         $this->configuration = $configuration;
-        $this->options = $options;
+        $this->dataProvider = $dataProvider;
+        $this->plausibleService = $plausibleService;
         $this->configurationService = $configurationService;
+        $this->options = $options;
         $this->preparePageRenderer();
     }
 
     public function renderWidgetContent(): string
     {
-        $timeSelectorConfig = [
-            'items' => $this->configurationService->getTimeFrames(),
-            'selected' => $this->configurationService->getDefaultTimeFrameValue(),
-        ];
+        $this->view->setTemplate('VisitorsOverTimeWidget');
+        $this->view->assignMultiple([
+            'id' => $this->plausibleService->getRandomId('visitorsOverTimeWidget'),
+            'label' => 'widget.visitorsOverTime.label',
+            'options' => $this->options,
+            'configuration' => $this->configuration,
+            'validConfiguration' => $this->configurationService->isValidConfiguration(),
+            'timeSelectorConfig' => [
+                'items' => $this->configurationService->getTimeFrames(),
+                'selected' => $this->configurationService->getDefaultTimeFrameValue(),
+            ],
+        ]);
 
-        $this->view->setTemplate('ChartWidget');
-        $this->view->assignMultiple(
-            [
-                'timeSelectorConfig' => $timeSelectorConfig,
-                'configuration' => $this->configuration,
-                'validConfiguration' => $this->configurationService->isValidConfiguration(),
-                'label' => 'widgets.visitorsOverTime.label',
-            ]
-        );
         return $this->view->render();
     }
 
     public function getEventData(): array
     {
         return [
-            'selectorConfig' => $this->configurationService->getTimeFrames(),
             'site' => $this->options['siteId'] ?? $this->configurationService->getDefaultSite(),
             'graphConfig' => [
                 'type' => 'line',

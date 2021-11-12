@@ -20,73 +20,59 @@ namespace Waldhacker\Plausibleio\Dashboard\Widget;
 use TYPO3\CMS\Core\Page\PageRenderer;
 use TYPO3\CMS\Core\Utility\PathUtility;
 use TYPO3\CMS\Dashboard\Widgets\AdditionalCssInterface;
-use TYPO3\CMS\Dashboard\Widgets\EventDataInterface;
 use TYPO3\CMS\Dashboard\Widgets\RequireJsModuleInterface;
 use TYPO3\CMS\Dashboard\Widgets\WidgetConfigurationInterface;
 use TYPO3\CMS\Dashboard\Widgets\WidgetInterface;
 use TYPO3\CMS\Fluid\View\StandaloneView;
-use Waldhacker\Plausibleio\Dashboard\DataProvider\CountryDataProvider;
+use Waldhacker\Plausibleio\Dashboard\DataProvider\CountryMapDataProvider;
 use Waldhacker\Plausibleio\Services\ConfigurationService;
+use Waldhacker\Plausibleio\Services\PlausibleService;
 
-class CountryDataWidget implements WidgetInterface, RequireJsModuleInterface, AdditionalCssInterface, EventDataInterface
+class CountryMapDataWidget implements WidgetInterface, RequireJsModuleInterface, AdditionalCssInterface
 {
     private PageRenderer $pageRenderer;
-    private WidgetConfigurationInterface $configuration;
     private StandaloneView $view;
-    private array $options;
-    private CountryDataProvider $dataProvider;
+    private WidgetConfigurationInterface $configuration;
+    private CountryMapDataProvider $dataProvider;
+    private PlausibleService $plausibleService;
     private ConfigurationService $configurationService;
-    private string $mapElementId = '';
+    private array $options;
 
     public function __construct(
         PageRenderer $pageRenderer,
-        WidgetConfigurationInterface $configuration,
-        CountryDataProvider $dataProvider,
         StandaloneView $view,
+        WidgetConfigurationInterface $configuration,
+        CountryMapDataProvider $dataProvider,
+        PlausibleService $plausibleService,
         ConfigurationService $configurationService,
         array $options = []
     ) {
         $this->pageRenderer = $pageRenderer;
-        $this->configuration = $configuration;
         $this->view = $view;
-        $this->options = $options;
+        $this->configuration = $configuration;
         $this->dataProvider = $dataProvider;
+        $this->plausibleService = $plausibleService;
         $this->configurationService = $configurationService;
-
-        $this->mapElementId = 'plausibleWidgetWorldMap-' . bin2hex(random_bytes(8));
+        $this->options = $options;
         $this->preparePageRenderer();
     }
 
     public function renderWidgetContent(): string
     {
-        $timeSelectorConfig = [
-            'items' => $this->configurationService->getTimeFrames(),
-            'selected' => $this->configurationService->getDefaultTimeFrameValue(),
-        ];
-
-        $this->view->setTemplate('CountryMap');
+        $this->view->setTemplate('CountryMapDataWidget');
         $this->view->assignMultiple([
-            'id' => $this->mapElementId,
+            'id' => $this->plausibleService->getRandomId('countryMapDataWidget'),
+            'label' => 'widget.countryMapData.label',
             'options' => $this->options,
-            'timeSelectorConfig' => $timeSelectorConfig,
             'configuration' => $this->configuration,
-            'label' => 'plausible.countryData.label',
             'validConfiguration' => $this->configurationService->isValidConfiguration(),
+            'timeSelectorConfig' => [
+                'items' => $this->configurationService->getTimeFrames(),
+                'selected' => $this->configurationService->getDefaultTimeFrameValue(),
+            ],
         ]);
 
         return $this->view->render();
-    }
-
-    public function getEventData(): array
-    {
-        /*
-        $data = $this->dataProvider->getCountryDataForDataMap($this->options['timeFrame'], $this->options['siteId']);
-        return [
-            'widgetId' => $this->mapElementId,
-            'data' => $data,
-        ];
-        */
-        return [];
     }
 
     public function getCssFiles(): array
@@ -99,7 +85,7 @@ class CountryDataWidget implements WidgetInterface, RequireJsModuleInterface, Ad
     public function getRequireJsModules(): array
     {
         return [
-            'TYPO3/CMS/Plausibleio/CountryDataWidget',
+            'TYPO3/CMS/Plausibleio/CountryMapDataWidget',
             'TYPO3/CMS/Plausibleio/Contrib/topojson.min',
             'TYPO3/CMS/Plausibleio/Contrib/datamaps.world.min',
             'TYPO3/CMS/Plausibleio/Contrib/d3-format',
@@ -124,7 +110,7 @@ class CountryDataWidget implements WidgetInterface, RequireJsModuleInterface, Ad
                 'shim' => [
                     'TYPO3/CMS/Dashboard/WidgetContentCollector' => [
                         'deps' => [
-                            'TYPO3/CMS/Plausibleio/CountryDataWidget',
+                            'TYPO3/CMS/Plausibleio/CountryMapDataWidget',
                         ],
                     ],
                 ],

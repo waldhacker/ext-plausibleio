@@ -21,7 +21,7 @@ namespace Waldhacker\Plausibleio\Dashboard\DataProvider;
 use Waldhacker\Plausibleio\Services\ConfigurationService;
 use Waldhacker\Plausibleio\Services\PlausibleService;
 
-class CountryDataProvider
+class CountryMapDataProvider
 {
     // Map ISO 3166-1 alpha-2 code to ISO 3166-1 alpha-3 code
     private const ISO3166_1_ALPHA_2_TO_ISO3166_1_ALPHA_3_MAP = [

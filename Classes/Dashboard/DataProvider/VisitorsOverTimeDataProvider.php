@@ -23,7 +23,7 @@ use TYPO3\CMS\Dashboard\Widgets\ChartDataProviderInterface;
 use Waldhacker\Plausibleio\Services\ConfigurationService;
 use Waldhacker\Plausibleio\Services\PlausibleService;
 
-class TimeSeriesDataProvider implements ChartDataProviderInterface
+class VisitorsOverTimeDataProvider implements ChartDataProviderInterface
 {
     private PlausibleService $plausibleService;
     private ConfigurationService $configurationService;
@@ -55,13 +55,14 @@ class TimeSeriesDataProvider implements ChartDataProviderInterface
         ];
 
         $data = $this->plausibleService->sendAuthorizedRequest($endpoint, $params);
-        if (is_object($data)) // api/v1/stats/aggregate returns an object
+        if (is_object($data)) { // api/v1/stats/aggregate returns an object
             $result = [
                 'bounce_rate' => $data->bounce_rate->value,
                 'pageviews' => $data->pageviews->value,
                 'visit_duration' => $data->visit_duration->value,
                 'visitors' => $data->visitors->value,
             ];
+        }
 
         return $result;
     }
@@ -111,7 +112,7 @@ class TimeSeriesDataProvider implements ChartDataProviderInterface
                     'label' => $this->languageService->getLL('visitors'),
                     'data' => $data,
                     'fill' => false,
-                    'borderColor' => "#85bcee",
+                    'borderColor' => '#85bcee',
                     'tension' => 0.5,
                 ],
             ],

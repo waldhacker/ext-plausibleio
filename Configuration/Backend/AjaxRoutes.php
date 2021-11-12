@@ -1,24 +1,24 @@
 <?php
 
 return [
-    'plausible_visitortimeseries' => [
-        'path' => '/plausibleio/visitortimeseries',
-        'target' => \Waldhacker\Plausibleio\Controller\VisitorTimeSeriesController::class,
+    'plausible_visitorsovertime' => [
+        'path' => '/plausibleio/visitorsovertime',
+        'target' => \Waldhacker\Plausibleio\Controller\VisitorsOverTimeWidgetController::class,
     ],
-    'plausible_countrymap' => [
-        'path' => '/plausibleio/countrymap',
-        'target' => \Waldhacker\Plausibleio\Controller\CountryMapController::class,
+    'plausible_countrymapdata' => [
+        'path' => '/plausibleio/countrymapdata',
+        'target' => \Waldhacker\Plausibleio\Controller\CountryMapDataWidgetController::class,
     ],
-    'plausible_page' => [
-        'path' => '/plausibleio/page',
-        'target' => \Waldhacker\Plausibleio\Controller\PageController::class,
+    'plausible_pagedata' => [
+        'path' => '/plausibleio/pagedata',
+        'target' => \Waldhacker\Plausibleio\Controller\PageDataWidgetController::class,
     ],
-    'plausible_device' => [
-        'path' => '/plausibleio/device',
-        'target' => \Waldhacker\Plausibleio\Controller\DeviceController::class,
+    'plausible_devicedata' => [
+        'path' => '/plausibleio/devicedata',
+        'target' => \Waldhacker\Plausibleio\Controller\DeviceDataWidgetController::class,
     ],
-    'plausible_source' => [
-        'path' => '/plausibleio/source',
-        'target' => \Waldhacker\Plausibleio\Controller\SourceController::class,
+    'plausible_sourcedata' => [
+        'path' => '/plausibleio/sourcedata',
+        'target' => \Waldhacker\Plausibleio\Controller\SourceDataWidgetController::class,
     ],
 ];

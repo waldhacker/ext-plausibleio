@@ -22,8 +22,10 @@ define([
     constructor() {
       this.options = {
         dashboardItemSelector: '.dashboard-item',
-        widgetContentSelector: '.widget-content',
-        pageEndpoint: TYPO3.settings.ajaxUrls.plausible_page,
+        widgetContainerSelector: '[data-widget-type="pageChart"]',
+        tabSelector: '[data-widget-tab-id="${tabId}"]',
+        timeframeSelectSelector: '[data-widget-plausible-timeframe-select]',
+        pageEndpoint: TYPO3.settings.ajaxUrls.plausible_pagedata,
       };
 
       this.initialize();
@@ -42,11 +44,14 @@ define([
     }
 
     renderChart(chartDiv, data) {
+      let that = this;
+
       if (chartDiv && data && data.length) {
         data.forEach(function (tabData) {
-          let tab = chartDiv.querySelector('[data-widget-type="' + tabData.tab + '"]');
-          if (tab)
+          let tab = chartDiv.querySelector(that.options.tabSelector.replace('${tabId}', tabData.tab));
+          if (tab) {
             WidgetService.renderBarChart(tab, tabData.data, true);
+          }
         });
       }
     }
@@ -57,13 +62,13 @@ define([
         e.preventDefault();
         let widget = e.target;
 
-        let pageChartElement = widget.querySelector('[data-widget-type="pageChart"]');
+        let pageChartElement = widget.querySelector(that.options.widgetContainerSelector);
         if (pageChartElement) {
-          widget.addEventListener('timeframechange', function (evt) {
+          widget.addEventListener('plausible:timeframechange', function (evt) {
             that.requestUpdatedData(evt, pageChartElement);
           });
 
-          let timeFrameSelect = e.target.querySelector('[data-widget-type="plausible-timeframe"]');
+          let timeFrameSelect = e.target.querySelector(that.options.timeframeSelectSelector);
           WidgetService.registerTimeSelector(timeFrameSelect);
 
           // request and render data

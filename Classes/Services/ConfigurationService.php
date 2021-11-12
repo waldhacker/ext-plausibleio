@@ -64,7 +64,7 @@ class ConfigurationService
             return $elm['default'] ?? [];
         })['value'] ?? DEFAULT_TIME_FRAME;
         */
-        return $this->extensionConfiguration->get(self::EXT_KEY, 'defaultTimeFrame') ?? DEFAULT_TIME_FRAME;;
+        return $this->extensionConfiguration->get(self::EXT_KEY, 'defaultTimeFrame') ?? DEFAULT_TIME_FRAME;
     }
 
     public function getTimeFrameValues(): array

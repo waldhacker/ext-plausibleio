@@ -17,7 +17,7 @@
                 <f:for each="{tabs}" as="tab" iteration="iteration">
                     <li role="presentation" class="t3js-tabmenu-item">
                         <a href="#{id}-{iteration.cycle}" title="" aria-controls="{id}-{iteration.cycle}" role="tab" data-bs-toggle="tab" aria-selected="{f:if(condition: '{iteration.cycle} == {defaultTabIndex}', then: 'true', else: 'false')}" class="{f:if(condition: '{iteration.cycle} == {defaultTabIndex}', then: 'active')}">
-                            {tab.label}
+                            <f:translate key="LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:{tab.label}" />
                         </a>
                     </li>
                 </f:for>
@@ -26,7 +26,7 @@
                 <f:for each="{tabs}" as="tab" iteration="iteration">
                     <div role="tabpanel" class="tab-pane {f:if(condition: '{iteration.cycle} == {defaultTabIndex}', then: 'active')}" id="{id}-{iteration.cycle}">
                         <div class="panel panel-tab">
-                            <div class="panel-body" data-widget-type="{tab.id}">
+                            <div class="panel-body" data-widget-tab-id="{tab.id}">
                             </div>
                         </div>
                     </div>

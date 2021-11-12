@@ -22,8 +22,7 @@ define([
       this.options = {
         dashBoardGridSelector: '.dashboard-grid',
         dashboardItemSelector: '.dashboard-item',
-        widgetContentSelector: '.widget-content',
-        timeFrameSelector: '[data-widget-type="plausible-timeframe"]',
+        timeFrameSelector: '[data-widget-plausible-timeframe-select]',
       };
     }
 
@@ -50,7 +49,7 @@ define([
     }
 
     dispatchTimeFrameChange(widget, timeFrame) {
-      let event = new CustomEvent('timeframechange', {detail: {timeFrame: timeFrame}});
+      let event = new CustomEvent('plausible:timeframechange', {detail: {timeFrame: timeFrame}});
       if (widget)
         widget.dispatchEvent(event);
     }

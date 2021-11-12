@@ -76,7 +76,7 @@ class VisitorLoader {
         return;
       }
 
-      that.renderTimeSelector(visitorsWidgetChart, config);
+      //that.renderTimeSelector(visitorsWidgetChart, config);
     }).delegateTo(document, this.options.dashboardItemSelector)
   }
 

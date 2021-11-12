@@ -31,64 +31,61 @@ use Waldhacker\Plausibleio\Services\PlausibleService;
 class PageDataWidget implements WidgetInterface, AdditionalCssInterface, RequireJsModuleInterface
 {
     private PageRenderer $pageRenderer;
-    private WidgetConfigurationInterface $configuration;
-    private PlausibleService $plausibleService;
     private StandaloneView $view;
-    private array $options;
+    private WidgetConfigurationInterface $configuration;
     private PageDataProvider $dataProvider;
+    private PlausibleService $plausibleService;
     private ConfigurationService $configurationService;
+    private array $options;
 
     public function __construct(
         PageRenderer $pageRenderer,
-        WidgetConfigurationInterface $configuration,
-        PlausibleService $plausibleService,
-        PageDataProvider $dataProvider,
         StandaloneView $view,
+        WidgetConfigurationInterface $configuration,
+        PageDataProvider $dataProvider,
+        PlausibleService $plausibleService,
         ConfigurationService $configurationService,
         array $options = []
     ) {
         $this->pageRenderer = $pageRenderer;
-        $this->configuration = $configuration;
-        $this->plausibleService = $plausibleService;
         $this->view = $view;
-        $this->options = $options;
+        $this->configuration = $configuration;
         $this->dataProvider = $dataProvider;
+        $this->plausibleService = $plausibleService;
         $this->configurationService = $configurationService;
+        $this->options = $options;
         $this->preparePageRenderer();
     }
 
     public function renderWidgetContent(): string
     {
-        $tabsData = [
-            [
-                'label' => 'Top Pages',
-                'id' => 'toppage',
-            ],
-            [
-                'label' => 'Entry Pages',
-                'id' => 'entrypage',
-            ],
-            [
-                'label' => 'Exit Pages',
-                'id' => 'exitpage',
-            ],
-        ];
-        $timeSelectorConfig = [
-            'items' => $this->configurationService->getTimeFrames(),
-            'selected' => $this->configurationService->getDefaultTimeFrameValue(),
-        ];
-
         $this->view->setTemplate('BaseTabs');
         $this->view->assignMultiple([
-                                        'widgetType' => 'pageChart',
-                                        'timeSelectorConfig' => $timeSelectorConfig,
-                                        'tabs' => $tabsData,
-                                        'id' => $this->plausibleService->getRandomId('plausibleWidgteTab'),
-                                        'options' => $this->options,
-                                        'configuration' => $this->configuration,
-                                        'label' => 'plausible.pageData.label',
-                                        'validConfiguration' => $this->configurationService->isValidConfiguration(),
-                                    ]);
+            'id' => $this->plausibleService->getRandomId('pageDataWidget'),
+            'label' => 'widget.pageData.label',
+            'options' => $this->options,
+            'configuration' => $this->configuration,
+            'validConfiguration' => $this->configurationService->isValidConfiguration(),
+            'timeSelectorConfig' => [
+                'items' => $this->configurationService->getTimeFrames(),
+                'selected' => $this->configurationService->getDefaultTimeFrameValue(),
+            ],
+            'widgetType' => 'pageChart',
+            'tabs' => [
+                [
+                    'label' => 'widget.pageData.tabs.toppage',
+                    'id' => 'toppage',
+                ],
+                [
+                    'label' => 'widget.pageData.tabs.entrypage',
+                    'id' => 'entrypage',
+                ],
+                [
+                    'label' => 'widget.pageData.tabs.exitpage',
+                    'id' => 'exitpage',
+                ],
+            ],
+        ]);
 
         return $this->view->render();
     }
@@ -103,7 +100,6 @@ class PageDataWidget implements WidgetInterface, AdditionalCssInterface, Require
     public function getRequireJsModules(): array
     {
         return [
-            //'TYPO3/CMS/Backend/Tabs',
             'TYPO3/CMS/Plausibleio/Contrib/d3-format',
             'TYPO3/CMS/Plausibleio/PageDataWidget',
             'TYPO3/CMS/Plausibleio/WidgetService',

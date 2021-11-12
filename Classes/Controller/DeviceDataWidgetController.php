@@ -21,22 +21,22 @@ namespace Waldhacker\Plausibleio\Controller;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Waldhacker\Plausibleio\Dashboard\DataProvider\CountryDataProvider;
+use Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider;
 use Waldhacker\Plausibleio\Services\ConfigurationService;
 
-class CountryMapController
+class DeviceDataWidgetController
 {
     private ResponseFactoryInterface $responseFactory;
-    private CountryDataProvider $countryDataProvider;
+    private DeviceDataProvider $deviceDataProvider;
     private ConfigurationService $configurationService;
 
     public function __construct(
-        CountryDataProvider $countryDataProvider,
+        DeviceDataProvider $deviceDataProvider,
         ConfigurationService $configurationService,
         ResponseFactoryInterface $responseFactory
     ) {
         $this->responseFactory = $responseFactory;
-        $this->countryDataProvider = $countryDataProvider;
+        $this->deviceDataProvider = $deviceDataProvider;
         $this->configurationService = $configurationService;
     }
 
@@ -48,7 +48,20 @@ class CountryMapController
             $timeFrame = $this->configurationService->getDefaultTimeFrameValue();
         }
 
-        $data = $this->countryDataProvider->getCountryDataForDataMap($timeFrame, $site);
+        $data = [
+            [
+                'tab' => 'browser',
+                'data'=> $this->deviceDataProvider->getBrowserData($timeFrame, $site),
+            ],
+            [
+                'tab' => 'device',
+                'data' => $this->deviceDataProvider->getDeviceData($timeFrame, $site),
+            ],
+            [
+                'tab' => 'operatingsystem',
+                'data' => $this->deviceDataProvider->getOSData($timeFrame, $site),
+            ],
+        ];
 
         $response = $this->responseFactory->createResponse(200)
             ->withHeader('Content-Type', 'application/json');

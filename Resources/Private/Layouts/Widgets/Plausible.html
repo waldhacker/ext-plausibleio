@@ -2,13 +2,11 @@
 <div class="widget-content-title">
     <div style="display: flex; justify-content: space-between;">
         <span>
-            <f:translate
-                key="LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:{label}"
-                arguments="{timeFrame: options.timeFrame, site: options.siteId}"
-            />
+            <f:translate key="LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:{label}" />
         </span>
         <div class="input-group">
-            <select class="form-select" data-widget-type="plausible-timeframe" aria-label="{f:translate(key: 'LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:timeframeselect_aria')}">
+            <label for="plausible-timeframe"><f:translate key="LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widget.general.timeframe_select.label" /></label>
+            <select class="form-select" id="plausible-timeframe" data-widget-plausible-timeframe-select aria-label="{f:translate(key: 'LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widget.general.timeframe_select.aria')}">
                 <f:for each="{timeSelectorConfig.items}" as="item">
                     <f:if condition="{timeSelectorConfig.selected}=={item.value}">
                         <f:then>
@@ -23,10 +21,11 @@
         </div>
     </div>
 </div>
+
 <f:if condition="{validConfiguration} == false">
     <f:then>
         <div class="alert alert-warning">
-            Invalid configuration. Please check the settings.
+            <f:translate key="LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widget.general.invalidConfiguration" />
         </div>
     </f:then>
     <f:else>

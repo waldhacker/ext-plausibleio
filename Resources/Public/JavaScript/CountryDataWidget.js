@@ -21,15 +21,16 @@ define([
   'TYPO3/CMS/Plausibleio/WidgetService',
 ], function (D3, Datamap, AjaxRequest, RegularEvent, D3Format, WidgetService) {
   /* The configuration of requirejs is done in
-   * CountryDataWidget->preparePageRenderer
+   * CountryMapDataWidget->preparePageRenderer
    */
 
-  class CountryDataWidget {
+  class CountryMapDataWidget {
     constructor() {
       this.options = {
-        dashboardItemSelector: '[data-widget-key="plausible.countrydata"]',
-        widgetContentSelector: '.widget-content',
-        visitorsCountryEndpoint: TYPO3.settings.ajaxUrls.plausible_countrymap,
+        dashboardItemSelector: '[data-widget-key="plausible.countrymapdata"]',
+        widgetContainerSelector: '[data-widget-type="countryMapData"]',
+        timeframeSelectSelector: '[data-widget-plausible-timeframe-select]',
+        visitorsCountryEndpoint: TYPO3.settings.ajaxUrls.plausible_countrymapdata,
       };
 
       this.initialize();
@@ -55,33 +56,35 @@ define([
         // We need to colorize every country based on 'numberOfWhatever'
         // colors should be uniq for every value.
         // For this purpose we create palette(using min/max series-value)
-        var onlyValues = data.map(function (obj) {
+        let onlyValues = data.map(function (obj) {
           return obj[1];
         });
-        var minValue = Math.min.apply(null, onlyValues);
-        var maxValue = Math.max.apply(null, onlyValues);
+        let minValue = Math.min.apply(null, onlyValues);
+        let maxValue = Math.max.apply(null, onlyValues);
 
         // create color palette function
         // color can be whatever you wish
-        var paletteScale = D3.scale.linear()
+        let paletteScale = D3.scale.linear()
           .domain([minValue, maxValue])
           .range(['#e0f3f8', '#4575b4']); // blue color
 
         // Datamaps expect data in format:
         // { 'USA': { 'fillColor': '#42a844', numberOfWhatever: 75},
         //   'FRA': { 'fillColor': '#8dc386', numberOfWhatever: 43 } }
-        var dataset = {};
+        let dataset = {};
 
         // fill dataset in appropriate format
         data.forEach(function (item) {
           // item example value ['USA', 70]
-          var iso = item[0];
-          var value = item[1];
-          value = D3Format.format('.2~s')(value); // 2400 -> 2.4k
+          let iso = item[0];
+          let value = item[1];
+          // 2400 -> 2.4k
+          value = D3Format.format('.2~s')(value);
           dataset[iso] = {numberOfThings: value, fillColor: paletteScale(value)};
         });
 
-        map.updateChoropleth(null, {reset: true}); // reset all countries to default color
+        // reset all countries to default color
+        map.updateChoropleth(null, {reset: true});
         map.updateChoropleth(dataset);
       }
     }
@@ -93,12 +96,13 @@ define([
         e.preventDefault();
         let widget = e.target;
 
-        let mapElement = widget.querySelector('[data-widget-type="countryMap"]');
+        let mapElement = widget.querySelector(that.options.widgetContainerSelector);
         if (mapElement) {
           // render map
           let map = new Datamap({
             element: mapElement,
-            projection: 'mercator', // big world map
+            // big world map
+            projection: 'mercator',
             // countries don't listed in dataset will be painted with this color
             fills: {defaultFill: '#F5F5F5'},
             //data: dataset,
@@ -126,11 +130,11 @@ define([
             }
           });
 
-          widget.addEventListener('timeframechange', function (evt) {
+          widget.addEventListener('plausible:timeframechange', function (evt) {
             that.requestUpdatedData(evt, map);
           });
 
-          let timeFrameSelect = e.target.querySelector('[data-widget-type="plausible-timeframe"]');
+          let timeFrameSelect = e.target.querySelector(that.options.timeframeSelectSelector);
           WidgetService.registerTimeSelector(timeFrameSelect);
 
           // request and render data
@@ -141,5 +145,5 @@ define([
     }
   }
 
-  return new CountryDataWidget();
+  return new CountryMapDataWidget();
 });

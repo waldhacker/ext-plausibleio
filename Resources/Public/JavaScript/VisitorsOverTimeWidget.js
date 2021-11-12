@@ -31,9 +31,13 @@ define([
         constructor() {
             this.options = {
                 dashboardItemSelector: '[data-widget-key="plausible.visitorsovertime"]',
-                widgetContentSelector: '.widget-content',
-                contentFooterClass: 'widget-content-footer',
-                visitorTimeSeriesEndpoint: TYPO3.settings.ajaxUrls.plausible_visitortimeseries
+                widgetContainerSelector: '[data-widget-type="visitorsChart"]',
+                timeframeSelectSelector: '[data-widget-plausible-timeframe-select]',
+                uniqueVisitorsOverviewItemSelector: '[data-widget-chart-overview-item="uniqueVisitors"]',
+                totalPageviewsOverviewItemSelector: '[data-widget-chart-overview-item="totalPageviews"]',
+                currentVisitorsOverviewItemSelector: '[data-widget-chart-overview-item="currentVisitors"]',
+                visitDurationOverviewItemSelector: '[data-widget-chart-overview-item="visitDuration"]',
+                visitorTimeSeriesEndpoint: TYPO3.settings.ajaxUrls.plausible_visitorsovertime
             };
             this.initialize();
         }
@@ -61,8 +65,9 @@ define([
             new RegularEvent('widgetContentRendered', function (evt) {
               evt.preventDefault();
 
-              if(!evt.target.querySelector('[data-widget-type="visitorsChart"]'))
+              if(!evt.target.querySelector(that.options.widgetContainerSelector)) {
                 return;
+              }
 
               let visitorsWidgetChart = null;
                 chartjs_1.default.helpers.each(chartjs_1.default.instances, function (instance) {
@@ -78,11 +83,11 @@ define([
 
                 let widget = visitorsWidgetChart.canvas.closest(that.options.dashboardItemSelector);
 
-                widget.addEventListener('timeframechange', function (e) {
+                widget.addEventListener('plausible:timeframechange', function (e) {
                    that.requestUpdatedData(e, widget, visitorsWidgetChart);
                 });
 
-                let timeFrameSelect = widget.querySelector('[data-widget-type="plausible-timeframe"]');
+                let timeFrameSelect = widget.querySelector(that.options.timeframeSelectSelector);
                 WidgetService.registerTimeSelector(timeFrameSelect);
 
                 // request and render data
@@ -91,21 +96,22 @@ define([
         }
 
         formatSIPrefix(n) {
-          n = D3Format.format('.2~s')(n); // 2400 -> 2.4k
+          // 2400 -> 2.4k
+          n = D3Format.format('.2~s')(n);
           return n;
         }
 
         renderOverviewData(widget, data) {
           if (widget && data) {
-            widget.querySelector('[data-widget-type="uniqueVisitors"]').innerHTML = this.formatSIPrefix(data.visitors);
-            widget.querySelector('[data-widget-type="totalPageviews"]').innerHTML = this.formatSIPrefix(data.pageviews);
-            widget.querySelector('[data-widget-type="currentVisitors"]').innerHTML = this.formatSIPrefix(data.current_visitors);
+            widget.querySelector(this.options.uniqueVisitorsOverviewItemSelector).innerHTML = this.formatSIPrefix(data.visitors);
+            widget.querySelector(this.options.totalPageviewsOverviewItemSelector).innerHTML = this.formatSIPrefix(data.pageviews);
+            widget.querySelector(this.options.currentVisitorsOverviewItemSelector).innerHTML = this.formatSIPrefix(data.current_visitors);
 
             // full minutes
-            var minutes = Math.floor(data.visit_duration / 60);
+            let minutes = Math.floor(data.visit_duration / 60);
             // remaining seconds
-            var seconds = data.visit_duration - minutes * 60;
-            widget.querySelector('[data-widget-type="visitDuration"]').innerHTML = (minutes > 0 ? minutes + 'm ' : '') + (seconds > 0 ? seconds + 's' : '');
+            let seconds = data.visit_duration - minutes * 60;
+            widget.querySelector(this.options.visitDurationOverviewItemSelector).innerHTML = (minutes > 0 ? minutes + 'm ' : '') + (seconds > 0 ? seconds + 's' : '');
           }
         }
     }

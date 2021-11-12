@@ -21,22 +21,22 @@ namespace Waldhacker\Plausibleio\Controller;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider;
+use Waldhacker\Plausibleio\Dashboard\DataProvider\CountryMapDataProvider;
 use Waldhacker\Plausibleio\Services\ConfigurationService;
 
-class SourceController
+class CountryMapDataWidgetController
 {
     private ResponseFactoryInterface $responseFactory;
-    private SourceDataProvider $dataProvider;
+    private CountryMapDataProvider $countryMapDataProvider;
     private ConfigurationService $configurationService;
 
     public function __construct(
-        SourceDataProvider $sourceDataProvider,
+        CountryMapDataProvider $countryMapDataProvider,
         ConfigurationService $configurationService,
         ResponseFactoryInterface $responseFactory
     ) {
         $this->responseFactory = $responseFactory;
-        $this->dataProvider = $sourceDataProvider;
+        $this->countryMapDataProvider = $countryMapDataProvider;
         $this->configurationService = $configurationService;
     }
 
@@ -48,24 +48,7 @@ class SourceController
             $timeFrame = $this->configurationService->getDefaultTimeFrameValue();
         }
 
-        $data = [
-            [
-                'tab' => 'allsources',
-                'data'=> $this->dataProvider->getAllSourcesData($timeFrame, $site),
-            ],
-            [
-                'tab' => 'mediumsource',
-                'data' => $this->dataProvider->getMediumData($timeFrame, $site),
-            ],
-            [
-                'tab' => 'sourcesource',
-                'data' => $this->dataProvider->getSourceData($timeFrame, $site),
-            ],
-            [
-                'tab' => 'campaignsource',
-                'data' => $this->dataProvider->getCampaignData($timeFrame, $site),
-            ],
-        ];
+        $data = $this->countryMapDataProvider->getCountryDataForDataMap($timeFrame, $site);
 
         $response = $this->responseFactory->createResponse(200)
             ->withHeader('Content-Type', 'application/json');

@@ -21,22 +21,22 @@ namespace Waldhacker\Plausibleio\Controller;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider;
+use Waldhacker\Plausibleio\Dashboard\DataProvider\VisitorsOverTimeDataProvider;
 use Waldhacker\Plausibleio\Services\ConfigurationService;
 
-class PageController
+class VisitorsOverTimeWidgetController
 {
     private ResponseFactoryInterface $responseFactory;
-    private PageDataProvider $pageDataProvider;
+    private VisitorsOverTimeDataProvider $visitorsOverTimeDataProvider;
     private ConfigurationService $configurationService;
 
     public function __construct(
-        PageDataProvider $pageDataProvider,
+        VisitorsOverTimeDataProvider $visitorsOverTimeDataProvider,
         ConfigurationService $configurationService,
         ResponseFactoryInterface $responseFactory
     ) {
         $this->responseFactory = $responseFactory;
-        $this->pageDataProvider = $pageDataProvider;
+        $this->visitorsOverTimeDataProvider = $visitorsOverTimeDataProvider;
         $this->configurationService = $configurationService;
     }
 
@@ -48,19 +48,12 @@ class PageController
             $timeFrame = $this->configurationService->getDefaultTimeFrameValue();
         }
 
+        $chartData = $this->visitorsOverTimeDataProvider->getChartData($timeFrame, $site);
+        $overviewData = $this->visitorsOverTimeDataProvider->getOverview($timeFrame, $site);
+        $overviewData['current_visitors'] = $this->visitorsOverTimeDataProvider->getCurrentVisitors();
         $data = [
-            [
-                'tab' => 'toppage',
-                'data'=> $this->pageDataProvider->getTopPageData($timeFrame, $site),
-            ],
-            [
-                'tab' => 'entrypage',
-                'data' => $this->pageDataProvider->getEntryPageData($timeFrame, $site),
-            ],
-            [
-                'tab' => 'exitpage',
-                'data' => $this->pageDataProvider->getExitPageData($timeFrame, $site),
-            ],
+            'chartData' => $chartData,
+            'overViewData' => $overviewData,
         ];
 
         $response = $this->responseFactory->createResponse(200)

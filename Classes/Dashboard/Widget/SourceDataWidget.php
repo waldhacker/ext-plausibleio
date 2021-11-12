@@ -31,69 +31,64 @@ use Waldhacker\Plausibleio\Services\PlausibleService;
 class SourceDataWidget implements WidgetInterface, AdditionalCssInterface, RequireJsModuleInterface
 {
     private PageRenderer $pageRenderer;
-    private WidgetConfigurationInterface $configuration;
-    private PlausibleService $plausibleService;
     private StandaloneView $view;
-    private array $options;
-
+    private WidgetConfigurationInterface $configuration;
     private SourceDataProvider $dataProvider;
+    private PlausibleService $plausibleService;
     private ConfigurationService $configurationService;
+    private array $options;
 
     public function __construct(
         PageRenderer $pageRenderer,
-        WidgetConfigurationInterface $configuration,
-        PlausibleService $plausibleService,
-        SourceDataProvider $dataProvider,
         StandaloneView $view,
+        WidgetConfigurationInterface $configuration,
+        SourceDataProvider $dataProvider,
+        PlausibleService $plausibleService,
         ConfigurationService $configurationService,
         array $options = []
     ) {
         $this->pageRenderer = $pageRenderer;
-        $this->configuration = $configuration;
-        $this->plausibleService = $plausibleService;
         $this->view = $view;
-        $this->options = $options;
+        $this->configuration = $configuration;
         $this->dataProvider = $dataProvider;
+        $this->plausibleService = $plausibleService;
         $this->configurationService = $configurationService;
+        $this->options = $options;
         $this->preparePageRenderer();
     }
 
     public function renderWidgetContent(): string
     {
-        $timeSelectorConfig = [
-            'items' => $this->configurationService->getTimeFrames(),
-            'selected' => $this->configurationService->getDefaultTimeFrameValue(),
-        ];
-
-        $tabsData = [
-            [
-                'label' => 'All',
-                'id' => 'allsources',
-            ],
-            [
-                'label' => 'Medium',
-                'id' => 'mediumsource',
-            ],
-            [
-                'label' => 'Source',
-                'id' => 'sourcesource',
-            ],
-            [
-                'label' => 'Campaign',
-                'id' => 'campaignsource',
-            ],
-        ];
-
         $this->view->setTemplate('BaseTabs');
         $this->view->assignMultiple([
-            'widgetType' => 'sourceChart',
-            'timeSelectorConfig' => $timeSelectorConfig,
-            'tabs' => $tabsData,
-            'id' => $this->plausibleService->getRandomId('plausibleWidgteTab'),
+            'id' => $this->plausibleService->getRandomId('sourceDataWidget'),
+            'label' => 'widget.sourceData.label',
             'options' => $this->options,
             'configuration' => $this->configuration,
-            'label' => 'plausible.sourceData.label',
             'validConfiguration' => $this->configurationService->isValidConfiguration(),
+            'timeSelectorConfig' => [
+                'items' => $this->configurationService->getTimeFrames(),
+                'selected' => $this->configurationService->getDefaultTimeFrameValue(),
+            ],
+            'widgetType' => 'sourceChart',
+            'tabs' => [
+                [
+                    'label' => 'widget.sourceData.tabs.allsources',
+                    'id' => 'allsources',
+                ],
+                [
+                    'label' => 'widget.sourceData.tabs.mediumsource',
+                    'id' => 'mediumsource',
+                ],
+                [
+                    'label' => 'widget.sourceData.tabs.sourcesource',
+                    'id' => 'sourcesource',
+                ],
+                [
+                    'label' => 'widget.sourceData.tabs.campaignsource',
+                    'id' => 'campaignsource',
+                ],
+            ],
         ]);
 
         return $this->view->render();

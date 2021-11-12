@@ -31,64 +31,60 @@ use Waldhacker\Plausibleio\Services\PlausibleService;
 class DeviceDataWidget implements WidgetInterface, AdditionalCssInterface, RequireJsModuleInterface
 {
     private PageRenderer $pageRenderer;
-    private WidgetConfigurationInterface $configuration;
-    private PlausibleService $plausibleService;
     private StandaloneView $view;
-    private array $options;
+    private WidgetConfigurationInterface $configuration;
     private DeviceDataProvider $dataProvider;
+    private PlausibleService $plausibleService;
     private ConfigurationService $configurationService;
+    private array $options;
 
     public function __construct(
         PageRenderer $pageRenderer,
-        WidgetConfigurationInterface $configuration,
-        PlausibleService $plausibleService,
-        DeviceDataProvider $dataProvider,
         StandaloneView $view,
+        WidgetConfigurationInterface $configuration,
+        DeviceDataProvider $dataProvider,
+        PlausibleService $plausibleService,
         ConfigurationService $configurationService,
         array $options = []
     ) {
         $this->pageRenderer = $pageRenderer;
-        $this->configuration = $configuration;
-        $this->plausibleService = $plausibleService;
         $this->view = $view;
-        $this->options = $options;
+        $this->configuration = $configuration;
         $this->dataProvider = $dataProvider;
+        $this->plausibleService = $plausibleService;
         $this->configurationService = $configurationService;
+        $this->options = $options;
         $this->preparePageRenderer();
     }
 
     public function renderWidgetContent(): string
     {
-        $timeSelectorConfig = [
-            'items' => $this->configurationService->getTimeFrames(),
-            'selected' => $this->configurationService->getDefaultTimeFrameValue(),
-        ];
-
-        $tabsData = [
-            [
-                'label' => 'Browser',
-                'id' => 'browser',
-            ],
-            [
-                'label' => 'Screen size',
-                'id' => 'device',
-            ],
-            [
-                'label' => 'OS',
-                'id' => 'operatingsystem',
-            ],
-        ];
-
         $this->view->setTemplate('BaseTabs');
         $this->view->assignMultiple([
-            'widgetType' => 'deviceChart',
-            'timeSelectorConfig' => $timeSelectorConfig,
-            'tabs' => $tabsData,
-            'id' => $this->plausibleService->getRandomId('plausibleWidgteTab'),
+            'id' => $this->plausibleService->getRandomId('deviceDataWidget'),
+            'label' => 'widget.deviceData.label',
             'options' => $this->options,
             'configuration' => $this->configuration,
-            'label' => 'plausible.devicedata.label',
             'validConfiguration' => $this->configurationService->isValidConfiguration(),
+            'timeSelectorConfig' => [
+                'items' => $this->configurationService->getTimeFrames(),
+                'selected' => $this->configurationService->getDefaultTimeFrameValue(),
+            ],
+            'widgetType' => 'deviceChart',
+            'tabs' => [
+                [
+                    'label' => 'widget.deviceData.tabs.browser',
+                    'id' => 'browser',
+                ],
+                [
+                    'label' => 'widget.deviceData.tabs.device',
+                    'id' => 'device',
+                ],
+                [
+                    'label' => 'widget.deviceData.tabs.operatingsystem',
+                    'id' => 'operatingsystem',
+                ],
+            ],
         ]);
 
         return $this->view->render();

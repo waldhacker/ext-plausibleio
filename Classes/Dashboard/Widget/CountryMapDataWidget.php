@@ -96,25 +96,23 @@ class CountryMapDataWidget implements WidgetInterface, RequireJsModuleInterface,
     private function preparePageRenderer(): void
     {
         $publicResourcesPath = PathUtility::getPublicResourceWebPath('EXT:plausibleio/Resources/Public/');
-        $this->pageRenderer->addRequireJsConfiguration(
-            [
-                'paths' => [
-                    'datamaps' => $publicResourcesPath . 'JavaScript/Contrib/datamaps.world.min',
+        $this->pageRenderer->addRequireJsConfiguration([
+            'paths' => [
+                'datamaps' => $publicResourcesPath . 'JavaScript/Contrib/datamaps.world.min',
+            ],
+            'map' => [
+                '*' => [
+                    'd3' => 'TYPO3/CMS/Plausibleio/Contrib/d3.min',
+                    'topojson' => 'TYPO3/CMS/Plausibleio/Contrib/topojson.min',
                 ],
-                'map' => [
-                    '*' => [
-                        'd3' => 'TYPO3/CMS/Plausibleio/Contrib/d3.min',
-                        'topojson' => 'TYPO3/CMS/Plausibleio/Contrib/topojson.min',
+            ],
+            'shim' => [
+                'TYPO3/CMS/Dashboard/WidgetContentCollector' => [
+                    'deps' => [
+                        'TYPO3/CMS/Plausibleio/CountryMapDataWidget',
                     ],
                 ],
-                'shim' => [
-                    'TYPO3/CMS/Dashboard/WidgetContentCollector' => [
-                        'deps' => [
-                            'TYPO3/CMS/Plausibleio/CountryMapDataWidget',
-                        ],
-                    ],
-                ],
-            ]
-        );
+            ],
+        ]);
     }
 }

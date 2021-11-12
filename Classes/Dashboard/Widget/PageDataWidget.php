@@ -108,16 +108,14 @@ class PageDataWidget implements WidgetInterface, AdditionalCssInterface, Require
 
     private function preparePageRenderer(): void
     {
-        $this->pageRenderer->addRequireJsConfiguration(
-            [
-                'shim' => [
-                    'TYPO3/CMS/Dashboard/WidgetContentCollector' => [
-                        'deps' => [
-                            'TYPO3/CMS/Plausibleio/PageDataWidget',
-                        ],
+        $this->pageRenderer->addRequireJsConfiguration([
+            'shim' => [
+                'TYPO3/CMS/Dashboard/WidgetContentCollector' => [
+                    'deps' => [
+                        'TYPO3/CMS/Plausibleio/PageDataWidget',
                     ],
                 ],
-            ]
-        );
+            ],
+        ]);
     }
 }

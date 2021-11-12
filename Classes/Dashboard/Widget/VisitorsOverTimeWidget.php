@@ -111,16 +111,14 @@ class VisitorsOverTimeWidget implements WidgetInterface, EventDataInterface, Add
     private function preparePageRenderer(): void
     {
         $this->pageRenderer->addInlineLanguageLabelFile('EXT:plausibleio/Resources/Private/Language/locallang.xlf');
-        $this->pageRenderer->addRequireJsConfiguration(
-            [
-                'shim' => [
-                    'TYPO3/CMS/Dashboard/WidgetContentCollector' => [
-                        'deps' => [
-                            'TYPO3/CMS/Plausibleio/VisitorsOverTimeWidget',
-                        ],
+        $this->pageRenderer->addRequireJsConfiguration([
+            'shim' => [
+                'TYPO3/CMS/Dashboard/WidgetContentCollector' => [
+                    'deps' => [
+                        'TYPO3/CMS/Plausibleio/VisitorsOverTimeWidget',
                     ],
                 ],
-            ]
-        );
+            ],
+        ]);
     }
 }

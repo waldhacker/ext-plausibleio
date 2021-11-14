@@ -11,6 +11,7 @@
          failOnRisky="true"
          failOnWarning="true"
          verbose="true">
+
     <testsuites>
         <testsuite name="default">
             <directory suffix="Test.php">../Tests</directory>
@@ -20,8 +21,12 @@
     <coverage cacheDirectory="../.phpunit.cache/code-coverage"
               processUncoveredFiles="true">
         <include>
-            <directory suffix=".php">../Classes/Dashboard/DataProvider/</directory>
-            <directory suffix=".php">../Classes/Services/</directory>
+            <directory suffix=".php">../Classes/</directory>
         </include>
+
+        <exclude>
+            <directory suffix=".php">../Classes/Services/Exception/</directory>
+            <directory suffix=".php">../Classes/Dashboard/Widget/</directory>
+        </exclude>
     </coverage>
 </phpunit>

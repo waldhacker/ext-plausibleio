@@ -45,12 +45,10 @@ class VisitorsOverTimeDataProvider
         $responseData = $this->plausibleService->sendAuthorizedRequest($plausibleSiteId, $endpoint, $params);
         if (
             is_array($responseData)
-            && isset(
-                $responseData['bounce_rate']['value'],
-                $responseData['pageviews']['value'],
-                $responseData['visit_duration']['value'],
-                $responseData['visitors']['value']
-            )
+            && !empty($responseData['bounce_rate']['value'])
+            && !empty($responseData['pageviews']['value'])
+            && !empty($responseData['visit_duration']['value'])
+            && !empty($responseData['visitors']['value'])
         ) {
             $result = [
                 'bounce_rate' => $responseData['bounce_rate']['value'],
@@ -81,7 +79,7 @@ class VisitorsOverTimeDataProvider
         $labels = [];
         $data = [];
         foreach ($results as $item) {
-            if (!isset($item['date'], $item['visitors'])) {
+            if (empty($item['date']) || empty($item['visitors'])) {
                 continue;
             }
 

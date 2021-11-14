@@ -42,18 +42,18 @@ class SourceDataWidgetController
 
     public function __invoke(ServerRequestInterface $request): ResponseInterface
     {
-        $plausibleSiteId = $request->getQueryParams()['siteId'] ?? false;
-        if (!in_array($plausibleSiteId, $this->configurationService->getAvailablePlausibleSiteIds(), true) || $plausibleSiteId === false) {
+        $plausibleSiteId = $request->getQueryParams()['siteId'] ?? null;
+        if ($plausibleSiteId === null || !in_array($plausibleSiteId, $this->configurationService->getAvailablePlausibleSiteIds(), true)) {
             $plausibleSiteId = $this->configurationService->getPlausibleSiteIdFromUserConfiguration();
         }
 
-        $timeFrame = $request->getQueryParams()['timeFrame'] ?? false;
-        if (!in_array($timeFrame, $this->configurationService->getTimeFrameValues(), true) || $timeFrame === false) {
+        $timeFrame = $request->getQueryParams()['timeFrame'] ?? null;
+        if ($timeFrame === null || !in_array($timeFrame, $this->configurationService->getTimeFrameValues(), true)) {
             $timeFrame = $this->configurationService->getTimeFrameValueFromUserConfiguration();
         }
 
-        $this->configurationService->persistPlausibleSiteIdInUserSession($plausibleSiteId);
-        $this->configurationService->persistTimeFrameValueInUserSession($timeFrame);
+        $this->configurationService->persistPlausibleSiteIdInUserConfiguration($plausibleSiteId);
+        $this->configurationService->persistTimeFrameValueInUserConfiguration($timeFrame);
 
         $data = [
             [

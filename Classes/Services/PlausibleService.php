@@ -56,8 +56,9 @@ class PlausibleService implements LoggerAwareInterface
         $apiBaseUrl = $this->configurationService->getApiBaseUrl($plausibleSiteId);
         $apiKey = $this->configurationService->getApiKey($plausibleSiteId);
 
+        $endpoint = ltrim($endpoint, '/');
         $uri = $endpoint . http_build_query($params);
-        $uri = rtrim($apiBaseUrl, '/') . '/' . ltrim($uri, '/');
+        $uri = rtrim($apiBaseUrl, '/') . '/' . $uri;
 
         $dataRequest = $this->factory
             ->createRequest('GET', $uri)
@@ -89,19 +90,22 @@ class PlausibleService implements LoggerAwareInterface
         } catch (\JsonException $e) {
             if ($this->logger !== null) {
                 $this->logger->warning(sprintf(
-                    'Something went wrong while fetching plausible endpoint "%s" for site "%s": %s',
+                    'Something went wrong while decoding data from plausible endpoint "%s" for site "%s": %s',
                     $endpoint,
                     $plausibleSiteId,
                     $e->getMessage()
                 ));
             }
+
+            return null;
         }
 
         if ($results === null) {
             if ($this->logger !== null) {
                 $this->logger->warning(sprintf(
-                    'Something went wrong while fetching plausible endpoint "%s"',
-                    $endpoint
+                    'Something went wrong while fetching plausible endpoint "%s" for site "%s"',
+                    $endpoint,
+                    $plausibleSiteId
                 ));
             }
         }

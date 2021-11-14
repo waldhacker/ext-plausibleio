@@ -35,7 +35,7 @@ class SourceDataProvider
         $result = $this->getData($plausibleSiteId, $timeFrame, 'visit:source');
 
         foreach ($result as $item) {
-            if (!isset($item['source'], $item['visitors'])) {
+            if (empty($item['source']) || empty($item['visitors'])) {
                 continue;
             }
             $map[] = ['label' => $item['source'], 'visitors' => $item['visitors']];
@@ -50,7 +50,7 @@ class SourceDataProvider
         $result = $this->getData($plausibleSiteId, $timeFrame, 'visit:utm_medium');
 
         foreach ($result as $item) {
-            if (!isset($item['utm_medium'], $item['visitors'])) {
+            if (empty($item['utm_medium']) || empty($item['visitors'])) {
                 continue;
             }
             $map[] = ['label' => $item['utm_medium'], 'visitors' => $item['visitors']];
@@ -65,7 +65,7 @@ class SourceDataProvider
         $result = $this->getData($plausibleSiteId, $timeFrame, 'visit:utm_source');
 
         foreach ($result as $item) {
-            if (!isset($item['utm_source'], $item['visitors'])) {
+            if (empty($item['utm_source']) || empty($item['visitors'])) {
                 continue;
             }
             $map[] = ['label' => $item['utm_source'], 'visitors' => $item['visitors']];
@@ -80,7 +80,7 @@ class SourceDataProvider
         $result = $this->getData($plausibleSiteId, $timeFrame, 'visit:utm_campaign');
 
         foreach ($result as $item) {
-            if (!isset($item['utm_campaign'], $item['visitors'])) {
+            if (empty($item['utm_campaign']) || empty($item['visitors'])) {
                 continue;
             }
             $map[] = ['label' => $item['utm_campaign'], 'visitors' => $item['visitors']];

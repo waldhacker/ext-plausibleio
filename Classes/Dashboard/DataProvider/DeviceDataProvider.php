@@ -35,7 +35,7 @@ class DeviceDataProvider
         $result = $this->getData($plausibleSiteId, $timeFrame, 'visit:browser');
 
         foreach ($result as $item) {
-            if (!isset($item['browser'], $item['visitors'])) {
+            if (empty($item['browser']) || empty($item['visitors'])) {
                 continue;
             }
             $map[] = ['label' => $item['browser'], 'visitors' => $item['visitors']];
@@ -50,7 +50,7 @@ class DeviceDataProvider
         $result = $this->getData($plausibleSiteId, $timeFrame, 'visit:os');
 
         foreach ($result as $item) {
-            if (!isset($item['os'], $item['visitors'])) {
+            if (empty($item['os']) || empty($item['visitors'])) {
                 continue;
             }
             $map[] = ['label' => $item['os'], 'visitors' => $item['visitors']];
@@ -65,7 +65,7 @@ class DeviceDataProvider
         $result = $this->getData($plausibleSiteId, $timeFrame, 'visit:device');
 
         foreach ($result as $item) {
-            if (!isset($item['device'], $item['visitors'])) {
+            if (empty($item['device']) || empty($item['visitors'])) {
                 continue;
             }
             $map[] = ['label' => $item['device'], 'visitors' => $item['visitors']];

@@ -58,7 +58,8 @@ class CountryMapDataProvider
         foreach ($data as $item) {
             if (
                 !is_array($item)
-                || !isset($item['country'], $item['visitors'])
+                || empty($item['country'])
+                || empty($item['visitors'])
             ) {
                 continue;
             }

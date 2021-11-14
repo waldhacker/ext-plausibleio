@@ -49,7 +49,7 @@ class ConfigurationService
 
     public function getTimeFrames(): array
     {
-        $timeFrames = array_filter(explode(',', $this->getDefaultTimeFramesFromConfiguration()));
+        $timeFrames = array_filter(explode(',', $this->getTimeFramesFromConfiguration()));
         $availableFrames = [];
         foreach ($timeFrames as $timeFrame) {
             $label = $this->getLabelForTimeFrameValue($timeFrame);
@@ -86,7 +86,7 @@ class ConfigurationService
         return $timeFrameValue;
     }
 
-    public function persistTimeFrameValueInUserSession(string $timeFrameValue): void
+    public function persistTimeFrameValueInUserConfiguration(string $timeFrameValue): void
     {
         if ($this->getBackendUser() === null || !is_array($this->getBackendUser()->uc)) {
             return;
@@ -106,7 +106,7 @@ class ConfigurationService
         } catch (ExtensionConfigurationPathDoesNotExistException $e) {
         }
 
-        return empty($value) ? DEFAULT_TIME_FRAME : $value;
+        return empty($value) ? self::DEFAULT_TIME_FRAME : $value;
     }
 
     public function getPlausibleSiteIdFromUserConfiguration(): string
@@ -123,7 +123,7 @@ class ConfigurationService
         return $plausibleSiteId;
     }
 
-    public function persistPlausibleSiteIdInUserSession(string $plausibleSiteId): void
+    public function persistPlausibleSiteIdInUserConfiguration(string $plausibleSiteId): void
     {
         if ($this->getBackendUser() === null || !is_array($this->getBackendUser()->uc)) {
             return;
@@ -252,7 +252,7 @@ class ConfigurationService
                && !empty($plausibleConfiguration['siteId']);
     }
 
-    private function getDefaultTimeFramesFromConfiguration(): string
+    private function getTimeFramesFromConfiguration(): string
     {
         $value = null;
         try {
@@ -260,10 +260,13 @@ class ConfigurationService
         } catch (ExtensionConfigurationPathDoesNotExistException $e) {
         }
 
-        return empty($value) ? DEFAULT_TIME_FRAMES : $value;
+        return empty($value) ? self::DEFAULT_TIME_FRAMES : $value;
     }
 
-    private function getLegacyPlausibleSiteIdConfiguration(): ?string
+    /**
+     * @codeCoverageIgnore
+     */
+    protected function getLegacyPlausibleSiteIdConfiguration(): ?string
     {
         try {
             $value = $this->extensionConfiguration->get(self::EXT_KEY, 'siteId');
@@ -281,7 +284,10 @@ class ConfigurationService
         return $value;
     }
 
-    private function getLegacyApiBaseUrlConfiguration(): ?string
+    /**
+     * @codeCoverageIgnore
+     */
+    protected function getLegacyApiBaseUrlConfiguration(): ?string
     {
         try {
             $value = $this->extensionConfiguration->get(self::EXT_KEY, 'baseUrl');
@@ -299,7 +305,10 @@ class ConfigurationService
         return $value;
     }
 
-    private function getLegacyApiKeyConfiguration(): ?string
+    /**
+     * @codeCoverageIgnore
+     */
+    protected function getLegacyApiKeyConfiguration(): ?string
     {
         try {
             $value = $this->extensionConfiguration->get(self::EXT_KEY, 'apiKey');
@@ -329,7 +338,10 @@ class ConfigurationService
         return sprintf($label ?? '', $matches['number'] ?? '');
     }
 
-    private function isPageAccessible(int $pageId): bool
+    /**
+     * @codeCoverageIgnore
+     */
+    protected function isPageAccessible(int $pageId): bool
     {
         $backendUser = $this->getBackendUser();
         if ($backendUser === null) {

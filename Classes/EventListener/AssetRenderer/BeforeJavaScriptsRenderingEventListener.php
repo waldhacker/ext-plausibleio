@@ -36,7 +36,7 @@ class BeforeJavaScriptsRenderingEventListener
     public function perform(BeforeJavaScriptsRenderingEvent $event): void
     {
         if (
-          $event->isInline()
+          !$event->isInline()
           || $this->getApplicationType() !== 'FE'
           || $this->getTypoScriptFrontendController() === null
       ) {
@@ -79,8 +79,8 @@ class BeforeJavaScriptsRenderingEventListener
     private function getApplicationType(): string
     {
         if (
-            ($GLOBALS['TYPO3_REQUEST'] ?? null) instanceof ServerRequestInterface &&
-            ApplicationType::fromRequest($GLOBALS['TYPO3_REQUEST'])->isFrontend()
+            ($GLOBALS['TYPO3_REQUEST'] ?? null) instanceof ServerRequestInterface
+            && ApplicationType::fromRequest($GLOBALS['TYPO3_REQUEST'])->isFrontend()
         ) {
             return 'FE';
         }

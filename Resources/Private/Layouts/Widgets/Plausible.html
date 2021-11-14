@@ -9,8 +9,7 @@
             </f:then>
             <f:else>
                 <div class="input-group">
-                    <f:comment><label for="plausible-sites"><f:translate key="LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widget.general.site_select.label" /></label></f:comment>
-                    <select class="form-select" id="plausible-sites" data-widget-plausible-sites-select aria-label="{f:translate(key: 'LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widget.general.site_select.aria')}">
+                    <select class="form-select" id="plausible-sites" data-widget-plausible-sites-select aria-label="{f:translate(key: 'LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widget.general.site_select.aria')}" title="{f:translate(key: 'LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widget.general.site_select.label')}">
                         <f:for each="{siteSelectorConfig.items}" as="item">
                             <f:if condition="{siteSelectorConfig.selected}=={item}">
                                 <f:then>
@@ -32,8 +31,7 @@
             </f:then>
             <f:else>
                 <div class="input-group">
-                    <f:comment><label for="plausible-timeframe"><f:translate key="LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widget.general.timeframe_select.label" /></label></f:comment>
-                    <select class="form-select" id="plausible-timeframe" data-widget-plausible-timeframe-select aria-label="{f:translate(key: 'LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widget.general.timeframe_select.aria')}">
+                    <select class="form-select" id="plausible-timeframe" data-widget-plausible-timeframe-select aria-label="{f:translate(key: 'LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widget.general.timeframe_select.aria')}" title="{f:translate(key: 'LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widget.general.timeframe_select.label')}">
                         <f:for each="{timeSelectorConfig.items}" as="item">
                             <f:if condition="{timeSelectorConfig.selected}=={item.value}">
                                 <f:then>

@@ -113,7 +113,7 @@ define([
     }
 
     renderOverviewData(widget, data) {
-      if (typeof(widget) !== 'undefined' && widget !== null && data && data.length > 0) {
+      if (typeof(widget) !== 'undefined' && widget !== null && data) {
         widget.querySelector(this.options.uniqueVisitorsOverviewItemSelector).innerHTML = this.formatSIPrefix(data.visitors);
         widget.querySelector(this.options.totalPageviewsOverviewItemSelector).innerHTML = this.formatSIPrefix(data.pageviews);
         widget.querySelector(this.options.currentVisitorsOverviewItemSelector).innerHTML = this.formatSIPrefix(data.current_visitors);

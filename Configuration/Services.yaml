@@ -32,6 +32,9 @@ services:
     arguments:
       $view: '@dashboard.views.widget'
       $configurationService: '@Waldhacker\Plausibleio\Services\ConfigurationService'
+      $options:
+        siteId: null
+        timeFrame: null
     tags:
       - name: dashboard.widget
         identifier: 'plausible.visitorsovertime'
@@ -47,6 +50,9 @@ services:
     arguments:
       $view: '@dashboard.views.widget'
       $configurationService: '@Waldhacker\Plausibleio\Services\ConfigurationService'
+      $options:
+        siteId: null
+        timeFrame: null
     tags:
       - name: dashboard.widget
         identifier: 'plausible.countrymapdata'
@@ -62,6 +68,9 @@ services:
     arguments:
       $view: '@dashboard.views.widget'
       $configurationService: '@Waldhacker\Plausibleio\Services\ConfigurationService'
+      $options:
+        siteId: null
+        timeFrame: null
     tags:
       - name: dashboard.widget
         identifier: 'plausible.pagedata'
@@ -77,6 +86,9 @@ services:
     arguments:
       $view: '@dashboard.views.widget'
       $configurationService: '@Waldhacker\Plausibleio\Services\ConfigurationService'
+      $options:
+        siteId: null
+        timeFrame: null
     tags:
       - name: dashboard.widget
         identifier: 'plausible.sourcedata'
@@ -93,6 +105,9 @@ services:
     arguments:
       $view: '@dashboard.views.widget'
       $configurationService: '@Waldhacker\Plausibleio\Services\ConfigurationService'
+      $options:
+        siteId: null
+        timeFrame: null
     tags:
       - name: dashboard.widget
         identifier: 'plausible.devicedata'

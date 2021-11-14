@@ -27,6 +27,7 @@
         <exclude>
             <directory suffix=".php">../Classes/Services/Exception/</directory>
             <directory suffix=".php">../Classes/Dashboard/Widget/</directory>
+            <directory suffix=".php">../Classes/ViewHelpers/</directory>
         </exclude>
     </coverage>
 </phpunit>

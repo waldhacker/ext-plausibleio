@@ -36,6 +36,7 @@ class PageDataWidget implements WidgetInterface, AdditionalCssInterface, Require
     private PageDataProvider $dataProvider;
     private PlausibleService $plausibleService;
     private ConfigurationService $configurationService;
+    private array $options;
 
     public function __construct(
         PageRenderer $pageRenderer,
@@ -43,11 +44,13 @@ class PageDataWidget implements WidgetInterface, AdditionalCssInterface, Require
         WidgetConfigurationInterface $configuration,
         PageDataProvider $dataProvider,
         PlausibleService $plausibleService,
-        ConfigurationService $configurationService
+        ConfigurationService $configurationService,
+        array $options = []
     ) {
         $this->pageRenderer = $pageRenderer;
         $this->view = $view;
         $this->configuration = $configuration;
+        $this->options = $options;
         $this->dataProvider = $dataProvider;
         $this->plausibleService = $plausibleService;
         $this->configurationService = $configurationService;
@@ -72,6 +75,8 @@ class PageDataWidget implements WidgetInterface, AdditionalCssInterface, Require
                 'items' => $this->configurationService->getAvailablePlausibleSiteIds(),
                 'selected' => $plausibleSiteId,
             ],
+            'predefinedSiteId' => $this->options['siteId'] ?? null,
+            'predefinedTimeFrame' => $this->options['timeFrame'] ?? null,
             'widgetType' => 'pageChart',
             'tabs' => [
                 [

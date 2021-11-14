@@ -24,8 +24,39 @@ define([
         dashBoardGridSelector: '.dashboard-grid',
         dashboardItemSelector: '.dashboard-item',
         timeFrameSelector: '[data-widget-plausible-timeframe-select]',
-        siteSelector: '[data-widget-plausible-sites-select]'
+        siteSelector: '[data-widget-plausible-sites-select]',
+        predefinedTimeframeSelectSelector: '[data-widget-plausible-predefined-timeframe]',
+        predefinedSiteSelector: '[data-widget-plausible-predefined-site]'
       };
+    }
+
+    getSiteAndTimeFrameFromDashboardItem(dashboardItem) {
+        let configuration = {
+          site: '',
+          timeFrame: '',
+        };
+
+        if (typeof(dashboardItem) === 'undefined' || dashboardItem === null) {
+          return configuration;
+        }
+
+        let timeFrameSelect = dashboardItem.querySelector(this.options.timeFrameSelector);
+        let siteSelect = dashboardItem.querySelector(this.options.siteSelector);
+        let predefinedTimeframeElement = dashboardItem.querySelector(this.options.predefinedTimeframeSelectSelector);
+        let predefinedSiteElement = dashboardItem.querySelector(this.options.predefinedSiteSelector);
+        if (typeof(predefinedSiteElement) !== 'undefined' && predefinedSiteElement !== null) {
+          configuration.site = predefinedSiteElement.dataset.widgetPlausiblePredefinedSite;
+        } else if (typeof(siteSelect) !== 'undefined' && siteSelect !== null) {
+          configuration.site = siteSelect.value;
+        }
+
+        if (typeof(predefinedTimeframeElement) !== 'undefined' && predefinedTimeframeElement !== null) {
+          configuration.timeFrame = predefinedTimeframeElement.dataset.widgetPlausiblePredefinedTimeframe;
+        } else if (typeof(timeFrameSelect) !== 'undefined' && timeFrameSelect !== null) {
+          configuration.timeFrame = timeFrameSelect.value;
+        }
+
+        return configuration;
     }
 
     registerTimeSelector(selectElement) {
@@ -37,11 +68,10 @@ define([
 
       selectElement.addEventListener('change', function (e) {
         let callingSelect = e.target;
-        let dashboard = callingSelect.closest(that.options.dashBoardGridSelector);
-        let widgetContent = callingSelect.closest(that.options.dashboardItemSelector);
-        let widgets = dashboard.querySelectorAll(that.options.dashboardItemSelector);
-        let widgetsTimeFrameSelects = dashboard.querySelectorAll(that.options.timeFrameSelector);
-        let widgetSiteSelect = widgetContent.querySelector(that.options.siteSelector);
+        let dashboardGrid = callingSelect.closest(that.options.dashBoardGridSelector);
+        let dashboardItem = callingSelect.closest(that.options.dashboardItemSelector);
+        let widgets = dashboardGrid.querySelectorAll(that.options.dashboardItemSelector);
+        let widgetsTimeFrameSelects = dashboardGrid.querySelectorAll(that.options.timeFrameSelector);
 
         widgetsTimeFrameSelects.forEach(function (select) {
           if (select !== callingSelect) {
@@ -50,7 +80,8 @@ define([
         });
 
         widgets.forEach(function (widget) {
-          that.dispatchTimeFrameChange(widget, widgetSiteSelect.value, callingSelect.value);
+          let configuration = that.getSiteAndTimeFrameFromDashboardItem(widget);
+          that.dispatchTimeFrameChange(widget, configuration.site, configuration.timeFrame);
         });
       });
     }
@@ -64,11 +95,10 @@ define([
 
       selectElement.addEventListener('change', function (e) {
         let callingSelect = e.target;
-        let dashboard = callingSelect.closest(that.options.dashBoardGridSelector);
-        let widgetContent = callingSelect.closest(that.options.dashboardItemSelector);
-        let widgets = dashboard.querySelectorAll(that.options.dashboardItemSelector);
-        let widgetsSiteSelects = dashboard.querySelectorAll(that.options.siteSelector);
-        let widgetTimeFrameSelect = widgetContent.querySelector(that.options.timeFrameSelector);
+        let dashboardGrid = callingSelect.closest(that.options.dashBoardGridSelector);
+        let dashboardItem = callingSelect.closest(that.options.dashboardItemSelector);
+        let widgets = dashboardGrid.querySelectorAll(that.options.dashboardItemSelector);
+        let widgetsSiteSelects = dashboardGrid.querySelectorAll(that.options.siteSelector);
 
         widgetsSiteSelects.forEach(function (select) {
           if (select !== callingSelect) {
@@ -77,7 +107,8 @@ define([
         });
 
         widgets.forEach(function (widget) {
-          that.dispatchSiteChange(widget, callingSelect.value, widgetTimeFrameSelect.value);
+          let configuration = that.getSiteAndTimeFrameFromDashboardItem(widget);
+          that.dispatchSiteChange(widget, configuration.site, configuration.timeFrame);
         });
       });
     }

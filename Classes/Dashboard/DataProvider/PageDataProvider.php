@@ -35,7 +35,7 @@ class PageDataProvider
         $result = $this->getData($plausibleSiteId, $timeFrame, 'event:page');
 
         foreach ($result as $item) {
-            if (empty($item['page']) || empty($item['visitors'])) {
+            if (!isset($item['page']) || !isset($item['visitors'])) {
                 continue;
             }
             $map[] = ['label' => $item['page'], 'visitors' => $item['visitors']];
@@ -50,7 +50,7 @@ class PageDataProvider
         $result = $this->getData($plausibleSiteId, $timeFrame, 'visit:entry_page');
 
         foreach ($result as $item) {
-            if (empty($item['entry_page']) || empty($item['visitors'])) {
+            if (!isset($item['entry_page']) || !isset($item['visitors'])) {
                 continue;
             }
             $map[] = ['label' => $item['entry_page'], 'visitors' => $item['visitors']];
@@ -65,7 +65,7 @@ class PageDataProvider
         $result = $this->getData($plausibleSiteId, $timeFrame, 'visit:exit_page');
 
         foreach ($result as $item) {
-            if (empty($item['exit_page']) || empty($item['visitors'])) {
+            if (!isset($item['exit_page']) || !isset($item['visitors'])) {
                 continue;
             }
             $map[] = ['label' => $item['exit_page'], 'visitors' => $item['visitors']];

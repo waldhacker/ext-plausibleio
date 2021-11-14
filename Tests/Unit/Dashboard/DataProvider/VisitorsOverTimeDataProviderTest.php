@@ -218,11 +218,12 @@ class VisitorsOverTimeDataProviderTest extends UnitTestCase
             'expected' => [
                 'labels' => [
                     '2021-04-16',
+                    ''
                 ],
                 'datasets' => [
                     [
                         'label' => 'Visitors',
-                        'data' => [3],
+                        'data' => [3, 4],
                         'fill' => false,
                         'borderColor' => '#85bcee',
                         'tension' => 0.5,

@@ -18,7 +18,6 @@ declare(strict_types=1);
 
 namespace Waldhacker\Plausibleio\Dashboard\Widget;
 
-use Psr\Log\LoggerInterface;
 use TYPO3\CMS\Core\Page\PageRenderer;
 use TYPO3\CMS\Dashboard\Widgets\AdditionalCssInterface;
 use TYPO3\CMS\Dashboard\Widgets\RequireJsModuleInterface;
@@ -30,15 +29,14 @@ use Waldhacker\Plausibleio\Services\PlausibleService;
 
 class DeviceDataWidget implements WidgetInterface, AdditionalCssInterface, RequireJsModuleInterface
 {
-    private LoggerInterface $logger;
     private PageRenderer $pageRenderer;
     private StandaloneView $view;
     private WidgetConfigurationInterface $configuration;
     private PlausibleService $plausibleService;
     private ConfigurationService $configurationService;
+    private array $options;
 
     public function __construct(
-        LoggerInterface $logger,
         PageRenderer $pageRenderer,
         StandaloneView $view,
         WidgetConfigurationInterface $configuration,
@@ -46,17 +44,12 @@ class DeviceDataWidget implements WidgetInterface, AdditionalCssInterface, Requi
         ConfigurationService $configurationService,
         array $options = []
     ) {
-        $this->logger = $logger;
         $this->pageRenderer = $pageRenderer;
         $this->view = $view;
         $this->configuration = $configuration;
+        $this->options = $options;
         $this->plausibleService = $plausibleService;
         $this->configurationService = $configurationService;
-
-        if (!empty($options)) {
-            $this->logger->warning('Support for widget configuration overrides through Service.yaml ($options) has been removed. They no longer have any effect.');
-        }
-
         $this->preparePageRenderer();
     }
 
@@ -78,6 +71,8 @@ class DeviceDataWidget implements WidgetInterface, AdditionalCssInterface, Requi
                 'items' => $this->configurationService->getAvailablePlausibleSiteIds(),
                 'selected' => $plausibleSiteId,
             ],
+            'predefinedSiteId' => $this->options['siteId'] ?? null,
+            'predefinedTimeFrame' => $this->options['timeFrame'] ?? null,
             'widgetType' => 'deviceChart',
             'tabs' => [
                 [

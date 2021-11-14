@@ -52,6 +52,7 @@ class SourceDataProviderTest extends UnitTestCase
             ],
             'expected' => [
                 ['label' => 'source1',  'visitors' => 3],
+                ['label' => '',  'visitors' => 4],
             ],
         ];
 
@@ -126,6 +127,7 @@ class SourceDataProviderTest extends UnitTestCase
             ],
             'expected' => [
                 ['label' => 'source1',  'visitors' => 3],
+                ['label' => '',  'visitors' => 4],
             ],
         ];
 
@@ -200,6 +202,7 @@ class SourceDataProviderTest extends UnitTestCase
             ],
             'expected' => [
                 ['label' => 'source1',  'visitors' => 3],
+                ['label' => '',  'visitors' => 4],
             ],
         ];
 
@@ -274,6 +277,7 @@ class SourceDataProviderTest extends UnitTestCase
             ],
             'expected' => [
                 ['label' => 'source1',  'visitors' => 3],
+                ['label' => '',  'visitors' => 4],
             ],
         ];
 

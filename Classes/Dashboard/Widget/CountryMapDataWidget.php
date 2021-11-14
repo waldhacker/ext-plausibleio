@@ -34,17 +34,20 @@ class CountryMapDataWidget implements WidgetInterface, RequireJsModuleInterface,
     private WidgetConfigurationInterface $configuration;
     private PlausibleService $plausibleService;
     private ConfigurationService $configurationService;
+    private array $options;
 
     public function __construct(
         PageRenderer $pageRenderer,
         StandaloneView $view,
         WidgetConfigurationInterface $configuration,
         PlausibleService $plausibleService,
-        ConfigurationService $configurationService
+        ConfigurationService $configurationService,
+        array $options = []
     ) {
         $this->pageRenderer = $pageRenderer;
         $this->view = $view;
         $this->configuration = $configuration;
+        $this->options = $options;
         $this->plausibleService = $plausibleService;
         $this->configurationService = $configurationService;
         $this->preparePageRenderer();
@@ -68,6 +71,8 @@ class CountryMapDataWidget implements WidgetInterface, RequireJsModuleInterface,
                 'items' => $this->configurationService->getAvailablePlausibleSiteIds(),
                 'selected' => $plausibleSiteId,
             ],
+            'predefinedSiteId' => $this->options['siteId'] ?? null,
+            'predefinedTimeFrame' => $this->options['timeFrame'] ?? null,
         ]);
 
         return $this->view->render();

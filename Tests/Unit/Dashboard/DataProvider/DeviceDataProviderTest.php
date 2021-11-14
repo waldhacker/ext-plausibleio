@@ -52,6 +52,7 @@ class DeviceDataProviderTest extends UnitTestCase
             ],
             'expected' => [
                 ['label' => 'Firefox',  'visitors' => 3],
+                ['label' => '',  'visitors' => 4],
             ],
         ];
 
@@ -126,6 +127,7 @@ class DeviceDataProviderTest extends UnitTestCase
             ],
             'expected' => [
                 ['label' => 'Windows',  'visitors' => 3],
+                ['label' => '',  'visitors' => 4],
             ],
         ];
 
@@ -200,6 +202,7 @@ class DeviceDataProviderTest extends UnitTestCase
             ],
             'expected' => [
                 ['label' => 'Tablet',  'visitors' => 3],
+                ['label' => '',  'visitors' => 4],
             ],
         ];
 

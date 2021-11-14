@@ -52,6 +52,7 @@ class PageDataProviderTest extends UnitTestCase
             ],
             'expected' => [
                 ['label' => '/de',  'visitors' => 3],
+                ['label' => '',  'visitors' => 4],
             ],
         ];
 
@@ -125,6 +126,7 @@ class PageDataProviderTest extends UnitTestCase
             ],
             'expected' => [
                 ['label' => '/de',  'visitors' => 3],
+                ['label' => '',  'visitors' => 4],
             ],
         ];
 
@@ -198,6 +200,7 @@ class PageDataProviderTest extends UnitTestCase
             ],
             'expected' => [
                 ['label' => '/de',  'visitors' => 3],
+                ['label' => '',  'visitors' => 4],
             ],
         ];
 

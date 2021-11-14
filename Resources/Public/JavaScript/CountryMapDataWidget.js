@@ -152,7 +152,8 @@ define([
           }
 
           // request and render data
-          WidgetService.dispatchTimeFrameChange(widget, timeFrameSelect.value);
+          let configuration = WidgetService.getSiteAndTimeFrameFromDashboardItem(widget);
+          WidgetService.dispatchTimeFrameChange(widget, configuration.site, configuration.timeFrame);
         }
 
       }).delegateTo(document, this.options.dashboardItemSelector);

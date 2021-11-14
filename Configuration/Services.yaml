@@ -27,6 +27,21 @@ services:
         event: TYPO3\CMS\Core\Page\Event\BeforeJavaScriptsRenderingEvent
         method: 'perform'
 
+  waldhacker.plausibleio.widget.visitorsovertime:
+    class: 'Waldhacker\Plausibleio\Dashboard\Widget\VisitorsOverTimeWidget'
+    arguments:
+      $view: '@dashboard.views.widget'
+      $configurationService: '@Waldhacker\Plausibleio\Services\ConfigurationService'
+    tags:
+      - name: dashboard.widget
+        identifier: 'plausible.visitorsovertime'
+        groupNames: 'plausibleio'
+        title: 'LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widget.visitorsOverTime.label'
+        description: 'LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widget.visitorsOverTime.description'
+        iconIdentifier: 'content-widget-chart-bar'
+        height: 'large'
+        width: 'medium'
+
   waldhacker.plausibleio.widget.country:
     class: 'Waldhacker\Plausibleio\Dashboard\Widget\CountryMapDataWidget'
     arguments:
@@ -57,22 +72,7 @@ services:
         height: 'medium'
         width: 'medium'
 
-  waldhacker.plausibleio.widget.visitorsovertime:
-    class: 'Waldhacker\Plausibleio\Dashboard\Widget\VisitorsOverTimeWidget'
-    arguments:
-      $view: '@dashboard.views.widget'
-      $configurationService: '@Waldhacker\Plausibleio\Services\ConfigurationService'
-    tags:
-      - name: dashboard.widget
-        identifier: 'plausible.visitorsovertime'
-        groupNames: 'plausibleio'
-        title: 'LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widget.visitorsOverTime.label'
-        description: 'LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widget.visitorsOverTime.description'
-        iconIdentifier: 'content-widget-chart-bar'
-        height: 'large'
-        width: 'medium'
-
-  waldhacker.plausibleio.widget.browser:
+  waldhacker.plausibleio.widget.source:
     class: 'Waldhacker\Plausibleio\Dashboard\Widget\SourceDataWidget'
     arguments:
       $view: '@dashboard.views.widget'

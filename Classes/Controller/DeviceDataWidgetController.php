@@ -42,24 +42,31 @@ class DeviceDataWidgetController
 
     public function __invoke(ServerRequestInterface $request): ResponseInterface
     {
-        $timeFrame = $request->getQueryParams()['timeFrame'] ?? false;
-        $site = $request->getQueryParams()['site'] ?? $this->configurationService->getDefaultSite();
-        if (!in_array($timeFrame, $this->configurationService->getTimeFrameValues(), true) || $timeFrame === false) {
-            $timeFrame = $this->configurationService->getDefaultTimeFrameValue();
+        $plausibleSiteId = $request->getQueryParams()['siteId'] ?? false;
+        if (!in_array($plausibleSiteId, $this->configurationService->getAvailablePlausibleSiteIds(), true) || $plausibleSiteId === false) {
+            $plausibleSiteId = $this->configurationService->getPlausibleSiteIdFromUserConfiguration();
         }
+
+        $timeFrame = $request->getQueryParams()['timeFrame'] ?? false;
+        if (!in_array($timeFrame, $this->configurationService->getTimeFrameValues(), true) || $timeFrame === false) {
+            $timeFrame = $this->configurationService->getTimeFrameValueFromUserConfiguration();
+        }
+
+        $this->configurationService->persistPlausibleSiteIdInUserSession($plausibleSiteId);
+        $this->configurationService->persistTimeFrameValueInUserSession($timeFrame);
 
         $data = [
             [
                 'tab' => 'browser',
-                'data'=> $this->deviceDataProvider->getBrowserData($timeFrame, $site),
+                'data'=> $this->deviceDataProvider->getBrowserData($plausibleSiteId, $timeFrame),
             ],
             [
                 'tab' => 'device',
-                'data' => $this->deviceDataProvider->getDeviceData($timeFrame, $site),
+                'data' => $this->deviceDataProvider->getDeviceData($plausibleSiteId, $timeFrame),
             ],
             [
                 'tab' => 'operatingsystem',
-                'data' => $this->deviceDataProvider->getOSData($timeFrame, $site),
+                'data' => $this->deviceDataProvider->getOSData($plausibleSiteId, $timeFrame),
             ],
         ];
 

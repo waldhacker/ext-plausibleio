@@ -178,8 +178,8 @@ class PlausibleServiceTest extends UnitTestCase
     private function setupConfigurationService()
     {
         $configurationService = $this->prophesize(ConfigurationService::class);
-        $configurationService->getBaseUrl()->willReturn('https://example.com');
-        $configurationService->getApiKey()->willReturn('super-secret-key');
+        $configurationService->getDefaultApiBaseUrl()->willReturn('https://example.com');
+        $configurationService->getDefaultApiKey()->willReturn('super-secret-key');
         return $configurationService;
     }
 }

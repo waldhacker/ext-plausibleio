@@ -42,24 +42,31 @@ class PageDataWidgetController
 
     public function __invoke(ServerRequestInterface $request): ResponseInterface
     {
-        $timeFrame = $request->getQueryParams()['timeFrame'] ?? false;
-        $site = $request->getQueryParams()['site'] ?? $this->configurationService->getDefaultSite();
-        if (!in_array($timeFrame, $this->configurationService->getTimeFrameValues(), true) || $timeFrame === false) {
-            $timeFrame = $this->configurationService->getDefaultTimeFrameValue();
+        $plausibleSiteId = $request->getQueryParams()['siteId'] ?? false;
+        if (!in_array($plausibleSiteId, $this->configurationService->getAvailablePlausibleSiteIds(), true) || $plausibleSiteId === false) {
+            $plausibleSiteId = $this->configurationService->getPlausibleSiteIdFromUserConfiguration();
         }
+
+        $timeFrame = $request->getQueryParams()['timeFrame'] ?? false;
+        if (!in_array($timeFrame, $this->configurationService->getTimeFrameValues(), true) || $timeFrame === false) {
+            $timeFrame = $this->configurationService->getTimeFrameValueFromUserConfiguration();
+        }
+
+        $this->configurationService->persistPlausibleSiteIdInUserSession($plausibleSiteId);
+        $this->configurationService->persistTimeFrameValueInUserSession($timeFrame);
 
         $data = [
             [
                 'tab' => 'toppage',
-                'data'=> $this->pageDataProvider->getTopPageData($timeFrame, $site),
+                'data'=> $this->pageDataProvider->getTopPageData($plausibleSiteId, $timeFrame),
             ],
             [
                 'tab' => 'entrypage',
-                'data' => $this->pageDataProvider->getEntryPageData($timeFrame, $site),
+                'data' => $this->pageDataProvider->getEntryPageData($plausibleSiteId, $timeFrame),
             ],
             [
                 'tab' => 'exitpage',
-                'data' => $this->pageDataProvider->getExitPageData($timeFrame, $site),
+                'data' => $this->pageDataProvider->getExitPageData($plausibleSiteId, $timeFrame),
             ],
         ];
 

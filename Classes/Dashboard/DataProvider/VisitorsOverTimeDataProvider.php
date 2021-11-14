@@ -19,108 +19,81 @@ declare(strict_types=1);
 namespace Waldhacker\Plausibleio\Dashboard\DataProvider;
 
 use TYPO3\CMS\Core\Localization\LanguageService;
-use TYPO3\CMS\Dashboard\Widgets\ChartDataProviderInterface;
-use Waldhacker\Plausibleio\Services\ConfigurationService;
 use Waldhacker\Plausibleio\Services\PlausibleService;
 
-class VisitorsOverTimeDataProvider implements ChartDataProviderInterface
+class VisitorsOverTimeDataProvider
 {
-    private PlausibleService $plausibleService;
-    private ConfigurationService $configurationService;
-    private LanguageService $languageService;
     private const EXT_KEY = 'plausibleio';
+    private PlausibleService $plausibleService;
 
-    public function __construct(
-        PlausibleService $plausibleService,
-        LanguageService $languageService,
-        ConfigurationService $configurationService
-    ) {
+    public function __construct(PlausibleService $plausibleService)
+    {
         $this->plausibleService = $plausibleService;
-        $this->configurationService = $configurationService;
-        $this->languageService = $languageService;
-        $this->languageService->includeLLFile('EXT:' . self::EXT_KEY . '/Resources/Private/Language/locallang.xlf');
+        $this->getLanguageService()->includeLLFile('EXT:' . self::EXT_KEY . '/Resources/Private/Language/locallang.xlf');
     }
 
-    public function getOverview(?string $timeFrame = null, ?string $site = null): array
+    public function getOverview(string $plausibleSiteId, string $timeFrame): array
     {
-        $timeFrame = $timeFrame ?? $this->configurationService->getDefaultTimeFrameValue();
-        $site = $site ?? $this->configurationService->getDefaultSite();
-        $result = [];
-
         $endpoint = '/api/v1/stats/aggregate?';
         $params = [
-            'site_id' => $site,
+            'site_id' => $plausibleSiteId,
             'period' => $timeFrame,
             'metrics' => 'visitors,visit_duration,pageviews,bounce_rate',
         ];
 
-        // api/v1/stats/aggregate returns an object
-        $data = $this->plausibleService->sendAuthorizedRequest($endpoint, $params);
+        $result = [];
+        $responseData = $this->plausibleService->sendAuthorizedRequest($plausibleSiteId, $endpoint, $params);
         if (
-            is_object($data)
-            && property_exists($data, 'bounce_rate')
-            && property_exists($data->bounce_rate, 'value')
-            && property_exists($data, 'pageviews')
-            && property_exists($data->pageviews, 'value')
-            && property_exists($data, 'visit_duration')
-            && property_exists($data->visit_duration, 'value')
-            && property_exists($data, 'visitors')
-            && property_exists($data->visitors, 'value')
+            is_array($responseData)
+            && isset(
+                $responseData['bounce_rate']['value'],
+                $responseData['pageviews']['value'],
+                $responseData['visit_duration']['value'],
+                $responseData['visitors']['value']
+            )
         ) {
             $result = [
-                'bounce_rate' => $data->bounce_rate->value,
-                'pageviews' => $data->pageviews->value,
-                'visit_duration' => $data->visit_duration->value,
-                'visitors' => $data->visitors->value,
+                'bounce_rate' => $responseData['bounce_rate']['value'],
+                'pageviews' => $responseData['pageviews']['value'],
+                'visit_duration' => $responseData['visit_duration']['value'],
+                'visitors' => $responseData['visitors']['value'],
             ];
         }
 
         return $result;
     }
 
-    public function getCurrentVisitors(?string $site = null): int
+    public function getCurrentVisitors(string $plausibleSiteId): int
     {
-        $site = $site ?? $this->configurationService->getDefaultSite();
-
         $endpoint = '/api/v1/stats/realtime/visitors?';
         $params = [
-            'site_id' => $site,
+            'site_id' => $plausibleSiteId,
         ];
 
-        $result =  $this->plausibleService->sendAuthorizedRequest($endpoint, $params);
-
-        return $result==null ? 0 : $result;
+        $responseData =  $this->plausibleService->sendAuthorizedRequest($plausibleSiteId, $endpoint, $params);
+        return is_int($responseData) ? $responseData : 0;
     }
 
-    private function getVisitors(string $timeFrame, string $site): array
+    public function getChartData(string $plausibleSiteId, string $timeFrame): array
     {
-        $endpoint = 'api/v1/stats/timeseries?';
-        $params = [
-            'site_id' => $site,
-            'period' => $timeFrame,
-        ];
-
-        return $this->plausibleService->sendAuthorizedRequest($endpoint, $params);
-    }
-
-    public function getChartData(?string $timeFrame = null, ?string $site = null): array
-    {
-        $timeFrame = $timeFrame ?? $this->configurationService->getDefaultTimeFrameValue();
-        $site = $site ?? $this->configurationService->getDefaultSite();
-
-        $results = $this->getVisitors($timeFrame, $site);
+        $results = $this->getVisitors($plausibleSiteId, $timeFrame);
 
         $labels = [];
         $data = [];
-        foreach ($results as $datum) {
-            $labels[] = $datum->date;
-            $data[] = $datum->visitors;
+        foreach ($results as $item) {
+            if (!isset($item['date'], $item['visitors'])) {
+                continue;
+            }
+
+            $labels[] = $item['date'];
+            $data[] = $item['visitors'];
         }
+
         return [
             'labels' => $labels,
             'datasets' => [
                 [
-                    'label' => $this->languageService->getLL('visitors'),
+                    'label' => $this->getLanguageService()->getLL('visitors'),
                     'data' => $data,
                     'fill' => false,
                     'borderColor' => '#85bcee',
@@ -128,5 +101,22 @@ class VisitorsOverTimeDataProvider implements ChartDataProviderInterface
                 ],
             ],
         ];
+    }
+
+    private function getVisitors(string $plausibleSiteId, string $timeFrame): array
+    {
+        $endpoint = 'api/v1/stats/timeseries?';
+        $params = [
+            'site_id' => $plausibleSiteId,
+            'period' => $timeFrame,
+        ];
+
+        $responseData = $this->plausibleService->sendAuthorizedRequest($plausibleSiteId, $endpoint, $params);
+        return is_array($responseData) ? $responseData : [];
+    }
+
+    private function getLanguageService(): LanguageService
+    {
+        return $GLOBALS['LANG'];
     }
 }

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <xliff version="1.0">
-	<file source-language="en" datatype="plaintext" original="messages" date="2019-08-19T13:37:00Z">
+	<file source-language="en" datatype="plaintext" original="messages" date="2021-11-13T13:37:00Z">
 		<body>
 			<trans-unit id="widget_group.plausibleio">
 				<source>Site Analytics (Plausible)</source>
@@ -45,7 +45,7 @@
 			</trans-unit>
 
 			<trans-unit id="widget.deviceData.label">
-				<source>Device usage and Visitors (Plausible Analytics)</source>
+				<source>Device usage and visitors (Plausible Analytics)</source>
 			</trans-unit>
 			<trans-unit id="widget.deviceData.description">
 				<source>Show statistics about visitors and their devices.</source>
@@ -67,13 +67,13 @@
 				<source>Show statistics about the number of page views, entries and exits.</source>
 			</trans-unit>
 			<trans-unit id="widget.pageData.tabs.toppage">
-				<source>Top Pages</source>
+				<source>Top pages</source>
 			</trans-unit>
 			<trans-unit id="widget.pageData.tabs.entrypage">
-				<source>Entry Pages</source>
+				<source>Entry pages</source>
 			</trans-unit>
 			<trans-unit id="widget.pageData.tabs.exitpage">
-				<source>Exit Pages</source>
+				<source>Exit pages</source>
 			</trans-unit>
 
 			<trans-unit id="widget.countryMapData.label">
@@ -94,18 +94,26 @@
 				<source>Last %s months</source>
 			</trans-unit>
 			<trans-unit id="timeframes.month">
-				<source>This Month</source>
+				<source>This month</source>
 			</trans-unit>
 			<trans-unit id="timeframes.day">
 				<source>Today</source>
 			</trans-unit>
 
 			<trans-unit id="widget.general.timeframe_select.label">
-				<source>Choose Time Frame to Show</source>
+				<source>Choose time frame to show</source>
 			</trans-unit>
 			<trans-unit id="widget.general.timeframe_select.aria">
-				<source>Time Frame Selector</source>
+				<source>Time frame selector</source>
 			</trans-unit>
+
+			<trans-unit id="widget.general.site_select.label">
+				<source>Choose a Plausible site to show</source>
+			</trans-unit>
+			<trans-unit id="widget.general.site_select.aria">
+				<source>Plausible site id selector</source>
+			</trans-unit>
+
 			<trans-unit id="visitors">
 				<source>Visitors</source>
 			</trans-unit>

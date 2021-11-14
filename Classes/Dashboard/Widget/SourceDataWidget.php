@@ -18,57 +18,65 @@ declare(strict_types=1);
 
 namespace Waldhacker\Plausibleio\Dashboard\Widget;
 
+use Psr\Log\LoggerInterface;
 use TYPO3\CMS\Core\Page\PageRenderer;
 use TYPO3\CMS\Dashboard\Widgets\AdditionalCssInterface;
 use TYPO3\CMS\Dashboard\Widgets\RequireJsModuleInterface;
 use TYPO3\CMS\Dashboard\Widgets\WidgetConfigurationInterface;
 use TYPO3\CMS\Dashboard\Widgets\WidgetInterface;
 use TYPO3\CMS\Fluid\View\StandaloneView;
-use Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider;
 use Waldhacker\Plausibleio\Services\ConfigurationService;
 use Waldhacker\Plausibleio\Services\PlausibleService;
 
 class SourceDataWidget implements WidgetInterface, AdditionalCssInterface, RequireJsModuleInterface
 {
+    private LoggerInterface $logger;
     private PageRenderer $pageRenderer;
     private StandaloneView $view;
     private WidgetConfigurationInterface $configuration;
-    private SourceDataProvider $dataProvider;
     private PlausibleService $plausibleService;
     private ConfigurationService $configurationService;
-    private array $options;
 
     public function __construct(
+        LoggerInterface $logger,
         PageRenderer $pageRenderer,
         StandaloneView $view,
         WidgetConfigurationInterface $configuration,
-        SourceDataProvider $dataProvider,
         PlausibleService $plausibleService,
         ConfigurationService $configurationService,
         array $options = []
     ) {
+        $this->logger = $logger;
         $this->pageRenderer = $pageRenderer;
         $this->view = $view;
         $this->configuration = $configuration;
-        $this->dataProvider = $dataProvider;
         $this->plausibleService = $plausibleService;
         $this->configurationService = $configurationService;
-        $this->options = $options;
+
+        if (!empty($options)) {
+            $this->logger->warning('Support for widget configuration overrides through Service.yaml ($options) has been removed. They no longer have any effect.');
+        }
+
         $this->preparePageRenderer();
     }
 
     public function renderWidgetContent(): string
     {
+        $plausibleSiteId = $this->configurationService->getPlausibleSiteIdFromUserConfiguration();
+
         $this->view->setTemplate('BaseTabs');
         $this->view->assignMultiple([
             'id' => $this->plausibleService->getRandomId('sourceDataWidget'),
             'label' => 'widget.sourceData.label',
-            'options' => $this->options,
             'configuration' => $this->configuration,
-            'validConfiguration' => $this->configurationService->isValidConfiguration(),
+            'validConfiguration' => $this->configurationService->isValidConfiguration($plausibleSiteId),
             'timeSelectorConfig' => [
                 'items' => $this->configurationService->getTimeFrames(),
-                'selected' => $this->configurationService->getDefaultTimeFrameValue(),
+                'selected' => $this->configurationService->getTimeFrameValueFromUserConfiguration(),
+            ],
+            'siteSelectorConfig' => [
+                'items' => $this->configurationService->getAvailablePlausibleSiteIds(),
+                'selected' => $plausibleSiteId,
             ],
             'widgetType' => 'sourceChart',
             'tabs' => [

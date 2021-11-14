@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<xliff version="1.0">
+	<file source-language="en" datatype="plaintext" original="messages" date="2021-11-13T13:37:00Z">
+		<body>
+			<trans-unit id="baseUrl.title">
+				<source>Plausible API base url</source>
+			</trans-unit>
+			<trans-unit id="baseUrl.description">
+				<source>If you are using a self-hosted Plausible instance, add your Plausible domain here (https://your-custom-domain/)</source>
+			</trans-unit>
+
+			<trans-unit id="siteId.title">
+				<source>Site</source>
+			</trans-unit>
+			<trans-unit id="siteId.description">
+				<source>Enter your Plausible site ID (domain) here</source>
+			</trans-unit>
+
+			<trans-unit id="apiKey.title">
+				<source>Plausible API Key</source>
+			</trans-unit>
+			<trans-unit id="apiKey.description">
+				<source>You must set a token here - generate on in your Plausible instance -> User Settings -> API keys</source>
+			</trans-unit>
+
+			<trans-unit id="includeTrackingScript.title">
+				<source>Auto-Include Plausible tracking snippet</source>
+			</trans-unit>
+			<trans-unit id="includeTrackingScript.description">
+				<source>Automatically adds the Plausible tracking script to the frontend</source>
+			</trans-unit>
+
+			<trans-unit id="trackingScriptBaseUrl.title">
+				<source>Plausible tracking snippet Base URL</source>
+			</trans-unit>
+			<trans-unit id="trackingScriptBaseUrl.description">
+				<source>Most likely the same as "Plausible API base url". If you are using a self-hosted Plausible instance, use your Plausible domain here (https://your-custom-domain/)</source>
+			</trans-unit>
+
+			<trans-unit id="trackingScriptType.title">
+				<source>Plausible tracking snippet Type</source>
+			</trans-unit>
+			<trans-unit id="trackingScriptType.description">
+				<source>Choose which type of script to include (read more: https://plausible.io/docs/script-extensions)</source>
+			</trans-unit>
+
+			<trans-unit id="site.tab">
+				<source>Plausible Analytics</source>
+			</trans-unit>
+		</body>
+	</file>
+</xliff>

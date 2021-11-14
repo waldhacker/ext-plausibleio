@@ -18,20 +18,38 @@ declare(strict_types=1);
 
 namespace Waldhacker\Plausibleio\Dashboard\DataProvider;
 
-use League\ISO3166\Exception\DomainException;
-use League\ISO3166\ISO3166;
-use Waldhacker\Plausibleio\Services\ConfigurationService;
+use Waldhacker\Plausibleio\Services\ISO3166Service;
 use Waldhacker\Plausibleio\Services\PlausibleService;
 
 class CountryMapDataProvider
 {
     private PlausibleService $plausibleService;
-    private ConfigurationService $configurationService;
+    private ISO3166Service $ISO3166Service;
 
-    public function __construct(PlausibleService $plausibleService, ConfigurationService $configurationService)
-    {
+    public function __construct(
+        PlausibleService $plausibleService,
+        ISO3166Service $ISO3166Service
+    ) {
         $this->plausibleService = $plausibleService;
-        $this->configurationService = $configurationService;
+        $this->ISO3166Service = $ISO3166Service;
+    }
+
+    public function getCountryDataForDataMap(string $plausibleSiteId, string $timeFrame): array
+    {
+        return $this->plausibleToDataMap($this->getCountryData($plausibleSiteId, $timeFrame));
+    }
+
+    private function getCountryData(string $plausibleSiteId, string $timeFrame): array
+    {
+        $endpoint = 'api/v1/stats/breakdown?';
+        $params = [
+            'site_id' => $plausibleSiteId,
+            'period' => $timeFrame,
+            'property' => 'visit:country',
+        ];
+
+        $responseData = $this->plausibleService->sendAuthorizedRequest($plausibleSiteId, $endpoint, $params);
+        return is_array($responseData) ? $responseData : [];
     }
 
     private function plausibleToDataMap(array $data): array
@@ -39,45 +57,22 @@ class CountryMapDataProvider
         $result = [];
         foreach ($data as $item) {
             if (
-                !is_object($item)
-                || !property_exists($item, 'country')
-                || !property_exists($item, 'visitors')
+                !is_array($item)
+                || !isset($item['country'], $item['visitors'])
             ) {
                 continue;
             }
-
-            try {
-                $iso3166Data = (new ISO3166())->alpha2($item->country);
-            } catch (DomainException $e) {
+            $iso3166Data = $this->ISO3166Service->alpha2($item['country']);
+            if ($iso3166Data === null) {
                 continue;
             }
 
             $result[] = [
-                $iso3166Data['alpha3'],
-                $item->visitors
+                $iso3166Data[ISO3166Service::ALPHA3],
+                $item['visitors']
             ];
         }
 
         return $result;
-    }
-
-    public function getCountryData(?string $timeFrame = null, ?string $site = null): array
-    {
-        $timeFrame = $timeFrame ?? $this->configurationService->getDefaultTimeFrameValue();
-        $site = $site ?? $this->configurationService->getDefaultSite();
-
-        $endpoint = 'api/v1/stats/breakdown?';
-        $params = [
-            'site_id' => $site,
-            'period' => $timeFrame,
-            'property' => 'visit:country',
-        ];
-
-        return $this->plausibleService->sendAuthorizedRequest($endpoint, $params);
-    }
-
-    public function getCountryDataForDataMap(?string $timeFrame = null, ?string $site = null): array
-    {
-        return $this->plausibleToDataMap($this->getCountryData($timeFrame, $site));
     }
 }

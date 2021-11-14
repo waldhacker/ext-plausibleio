@@ -22,6 +22,7 @@ use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
+use TYPO3\CMS\Core\Utility\MathUtility;
 
 class PlausibleService implements LoggerAwareInterface
 {
@@ -47,31 +48,64 @@ class PlausibleService implements LoggerAwareInterface
     }
 
     /**
-     * @return mixed Endpoint /api/v1/stats/realtime/visitors returns an int,
-     *               /api/v1/stats/aggregate an object and the rest an array.
+     * @return array|int|null Endpoint /api/v1/stats/realtime/visitors
+     *                        returns an int and the rest an array.
      */
-    public function sendAuthorizedRequest(string $endpoint, array $params)
+    public function sendAuthorizedRequest(string $plausibleSiteId, string $endpoint, array $params)
     {
+        $apiBaseUrl = $this->configurationService->getApiBaseUrl($plausibleSiteId);
+        $apiKey = $this->configurationService->getApiKey($plausibleSiteId);
+
         $uri = $endpoint . http_build_query($params);
-        $baseDomain = $this->configurationService->getBaseUrl();
-        $uri = $baseDomain . $uri;
+        $uri = rtrim($apiBaseUrl, '/') . '/' . ltrim($uri, '/');
 
         $dataRequest = $this->factory
             ->createRequest('GET', $uri)
-            ->withHeader('authorization', 'Bearer ' . $this->configurationService->getApiKey());
+            ->withHeader('authorization', 'Bearer ' . $apiKey);
 
         $response = $this->client->sendRequest($dataRequest);
         if ($response->getStatusCode() !== 200) {
-            $this->logger->warning('Something went wrong while fetching analytics. ' . $response->getReasonPhrase());
-            return [];
+            if ($this->logger !== null) {
+                $this->logger->warning(sprintf(
+                    'Something went wrong while fetching plausible endpoint "%s" for site "%s": %s',
+                    $endpoint,
+                    $plausibleSiteId,
+                    $response->getReasonPhrase()
+                ));
+            }
+            return null;
         }
+
         $responseBody = (string)$response->getBody();
-
         // endpoint /api/v1/stats/realtime/visitors returns only a number
-        if (is_numeric($responseBody)) {
-            $responseBody = '{"results":' . $responseBody . '}';
+        if (MathUtility::canBeInterpretedAsInteger($responseBody)) {
+            return (int)$responseBody;
         }
 
-        return (json_decode($responseBody, false, 512, JSON_THROW_ON_ERROR))->results;
+        $results = null;
+        try {
+            $responseData = json_decode($responseBody, true, 512, JSON_THROW_ON_ERROR);
+            $results = $responseData['results'] ?? null;
+        } catch (\JsonException $e) {
+            if ($this->logger !== null) {
+                $this->logger->warning(sprintf(
+                    'Something went wrong while fetching plausible endpoint "%s" for site "%s": %s',
+                    $endpoint,
+                    $plausibleSiteId,
+                    $e->getMessage()
+                ));
+            }
+        }
+
+        if ($results === null) {
+            if ($this->logger !== null) {
+                $this->logger->warning(sprintf(
+                    'Something went wrong while fetching plausible endpoint "%s"',
+                    $endpoint
+                ));
+            }
+        }
+
+        return $results;
     }
 }

@@ -18,68 +18,72 @@ declare(strict_types=1);
 
 namespace Waldhacker\Plausibleio\Dashboard\DataProvider;
 
-use Waldhacker\Plausibleio\Services\ConfigurationService;
 use Waldhacker\Plausibleio\Services\PlausibleService;
 
 class PageDataProvider
 {
     private PlausibleService $plausibleService;
-    private ConfigurationService $configurationService;
 
-    public function __construct(PlausibleService $plausibleService, ConfigurationService $configurationService)
+    public function __construct(PlausibleService $plausibleService)
     {
         $this->plausibleService = $plausibleService;
-        $this->configurationService = $configurationService;
     }
 
-    private function getPageData(string $property, ?string $timeFrame = null, ?string $site = null): array
+    public function getTopPageData(string $plausibleSiteId, string $timeFrame): array
     {
-        $timeFrame = $timeFrame ?? $this->configurationService->getDefaultTimeFrameValue();
-        $site = $site ?? $this->configurationService->getDefaultSite();
+        $map = [];
+        $result = $this->getData($plausibleSiteId, $timeFrame, 'event:page');
 
+        foreach ($result as $item) {
+            if (!isset($item['page'], $item['visitors'])) {
+                continue;
+            }
+            $map[] = ['label' => $item['page'], 'visitors' => $item['visitors']];
+        }
+
+        return $map;
+    }
+
+    public function getEntryPageData(string $plausibleSiteId, string $timeFrame): array
+    {
+        $map = [];
+        $result = $this->getData($plausibleSiteId, $timeFrame, 'visit:entry_page');
+
+        foreach ($result as $item) {
+            if (!isset($item['entry_page'], $item['visitors'])) {
+                continue;
+            }
+            $map[] = ['label' => $item['entry_page'], 'visitors' => $item['visitors']];
+        }
+
+        return $map;
+    }
+
+    public function getExitPageData(string $plausibleSiteId, string $timeFrame): array
+    {
+        $map = [];
+        $result = $this->getData($plausibleSiteId, $timeFrame, 'visit:exit_page');
+
+        foreach ($result as $item) {
+            if (!isset($item['exit_page'], $item['visitors'])) {
+                continue;
+            }
+            $map[] = ['label' => $item['exit_page'], 'visitors' => $item['visitors']];
+        }
+
+        return $map;
+    }
+
+    private function getData(string $plausibleSiteId, string $timeFrame, string $property): array
+    {
         $endpoint = 'api/v1/stats/breakdown?';
         $params = [
-            'site_id' => $site,
+            'site_id' => $plausibleSiteId,
             'period' => $timeFrame,
             'property' => $property
         ];
 
-        return $this->plausibleService->sendAuthorizedRequest($endpoint, $params);
-    }
-
-    public function getTopPageData(?string $timeFrame = null, ?string $site = null): array
-    {
-        $map = [];
-        $result = $this->getPageData('event:page', $timeFrame, $site);
-
-        foreach ($result as $item) {
-            $map[] = ['label' => $item->page, 'visitors' => $item->visitors];
-        }
-
-        return $map;
-    }
-
-    public function getEntryPageData(?string $timeFrame = null, ?string $site = null): array
-    {
-        $map = [];
-        $result = $this->getPageData('visit:entry_page', $timeFrame, $site);
-
-        foreach ($result as $item) {
-            $map[] = ['label' => $item->entry_page, 'visitors' => $item->visitors];
-        }
-
-        return $map;
-    }
-
-    public function getExitPageData(?string $timeFrame = null, ?string $site = null): array
-    {
-        $map = [];
-        $result = $this->getPageData('visit:exit_page', $timeFrame, $site);
-
-        foreach ($result as $item) {
-            $map[] = ['label' => $item->exit_page, 'visitors' => $item->visitors];
-        }
-
-        return $map;
+        $responseData = $this->plausibleService->sendAuthorizedRequest($plausibleSiteId, $endpoint, $params);
+        return is_array($responseData) ? $responseData : [];
     }
 }

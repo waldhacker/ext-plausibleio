@@ -42,13 +42,20 @@ class CountryMapDataWidgetController
 
     public function __invoke(ServerRequestInterface $request): ResponseInterface
     {
-        $timeFrame = $request->getQueryParams()['timeFrame'] ?? false;
-        $site = $request->getQueryParams()['site'] ?? $this->configurationService->getDefaultSite();
-        if (!in_array($timeFrame, $this->configurationService->getTimeFrameValues(), true) || $timeFrame === false) {
-            $timeFrame = $this->configurationService->getDefaultTimeFrameValue();
+        $plausibleSiteId = $request->getQueryParams()['siteId'] ?? false;
+        if (!in_array($plausibleSiteId, $this->configurationService->getAvailablePlausibleSiteIds(), true) || $plausibleSiteId === false) {
+            $plausibleSiteId = $this->configurationService->getPlausibleSiteIdFromUserConfiguration();
         }
 
-        $data = $this->countryMapDataProvider->getCountryDataForDataMap($timeFrame, $site);
+        $timeFrame = $request->getQueryParams()['timeFrame'] ?? false;
+        if (!in_array($timeFrame, $this->configurationService->getTimeFrameValues(), true) || $timeFrame === false) {
+            $timeFrame = $this->configurationService->getTimeFrameValueFromUserConfiguration();
+        }
+
+        $this->configurationService->persistPlausibleSiteIdInUserSession($plausibleSiteId);
+        $this->configurationService->persistTimeFrameValueInUserSession($timeFrame);
+
+        $data = $this->countryMapDataProvider->getCountryDataForDataMap($plausibleSiteId, $timeFrame);
 
         $response = $this->responseFactory->createResponse(200)
             ->withHeader('Content-Type', 'application/json');

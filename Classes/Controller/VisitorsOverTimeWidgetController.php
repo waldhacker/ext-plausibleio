@@ -42,15 +42,23 @@ class VisitorsOverTimeWidgetController
 
     public function __invoke(ServerRequestInterface $request): ResponseInterface
     {
-        $timeFrame = $request->getQueryParams()['timeFrame'] ?? false;
-        $site = $request->getQueryParams()['site'] ?? $this->configurationService->getDefaultSite();
-        if (!in_array($timeFrame, $this->configurationService->getTimeFrameValues(), true) || $timeFrame === false) {
-            $timeFrame = $this->configurationService->getDefaultTimeFrameValue();
+        $plausibleSiteId = $request->getQueryParams()['siteId'] ?? false;
+        if (!in_array($plausibleSiteId, $this->configurationService->getAvailablePlausibleSiteIds(), true) || $plausibleSiteId === false) {
+            $plausibleSiteId = $this->configurationService->getPlausibleSiteIdFromUserConfiguration();
         }
 
-        $chartData = $this->visitorsOverTimeDataProvider->getChartData($timeFrame, $site);
-        $overviewData = $this->visitorsOverTimeDataProvider->getOverview($timeFrame, $site);
-        $overviewData['current_visitors'] = $this->visitorsOverTimeDataProvider->getCurrentVisitors();
+        $timeFrame = $request->getQueryParams()['timeFrame'] ?? false;
+        if (!in_array($timeFrame, $this->configurationService->getTimeFrameValues(), true) || $timeFrame === false) {
+            $timeFrame = $this->configurationService->getTimeFrameValueFromUserConfiguration();
+        }
+
+        $this->configurationService->persistPlausibleSiteIdInUserSession($plausibleSiteId);
+        $this->configurationService->persistTimeFrameValueInUserSession($timeFrame);
+
+        $chartData = $this->visitorsOverTimeDataProvider->getChartData($plausibleSiteId, $timeFrame);
+        $overviewData = $this->visitorsOverTimeDataProvider->getOverview($plausibleSiteId, $timeFrame);
+        $overviewData['current_visitors'] = $this->visitorsOverTimeDataProvider->getCurrentVisitors($plausibleSiteId);
+
         $data = [
             'chartData' => $chartData,
             'overViewData' => $overviewData,

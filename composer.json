@@ -9,15 +9,9 @@
     },
     "authors": [
         {
-            "name": "Ralf Zimmermann",
+            "name": "waldhacker",
             "email": "hello@waldhacker.dev",
             "homepage": "https://waldhacker.dev",
-            "role": "Developer"
-        },
-        {
-            "name": "Susanne Moog",
-            "email": "susanne@waldhacker.dev",
-            "homepage": "https://susi.dev",
             "role": "Developer"
         }
     ],

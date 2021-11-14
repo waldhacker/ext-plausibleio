@@ -30,8 +30,7 @@
         "psr/http-factory": "*",
         "psr/http-client": "*",
         "psr/log": "*",
-        "ext-json": "*",
-        "league/iso3166": "^4.0"
+        "ext-json": "*"
     },
     "require-dev": {
         "roave/security-advisories": "dev-latest",
@@ -81,7 +80,7 @@
             "phpstan analyze --configuration build/phpstan.neon"
         ],
         "ci:stan:baseline": [
-            "phpstan analyze --configuration build/phpstan.neon --generate-baseline=build/phpstan-baseline.neon"
+            "phpstan analyze --configuration build/phpstan.neon"
         ],
         "ci:psalm": [
             "psalm -c build/psalm.xml"

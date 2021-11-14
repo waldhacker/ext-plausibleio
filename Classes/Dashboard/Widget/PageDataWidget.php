@@ -36,7 +36,6 @@ class PageDataWidget implements WidgetInterface, AdditionalCssInterface, Require
     private PageDataProvider $dataProvider;
     private PlausibleService $plausibleService;
     private ConfigurationService $configurationService;
-    private array $options;
 
     public function __construct(
         PageRenderer $pageRenderer,
@@ -44,8 +43,7 @@ class PageDataWidget implements WidgetInterface, AdditionalCssInterface, Require
         WidgetConfigurationInterface $configuration,
         PageDataProvider $dataProvider,
         PlausibleService $plausibleService,
-        ConfigurationService $configurationService,
-        array $options = []
+        ConfigurationService $configurationService
     ) {
         $this->pageRenderer = $pageRenderer;
         $this->view = $view;
@@ -53,22 +51,26 @@ class PageDataWidget implements WidgetInterface, AdditionalCssInterface, Require
         $this->dataProvider = $dataProvider;
         $this->plausibleService = $plausibleService;
         $this->configurationService = $configurationService;
-        $this->options = $options;
         $this->preparePageRenderer();
     }
 
     public function renderWidgetContent(): string
     {
+        $plausibleSiteId = $this->configurationService->getPlausibleSiteIdFromUserConfiguration();
+
         $this->view->setTemplate('BaseTabs');
         $this->view->assignMultiple([
             'id' => $this->plausibleService->getRandomId('pageDataWidget'),
             'label' => 'widget.pageData.label',
-            'options' => $this->options,
             'configuration' => $this->configuration,
-            'validConfiguration' => $this->configurationService->isValidConfiguration(),
+            'validConfiguration' => $this->configurationService->isValidConfiguration($plausibleSiteId),
             'timeSelectorConfig' => [
                 'items' => $this->configurationService->getTimeFrames(),
-                'selected' => $this->configurationService->getDefaultTimeFrameValue(),
+                'selected' => $this->configurationService->getTimeFrameValueFromUserConfiguration(),
+            ],
+            'siteSelectorConfig' => [
+                'items' => $this->configurationService->getAvailablePlausibleSiteIds(),
+                'selected' => $plausibleSiteId,
             ],
             'widgetType' => 'pageChart',
             'tabs' => [

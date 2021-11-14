@@ -42,28 +42,35 @@ class SourceDataWidgetController
 
     public function __invoke(ServerRequestInterface $request): ResponseInterface
     {
-        $timeFrame = $request->getQueryParams()['timeFrame'] ?? false;
-        $site = $request->getQueryParams()['site'] ?? $this->configurationService->getDefaultSite();
-        if (!in_array($timeFrame, $this->configurationService->getTimeFrameValues(), true) || $timeFrame === false) {
-            $timeFrame = $this->configurationService->getDefaultTimeFrameValue();
+        $plausibleSiteId = $request->getQueryParams()['siteId'] ?? false;
+        if (!in_array($plausibleSiteId, $this->configurationService->getAvailablePlausibleSiteIds(), true) || $plausibleSiteId === false) {
+            $plausibleSiteId = $this->configurationService->getPlausibleSiteIdFromUserConfiguration();
         }
+
+        $timeFrame = $request->getQueryParams()['timeFrame'] ?? false;
+        if (!in_array($timeFrame, $this->configurationService->getTimeFrameValues(), true) || $timeFrame === false) {
+            $timeFrame = $this->configurationService->getTimeFrameValueFromUserConfiguration();
+        }
+
+        $this->configurationService->persistPlausibleSiteIdInUserSession($plausibleSiteId);
+        $this->configurationService->persistTimeFrameValueInUserSession($timeFrame);
 
         $data = [
             [
                 'tab' => 'allsources',
-                'data'=> $this->dataProvider->getAllSourcesData($timeFrame, $site),
+                'data'=> $this->dataProvider->getAllSourcesData($plausibleSiteId, $timeFrame),
             ],
             [
                 'tab' => 'mediumsource',
-                'data' => $this->dataProvider->getMediumData($timeFrame, $site),
+                'data' => $this->dataProvider->getMediumData($plausibleSiteId, $timeFrame),
             ],
             [
                 'tab' => 'sourcesource',
-                'data' => $this->dataProvider->getSourceData($timeFrame, $site),
+                'data' => $this->dataProvider->getSourceData($plausibleSiteId, $timeFrame),
             ],
             [
                 'tab' => 'campaignsource',
-                'data' => $this->dataProvider->getCampaignData($timeFrame, $site),
+                'data' => $this->dataProvider->getCampaignData($plausibleSiteId, $timeFrame),
             ],
         ];
 

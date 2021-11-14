@@ -20,9 +20,7 @@ define([
   'TYPO3/CMS/Plausibleio/Contrib/d3-format',
   'TYPO3/CMS/Plausibleio/WidgetService',
 ], function (D3, Datamap, AjaxRequest, RegularEvent, D3Format, WidgetService) {
-  /* The configuration of requirejs is done in
-   * CountryMapDataWidget->preparePageRenderer
-   */
+  'use strict';
 
   class CountryMapDataWidget {
     constructor() {
@@ -30,7 +28,8 @@ define([
         dashboardItemSelector: '[data-widget-key="plausible.countrymapdata"]',
         widgetContainerSelector: '[data-widget-type="countryMapData"]',
         timeframeSelectSelector: '[data-widget-plausible-timeframe-select]',
-        visitorsCountryEndpoint: TYPO3.settings.ajaxUrls.plausible_countrymapdata,
+        siteSelector: '[data-widget-plausible-sites-select]',
+        visitorsCountryEndpoint: TYPO3.settings.ajaxUrls.plausible_countrymapdata
       };
 
       this.initialize();
@@ -39,7 +38,8 @@ define([
     requestUpdatedData(evt, map) {
       new AjaxRequest(this.options.visitorsCountryEndpoint)
         .withQueryArguments({
-          timeFrame: evt.detail.timeFrame
+          timeFrame: evt.detail.timeFrame,
+          siteId: evt.detail.siteId
         })
         .get()
         .then(async (response) => {
@@ -49,7 +49,7 @@ define([
     }
 
     setMapData(map, data) {
-      if (map && data && data.length) {
+      if (map && data && data.length > 0) {
         /* Highmap code taken from: */
         /* https://github.com/markmarkoh/datamaps/blob/master/README.md#getting-started */
 
@@ -86,18 +86,21 @@ define([
         // reset all countries to default color
         map.updateChoropleth(null, {reset: true});
         map.updateChoropleth(dataset);
+      } else {
+        map.updateChoropleth(null, {reset: true});
+        map.updateChoropleth({});
       }
     }
 
     initialize() {
       let that = this;
 
-      new RegularEvent('widgetContentRendered', function (e) {
-        e.preventDefault();
-        let widget = e.target;
+      new RegularEvent('widgetContentRendered', function (evt) {
+        evt.preventDefault();
+        let widget = evt.target;
 
         let mapElement = widget.querySelector(that.options.widgetContainerSelector);
-        if (mapElement) {
+        if (typeof(mapElement) !== 'undefined' && mapElement !== null) {
           // render map
           let map = new Datamap({
             element: mapElement,
@@ -134,8 +137,19 @@ define([
             that.requestUpdatedData(evt, map);
           });
 
-          let timeFrameSelect = e.target.querySelector(that.options.timeframeSelectSelector);
-          WidgetService.registerTimeSelector(timeFrameSelect);
+          widget.addEventListener('plausible:sitechange', function (evt) {
+            that.requestUpdatedData(evt, map);
+          });
+
+          let timeFrameSelect = widget.querySelector(that.options.timeframeSelectSelector);
+          if (typeof(timeFrameSelect) !== 'undefined' && timeFrameSelect !== null) {
+            WidgetService.registerTimeSelector(timeFrameSelect);
+          }
+
+          let siteSelect = widget.querySelector(that.options.siteSelector);
+          if (typeof(siteSelect) !== 'undefined' && siteSelect !== null) {
+            WidgetService.registerSiteSelector(siteSelect);
+          }
 
           // request and render data
           WidgetService.dispatchTimeFrameChange(widget, timeFrameSelect.value);

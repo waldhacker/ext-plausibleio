@@ -18,69 +18,73 @@ declare(strict_types=1);
 
 namespace Waldhacker\Plausibleio\Dashboard\DataProvider;
 
-use Waldhacker\Plausibleio\Services\ConfigurationService;
 use Waldhacker\Plausibleio\Services\PlausibleService;
 
 class DeviceDataProvider
 {
     private PlausibleService $plausibleService;
-    private ConfigurationService $configurationService;
 
-    public function __construct(PlausibleService $plausibleService, ConfigurationService $configurationService)
+    public function __construct(PlausibleService $plausibleService)
     {
         $this->plausibleService = $plausibleService;
-        $this->configurationService = $configurationService;
     }
 
-    private function getData(string $property, ?string $timeFrame = null, ?string $site = null): array
+    public function getBrowserData(string $plausibleSiteId, string $timeFrame): array
     {
-        $timeFrame = $timeFrame ?? $this->configurationService->getDefaultTimeFrameValue();
-        $site = $site ?? $this->configurationService->getDefaultSite();
+        $map = [];
+        $result = $this->getData($plausibleSiteId, $timeFrame, 'visit:browser');
 
+        foreach ($result as $item) {
+            if (!isset($item['browser'], $item['visitors'])) {
+                continue;
+            }
+            $map[] = ['label' => $item['browser'], 'visitors' => $item['visitors']];
+        }
+
+        return $map;
+    }
+
+    public function getOSData(string $plausibleSiteId, string $timeFrame): array
+    {
+        $map = [];
+        $result = $this->getData($plausibleSiteId, $timeFrame, 'visit:os');
+
+        foreach ($result as $item) {
+            if (!isset($item['os'], $item['visitors'])) {
+                continue;
+            }
+            $map[] = ['label' => $item['os'], 'visitors' => $item['visitors']];
+        }
+
+        return $map;
+    }
+
+    public function getDeviceData(string $plausibleSiteId, string $timeFrame): array
+    {
+        $map = [];
+        $result = $this->getData($plausibleSiteId, $timeFrame, 'visit:device');
+
+        foreach ($result as $item) {
+            if (!isset($item['device'], $item['visitors'])) {
+                continue;
+            }
+            $map[] = ['label' => $item['device'], 'visitors' => $item['visitors']];
+        }
+
+        return $map;
+    }
+
+    private function getData(string $plausibleSiteId, string $timeFrame, string $property): array
+    {
         $endpoint = 'api/v1/stats/breakdown?';
         $params = [
-            'site_id' => $site,
+            'site_id' => $plausibleSiteId,
             'period' => $timeFrame,
             'property' => $property,
             'metrics' => 'visitors',
         ];
 
-        return $this->plausibleService->sendAuthorizedRequest($endpoint, $params);
-    }
-
-    public function getBrowserData(?string $timeFrame = null, ?string $site = null): array
-    {
-        $map = [];
-        $result = $this->getData('visit:browser', $timeFrame, $site);
-
-        foreach ($result as $item) {
-            $map[] = ['label' => $item->browser, 'visitors' => $item->visitors];
-        }
-
-        return $map;
-    }
-
-    public function getOSData(?string $timeFrame = null, ?string $site = null): array
-    {
-        $map = [];
-        $result = $this->getData('visit:os', $timeFrame, $site);
-
-        foreach ($result as $item) {
-            $map[] = ['label' => $item->os, 'visitors' => $item->visitors];
-        }
-
-        return $map;
-    }
-
-    public function getDeviceData(?string $timeFrame = null, ?string $site = null): array
-    {
-        $map = [];
-        $result = $this->getData('visit:device', $timeFrame, $site);
-
-        foreach ($result as $item) {
-            $map[] = ['label' => $item->device, 'visitors' => $item->visitors];
-        }
-
-        return $map;
+        $responseData = $this->plausibleService->sendAuthorizedRequest($plausibleSiteId, $endpoint, $params);
+        return is_array($responseData) ? $responseData : [];
     }
 }

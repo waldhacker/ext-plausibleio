@@ -18,81 +18,88 @@ declare(strict_types=1);
 
 namespace Waldhacker\Plausibleio\Dashboard\DataProvider;
 
-use Waldhacker\Plausibleio\Services\ConfigurationService;
 use Waldhacker\Plausibleio\Services\PlausibleService;
 
 class SourceDataProvider
 {
     private PlausibleService $plausibleService;
-    private ConfigurationService $configurationService;
 
-    public function __construct(PlausibleService $plausibleService, ConfigurationService $configurationService)
+    public function __construct(PlausibleService $plausibleService)
     {
         $this->plausibleService = $plausibleService;
-        $this->configurationService = $configurationService;
     }
 
-    public function getData(string $property, ?string $timeFrame = null, ?string $site = null): array
+    public function getAllSourcesData(string $plausibleSiteId, string $timeFrame): array
     {
-        $timeFrame = $timeFrame ?? $this->configurationService->getDefaultTimeFrameValue();
-        $site = $site ?? $this->configurationService->getDefaultSite();
+        $map = [];
+        $result = $this->getData($plausibleSiteId, $timeFrame, 'visit:source');
 
+        foreach ($result as $item) {
+            if (!isset($item['source'], $item['visitors'])) {
+                continue;
+            }
+            $map[] = ['label' => $item['source'], 'visitors' => $item['visitors']];
+        }
+
+        return $map;
+    }
+
+    public function getMediumData(string $plausibleSiteId, string $timeFrame): array
+    {
+        $map = [];
+        $result = $this->getData($plausibleSiteId, $timeFrame, 'visit:utm_medium');
+
+        foreach ($result as $item) {
+            if (!isset($item['utm_medium'], $item['visitors'])) {
+                continue;
+            }
+            $map[] = ['label' => $item['utm_medium'], 'visitors' => $item['visitors']];
+        }
+
+        return $map;
+    }
+
+    public function getSourceData(string $plausibleSiteId, string $timeFrame): array
+    {
+        $map = [];
+        $result = $this->getData($plausibleSiteId, $timeFrame, 'visit:utm_source');
+
+        foreach ($result as $item) {
+            if (!isset($item['utm_source'], $item['visitors'])) {
+                continue;
+            }
+            $map[] = ['label' => $item['utm_source'], 'visitors' => $item['visitors']];
+        }
+
+        return $map;
+    }
+
+    public function getCampaignData(string $plausibleSiteId, string $timeFrame): array
+    {
+        $map = [];
+        $result = $this->getData($plausibleSiteId, $timeFrame, 'visit:utm_campaign');
+
+        foreach ($result as $item) {
+            if (!isset($item['utm_campaign'], $item['visitors'])) {
+                continue;
+            }
+            $map[] = ['label' => $item['utm_campaign'], 'visitors' => $item['visitors']];
+        }
+
+        return $map;
+    }
+
+    private function getData(string $plausibleSiteId, string $timeFrame, string $property): array
+    {
         $endpoint = 'api/v1/stats/breakdown?';
         $params = [
-            'site_id' => $site,
+            'site_id' => $plausibleSiteId,
             'period' => $timeFrame,
             'property' => $property,
             'metrics' => 'visitors',
         ];
 
-        return $this->plausibleService->sendAuthorizedRequest($endpoint, $params);
-    }
-
-    public function getAllSourcesData(?string $timeFrame = null, ?string $site = null): array
-    {
-        $map = [];
-        $result = $this->getData('visit:source', $timeFrame, $site);
-
-        foreach ($result as $item) {
-            $map[] = ['label' => $item->source, 'visitors' => $item->visitors];
-        }
-
-        return $map;
-    }
-
-    public function getMediumData(?string $timeFrame = null, ?string $site = null): array
-    {
-        $map = [];
-        $result = $this->getData('visit:utm_medium', $timeFrame, $site);
-
-        foreach ($result as $item) {
-            $map[] = ['label' => $item->utm_medium, 'visitors' => $item->visitors];
-        }
-
-        return $map;
-    }
-
-    public function getSourceData(?string $timeFrame = null, ?string $site = null): array
-    {
-        $map = [];
-        $result = $this->getData('visit:utm_source', $timeFrame, $site);
-
-        foreach ($result as $item) {
-            $map[] = ['label' => $item->utm_source, 'visitors' => $item->visitors];
-        }
-
-        return $map;
-    }
-
-    public function getCampaignData(?string $timeFrame = null, ?string $site = null): array
-    {
-        $map = [];
-        $result = $this->getData('visit:utm_campaign', $timeFrame, $site);
-
-        foreach ($result as $item) {
-            $map[] = ['label' => $item->utm_campaign, 'visitors' => $item->visitors];
-        }
-
-        return $map;
+        $responseData = $this->plausibleService->sendAuthorizedRequest($plausibleSiteId, $endpoint, $params);
+        return is_array($responseData) ? $responseData : [];
     }
 }

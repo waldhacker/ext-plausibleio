@@ -13,12 +13,11 @@
  */
 
 define([
-  'lit',
   'TYPO3/CMS/Core/Ajax/AjaxRequest',
   'TYPO3/CMS/Core/Event/RegularEvent',
-  'TYPO3/CMS/Plausibleio/Contrib/d3-format',
   'TYPO3/CMS/Plausibleio/WidgetService',
-], function (lit, AjaxRequest, RegularEvent, D3Format, WidgetService) {
+], function (AjaxRequest, RegularEvent, WidgetService) {
+  'use strict';
 
   class DeviceDataWidget {
     constructor() {
@@ -27,7 +26,8 @@ define([
         widgetContainerSelector: '[data-widget-type="deviceChart"]',
         tabSelector: '[data-widget-tab-id="${tabId}"]',
         timeframeSelectSelector: '[data-widget-plausible-timeframe-select]',
-        pageEndpoint: TYPO3.settings.ajaxUrls.plausible_devicedata,
+        siteSelector: '[data-widget-plausible-sites-select]',
+        pageEndpoint: TYPO3.settings.ajaxUrls.plausible_devicedata
       };
 
       this.initialize();
@@ -36,7 +36,8 @@ define([
     requestUpdatedData(evt, chartDiv) {
       new AjaxRequest(this.options.pageEndpoint)
         .withQueryArguments({
-          timeFrame: evt.detail.timeFrame
+          timeFrame: evt.detail.timeFrame,
+          siteId: evt.detail.siteId
         })
         .get()
         .then(async (response) => {
@@ -48,10 +49,10 @@ define([
     renderChart(chartDiv, data) {
       let that = this;
 
-      if (chartDiv && data && data.length) {
+      if (typeof(chartDiv) !== 'undefined' && chartDiv !== null && data && data.length > 0) {
         data.forEach(function (tabData) {
           let tab = chartDiv.querySelector(that.options.tabSelector.replace('${tabId}', tabData.tab));
-          if (tab) {
+          if (typeof(tab) !== 'undefined' && tab !== null) {
             WidgetService.renderBarChart(tab, tabData.data, true);
           }
         });
@@ -61,23 +62,33 @@ define([
     initialize() {
       let that = this;
 
-      new RegularEvent('widgetContentRendered', function (e) {
-        e.preventDefault();
-        let widget = e.target;
+      new RegularEvent('widgetContentRendered', function (evt) {
+        evt.preventDefault();
+        let widget = evt.target;
 
         let pageChartElement = widget.querySelector(that.options.widgetContainerSelector);
-        if (pageChartElement) {
+        if (typeof(pageChartElement) !== 'undefined' && pageChartElement !== null) {
           widget.addEventListener('plausible:timeframechange', function (evt) {
             that.requestUpdatedData(evt, pageChartElement);
           });
 
-          let timeFrameSelect = e.target.querySelector(that.options.timeframeSelectSelector);
-          WidgetService.registerTimeSelector(timeFrameSelect);
+          widget.addEventListener('plausible:sitechange', function (evt) {
+            that.requestUpdatedData(evt, pageChartElement);
+          });
+
+          let timeFrameSelect = widget.querySelector(that.options.timeframeSelectSelector);
+          if (typeof(timeFrameSelect) !== 'undefined' && timeFrameSelect !== null) {
+            WidgetService.registerTimeSelector(timeFrameSelect);
+          }
+
+          let siteSelect = widget.querySelector(that.options.siteSelector);
+          if (typeof(siteSelect) !== 'undefined' && siteSelect !== null) {
+            WidgetService.registerSiteSelector(siteSelect);
+          }
 
           // request and render data
           WidgetService.dispatchTimeFrameChange(widget, timeFrameSelect.value);
         }
-
       }).delegateTo(document, this.options.dashboardItemSelector);
     }
   }

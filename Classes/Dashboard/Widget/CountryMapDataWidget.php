@@ -24,7 +24,6 @@ use TYPO3\CMS\Dashboard\Widgets\RequireJsModuleInterface;
 use TYPO3\CMS\Dashboard\Widgets\WidgetConfigurationInterface;
 use TYPO3\CMS\Dashboard\Widgets\WidgetInterface;
 use TYPO3\CMS\Fluid\View\StandaloneView;
-use Waldhacker\Plausibleio\Dashboard\DataProvider\CountryMapDataProvider;
 use Waldhacker\Plausibleio\Services\ConfigurationService;
 use Waldhacker\Plausibleio\Services\PlausibleService;
 
@@ -33,42 +32,41 @@ class CountryMapDataWidget implements WidgetInterface, RequireJsModuleInterface,
     private PageRenderer $pageRenderer;
     private StandaloneView $view;
     private WidgetConfigurationInterface $configuration;
-    private CountryMapDataProvider $dataProvider;
     private PlausibleService $plausibleService;
     private ConfigurationService $configurationService;
-    private array $options;
 
     public function __construct(
         PageRenderer $pageRenderer,
         StandaloneView $view,
         WidgetConfigurationInterface $configuration,
-        CountryMapDataProvider $dataProvider,
         PlausibleService $plausibleService,
-        ConfigurationService $configurationService,
-        array $options = []
+        ConfigurationService $configurationService
     ) {
         $this->pageRenderer = $pageRenderer;
         $this->view = $view;
         $this->configuration = $configuration;
-        $this->dataProvider = $dataProvider;
         $this->plausibleService = $plausibleService;
         $this->configurationService = $configurationService;
-        $this->options = $options;
         $this->preparePageRenderer();
     }
 
     public function renderWidgetContent(): string
     {
+        $plausibleSiteId = $this->configurationService->getPlausibleSiteIdFromUserConfiguration();
+
         $this->view->setTemplate('CountryMapDataWidget');
         $this->view->assignMultiple([
             'id' => $this->plausibleService->getRandomId('countryMapDataWidget'),
             'label' => 'widget.countryMapData.label',
-            'options' => $this->options,
             'configuration' => $this->configuration,
-            'validConfiguration' => $this->configurationService->isValidConfiguration(),
+            'validConfiguration' => $this->configurationService->isValidConfiguration($plausibleSiteId),
             'timeSelectorConfig' => [
                 'items' => $this->configurationService->getTimeFrames(),
-                'selected' => $this->configurationService->getDefaultTimeFrameValue(),
+                'selected' => $this->configurationService->getTimeFrameValueFromUserConfiguration(),
+            ],
+            'siteSelectorConfig' => [
+                'items' => $this->configurationService->getAvailablePlausibleSiteIds(),
+                'selected' => $plausibleSiteId,
             ],
         ]);
 

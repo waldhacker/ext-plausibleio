@@ -16,6 +16,7 @@ define([
   'lit',
   'TYPO3/CMS/Plausibleio/Contrib/d3-format'
 ], function (lit, D3Format) {
+  'use strict';
 
   class WidgetService {
     constructor() {
@@ -23,45 +24,99 @@ define([
         dashBoardGridSelector: '.dashboard-grid',
         dashboardItemSelector: '.dashboard-item',
         timeFrameSelector: '[data-widget-plausible-timeframe-select]',
+        siteSelector: '[data-widget-plausible-sites-select]'
       };
     }
 
     registerTimeSelector(selectElement) {
       let that = this;
 
-      if (selectElement) {
-        selectElement.addEventListener('change', function (e) {
-          let callingSelect = e.target;
-          let dashboard = callingSelect.closest(that.options.dashBoardGridSelector);
-          let widgetsTimeFrameSelects = dashboard.querySelectorAll(that.options.timeFrameSelector);
-          widgetsTimeFrameSelects.forEach(function (select) {
-            if (select != callingSelect) {
-              select.value = callingSelect.value;
-            }
-          });
-
-          let widgets = dashboard.querySelectorAll(that.options.dashboardItemSelector);
-          widgets.forEach(function (widget) {
-            that.dispatchTimeFrameChange(widget, callingSelect.value);
-          });
-        });
+      if (typeof(selectElement) === 'undefined' || selectElement === null) {
+          return;
       }
+
+      selectElement.addEventListener('change', function (e) {
+        let callingSelect = e.target;
+        let dashboard = callingSelect.closest(that.options.dashBoardGridSelector);
+        let widgetContent = callingSelect.closest(that.options.dashboardItemSelector);
+        let widgets = dashboard.querySelectorAll(that.options.dashboardItemSelector);
+        let widgetsTimeFrameSelects = dashboard.querySelectorAll(that.options.timeFrameSelector);
+        let widgetSiteSelect = widgetContent.querySelector(that.options.siteSelector);
+
+        widgetsTimeFrameSelects.forEach(function (select) {
+          if (select !== callingSelect) {
+            select.value = callingSelect.value;
+          }
+        });
+
+        widgets.forEach(function (widget) {
+          that.dispatchTimeFrameChange(widget, widgetSiteSelect.value, callingSelect.value);
+        });
+      });
     }
 
-    dispatchTimeFrameChange(widget, timeFrame) {
-      let event = new CustomEvent('plausible:timeframechange', {detail: {timeFrame: timeFrame}});
-      if (widget)
-        widget.dispatchEvent(event);
+    registerSiteSelector(selectElement) {
+      let that = this;
+
+      if (typeof(selectElement) === 'undefined' || selectElement === null) {
+        return;
+      }
+
+      selectElement.addEventListener('change', function (e) {
+        let callingSelect = e.target;
+        let dashboard = callingSelect.closest(that.options.dashBoardGridSelector);
+        let widgetContent = callingSelect.closest(that.options.dashboardItemSelector);
+        let widgets = dashboard.querySelectorAll(that.options.dashboardItemSelector);
+        let widgetsSiteSelects = dashboard.querySelectorAll(that.options.siteSelector);
+        let widgetTimeFrameSelect = widgetContent.querySelector(that.options.timeFrameSelector);
+
+        widgetsSiteSelects.forEach(function (select) {
+          if (select !== callingSelect) {
+            select.value = callingSelect.value;
+          }
+        });
+
+        widgets.forEach(function (widget) {
+          that.dispatchSiteChange(widget, callingSelect.value, widgetTimeFrameSelect.value);
+        });
+      });
+    }
+
+    dispatchTimeFrameChange(widget, siteId, timeFrame) {
+      if (typeof(widget) === 'undefined' || widget === null) {
+        return;
+      }
+
+      let event = new CustomEvent('plausible:timeframechange', {
+        detail: {
+          siteId: siteId,
+          timeFrame: timeFrame
+        }
+      });
+      widget.dispatchEvent(event);
+    }
+
+    dispatchSiteChange(widget, siteId, timeFrame) {
+      if (typeof(widget) === 'undefined' || widget === null) {
+        return;
+      }
+
+      let event = new CustomEvent('plausible:sitechange', {
+        detail: {
+          siteId: siteId,
+          timeFrame: timeFrame
+        }
+      });
+      widget.dispatchEvent(event);
     }
 
     renderBarChart(parentElement, data, clear = false) {
-      var visitorsSum = 0;
-
-      if (!parentElement) {
+      if (typeof(parentElement) === 'undefined' || parentElement === null) {
         console.error('No parent element was specified for the bar chart.')
         return;
       }
 
+      let visitorsSum = 0;
       data.forEach(function (item) {
         visitorsSum += item.visitors;
       });

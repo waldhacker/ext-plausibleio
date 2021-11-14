@@ -13,7 +13,7 @@
 				<source>Site</source>
 			</trans-unit>
 			<trans-unit id="siteId.description">
-				<source>Enter your Plausible site ID (domain) here</source>
+				<source>Enter your Plausible site ID (domain without 'www') here</source>
 			</trans-unit>
 
 			<trans-unit id="apiKey.title">

@@ -241,7 +241,15 @@ class ConfigurationService
 
     public function isValidConfiguration(string $plausibleSiteId): bool
     {
-        return true;
+        $availablePlausibleSiteIds = $this->getAvailablePlausibleSiteIdConfigurations();
+        if (!isset($availablePlausibleSiteIds[$plausibleSiteId])) {
+            return false;
+        }
+        $plausibleConfiguration = $availablePlausibleSiteIds[$plausibleSiteId];
+
+        return !empty($plausibleConfiguration['apiUrl'])
+               && !empty($plausibleConfiguration['apiKey'])
+               && !empty($plausibleConfiguration['siteId']);
     }
 
     private function getDefaultTimeFramesFromConfiguration(): string
@@ -337,7 +345,7 @@ class ConfigurationService
                && $backendUser->doesUserHaveAccess($pageRow, Permission::PAGE_SHOW);
     }
 
-    protected function getBackendUser(): ?BackendUserAuthentication
+    private function getBackendUser(): ?BackendUserAuthentication
     {
         return $GLOBALS['BE_USER'];
     }

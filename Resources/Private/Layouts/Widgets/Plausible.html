@@ -37,23 +37,20 @@
     </div>
 </div>
 
-<f:if condition="{validConfiguration} == false">
-    <f:then>
-        <div class="alert alert-warning">
-            <f:translate key="LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widget.general.invalidConfiguration" />
-        </div>
-    </f:then>
-    <f:else>
-        <div class="widget-content-main">
-            <f:render section="main" optional="true" />
-        </div>
+<f:if condition="!{validConfiguration}">
+    <div class="alert alert-warning">
+        <f:translate key="LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widget.general.invalidConfiguration" />
+    </div>
+</f:if>
 
-        <f:variable name="footer" value="{f:render(section:'footer', optional: 'true')}" />
-        <f:if condition="{footer -> f:spaceless()}">
-            <div class="widget-content-footer">
-                {footer -> f:format.raw()}
-            </div>
-        </f:if>
-    </f:else>
+<div class="widget-content-main">
+    <f:render section="main" optional="true" />
+</div>
+
+<f:variable name="footer" value="{f:render(section:'footer', optional: 'true')}" />
+<f:if condition="{footer -> f:spaceless()}">
+    <div class="widget-content-footer">
+        {footer -> f:format.raw()}
+    </div>
 </f:if>
 </html>

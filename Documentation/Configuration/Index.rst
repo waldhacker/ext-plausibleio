@@ -158,3 +158,13 @@ into your site package :file:`Configuration/Services.yaml` file and adjust the c
       width: 'medium'
 
 Within :yaml:`$options` you have the possibility to fix a widget to a plausible site ID and/or to a time frame.
+
+Migration from version 1.x to 2.x
+=================================
+
+In version 1.x the options "Plausible API base url" (`baseUrl`), "Plausible API Key" (`apiKey`) and "Site" (`siteId`) were set within the extension configuration (:php:`$GLOBALS['TYPO3_CONF_VARS']['EXTENSIONS']['plausibleio']`).
+However, this only allowed the configuration of one Plausible site ID within the TYPO3 installation.
+
+
+These 3 configuration options have been moved to the site language configurations with version 2.x.
+You have to manually transfer the values you entered in the extension configuration (version 1.x) to the site language configuration, there is no automated migration script.

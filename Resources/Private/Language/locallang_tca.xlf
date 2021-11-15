@@ -20,7 +20,7 @@
 				<source>Plausible API Key</source>
 			</trans-unit>
 			<trans-unit id="apiKey.description">
-				<source>You must set a token here - generate on in your Plausible instance -> User Settings -> API keys</source>
+				<source>You must set a token here - generate on in your Plausible instance -> Settings -> API keys</source>
 			</trans-unit>
 
 			<trans-unit id="includeTrackingScript.title">

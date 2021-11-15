@@ -1,7 +1,7 @@
 {
     "name": "waldhacker/typo3-plausibleio",
     "type": "typo3-cms-extension",
-    "description": "TYPO3 Extension to add dashboard widgets for plausible.io statistics.",
+    "description": "Privacy-friendly analytics integration for TYPO3 CMS. Analyze your audience with Plausible Analytics and see nice dashboards with analytics data directly in the TYPO3 backend.",
     "license": ["GPL-2.0-or-later"],
     "homepage": "https://github.com/waldhacker/ext-plausibleio/",
     "support": {
@@ -18,31 +18,34 @@
     "prefer-stable": true,
     "minimum-stability": "dev",
     "require": {
-        "typo3/cms-core": "^11.0@dev | dev-master",
-        "typo3/cms-dashboard":  "^11.0@dev | dev-master",
+        "ext-json": "*",
         "psr/http-message": "*",
         "psr/http-factory": "*",
         "psr/http-client": "*",
         "psr/log": "*",
-        "ext-json": "*"
+        "typo3/cms-backend": "^11.5@dev",
+        "typo3/cms-core": "^11.5@dev",
+        "typo3/cms-dashboard":  "^11.5@dev",
+        "typo3/cms-fluid": "^11.5@dev",
+        "typo3/cms-frontend": "^11.5@dev"
     },
     "require-dev": {
-        "roave/security-advisories": "dev-latest",
-        "overtrue/phplint": "^2.0",
-        "phpstan/phpstan": "^0.12.50",
-        "phpstan/extension-installer": "^1.0",
         "friendsofphp/php-cs-fixer": "^3.0",
-        "typo3/coding-standards": "^0.4.0",
+        "helmich/typo3-typoscript-lint": "^2.3",
+        "overtrue/phplint": "^2.0",
+        "phpspec/prophecy-phpunit": "^2.0",
+        "phpstan/extension-installer": "^1.0",
+        "phpstan/phpstan": "^0.12.50",
+        "phpunit/phpunit": "^9.4",
+        "roave/security-advisories": "dev-latest",
+        "saschaegerer/phpstan-typo3": "@dev",
         "symfony/console": "^5.1",
         "symfony/yaml": "^5.1",
-        "helmich/typo3-typoscript-lint": "^2.3",
-        "saschaegerer/phpstan-typo3": "@dev",
-        "vimeo/psalm": "^3.0 | ^4.0",
-        "phpunit/phpunit": "^9.4",
-        "phpspec/prophecy-phpunit": "^2.0",
-        "typo3/testing-framework": "^6.8",
+        "typo3/cms-extensionmanager": "@dev",
         "typo3/cms-install": "@dev",
-        "typo3/cms-extensionmanager": "@dev"
+        "typo3/coding-standards": "^0.4.0",
+        "typo3/testing-framework": "^6.8",
+        "vimeo/psalm": "^3.0 | ^4.0"
     },
     "autoload": {
         "psr-4": {
@@ -51,11 +54,12 @@
         }
     },
     "config": {
-        "vendor-dir": ".build/vendor",
         "bin-dir": ".build/bin",
+        "sort-packages": true,
         "platform": {
             "php": "7.4.2"
-        }
+        },
+        "vendor-dir": ".build/vendor"
     },
     "scripts": {
         "post-autoload-dump": [
@@ -95,10 +99,9 @@
     },
     "extra": {
         "typo3/cms": {
-            "extension-key": "plausibleio",
             "cms-package-dir": "{$vendor-dir}/typo3/cms",
+            "extension-key": "plausibleio",
             "web-dir": ".build/web"
         }
     }
-
 }

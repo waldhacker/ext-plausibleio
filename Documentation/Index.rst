@@ -19,7 +19,7 @@ TYPO3 Dashboard Widgets for Plausible Analytics (plausibleio)
    en
 
 :Authors:
-   Waldhacker UG (haftungsbeschränkt)
+   waldhacker UG (haftungsbeschränkt)
 
 :Email:
    hello@waldhacker.dev

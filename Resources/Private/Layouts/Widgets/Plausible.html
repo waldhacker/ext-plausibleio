@@ -1,15 +1,64 @@
-<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers" data-namespace-typo3-fluid="true">
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers" xmlns:wh="http://typo3.org/ns/Waldhacker/Plausibleio/ViewHelpers" data-namespace-typo3-fluid="true">
 <div class="widget-content-title">
-    <span>
-        <f:translate
-            key="LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:{label}"
-            arguments="{timeFrame: options.timeFrame, site: options.siteId}"
-        />
-    </span>
+    <div style="display: flex; justify-content: space-between;">
+        <span><f:translate key="LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:{label}" /></span>
+
+        <f:if condition="{predefinedSiteId}">
+            <f:then>
+                {predefinedSiteId}
+            </f:then>
+            <f:else>
+                <div class="input-group">
+                    <select class="form-select" id="plausible-sites" data-widget-plausible-sites-select aria-label="{f:translate(key: 'LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widget.general.site_select.aria')}" title="{f:translate(key: 'LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widget.general.site_select.label')}">
+                        <f:for each="{siteSelectorConfig.items}" as="item">
+                            <f:if condition="{siteSelectorConfig.selected}=={item}">
+                                <f:then>
+                                    <option value="{item}" selected="selected">{item}</option>
+                                </f:then>
+                                <f:else>
+                                    <option value="{item}">{item}</option>
+                                </f:else>
+                            </f:if>
+                        </f:for>
+                    </select>
+                </div>
+            </f:else>
+        </f:if>
+
+        <f:if condition="{predefinedTimeFrame}">
+            <f:then>
+                <f:if condition="{predefinedSiteId}"> (</f:if><wh:format.timeFrameLabel value="{predefinedTimeFrame}" /><f:if condition="{predefinedSiteId}">)</f:if>
+            </f:then>
+            <f:else>
+                <div class="input-group">
+                    <select class="form-select" id="plausible-timeframe" data-widget-plausible-timeframe-select aria-label="{f:translate(key: 'LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widget.general.timeframe_select.aria')}" title="{f:translate(key: 'LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widget.general.timeframe_select.label')}">
+                        <f:for each="{timeSelectorConfig.items}" as="item">
+                            <f:if condition="{timeSelectorConfig.selected}=={item.value}">
+                                <f:then>
+                                    <option value="{item.value}" selected="selected">{item.label}</option>
+                                </f:then>
+                                <f:else>
+                                    <option value="{item.value}">{item.label}</option>
+                                </f:else>
+                            </f:if>
+                        </f:for>
+                    </select>
+                </div>
+            </f:else>
+        </f:if>
+    </div>
 </div>
-<div class="widget-content-main">
+
+<f:if condition="!{validConfiguration}">
+    <div class="alert alert-warning">
+        <f:translate key="LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widget.general.invalidConfiguration" />
+    </div>
+</f:if>
+
+<div class="widget-content-main"{f:if(condition='{predefinedSiteId}', then: ' data-widget-plausible-predefined-site="{predefinedSiteId}"')}{f:if(condition='{predefinedTimeFrame}', then: ' data-widget-plausible-predefined-timeframe="{predefinedTimeFrame}"')}>
     <f:render section="main" optional="true" />
 </div>
+
 <f:variable name="footer" value="{f:render(section:'footer', optional: 'true')}" />
 <f:if condition="{footer -> f:spaceless()}">
     <div class="widget-content-footer">

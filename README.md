@@ -80,13 +80,13 @@ Some options are configured within the extension configuration at `Admin Tools` 
 
 #### Time Frames 
 
-Comma-separated list of available selectable time frames within the dashboard widgets - see [https://plausible.io/docs/stats-api#time-periods](https://plausible.io/docs/stats-api#time-periods) for possible options ("custom" is currently not available).
+Comma-separated list of available selectable time frames within the dashboard widgets - see [https://plausible.io/docs/stats-api#time-periods](https://plausible.io/docs/stats-api#time-periods) for possible options (`custom` is currently not available).
 
 #### Default Time Frame 
 
 The time frame to use initially when rendering the widgets.
 
-###Advanced configuration
+### Advanced configuration
 
 #### Service.yaml
 

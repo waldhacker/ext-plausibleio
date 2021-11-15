@@ -42,7 +42,7 @@ call_user_func(static function () {
         'config' => [
             'type' => 'check',
             'renderType' => 'checkboxToggle',
-            'default' => 1,
+            'default' => 0,
         ],
     ];
 

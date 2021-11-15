@@ -8,9 +8,9 @@
 
 .. _start:
 
-=============================================================
-TYPO3 Dashboard Widgets for Plausible Analytics (plausibleio)
-=============================================================
+==============================================================================
+Privacy-friendly analytics integration for TYPO3 CMS with Plausible Analytics.
+==============================================================================
 
 :Version:
    |release|
@@ -19,7 +19,7 @@ TYPO3 Dashboard Widgets for Plausible Analytics (plausibleio)
    en
 
 :Authors:
-   Waldhacker UG (haftungsbeschränkt)
+   waldhacker UG (haftungsbeschränkt)
 
 :Email:
    hello@waldhacker.dev
@@ -32,11 +32,12 @@ TYPO3 Dashboard Widgets for Plausible Analytics (plausibleio)
    `CC BY-NC-SA 4.0 <https://creativecommons.org/licenses/by-nc-sa/4.0/>`__ (Creative Commons)
    license
 
-Provides TYPO3 Backend Dashboard Widgets displaying Plausible Analytics Data for your site.
-Plausible Analytics is a privacy-friendly analytics alternative - you can either use their
-service at https://plausible.io or self-host the service on your own platform.
+Plausible Analytics is a privacy-friendly, cookieless, lightweight and
+open-source analytics alternative - you can either use their service at
+`https://plausible.io <https://plausible.io>`__ or `self-host the service <https://plausible.io/docs/self-hosting>`__
+on your own platform.
 
-.. image:: Images/dashboard.png
+.. image:: Images/all-dashboards.png
 
 If you find an error or something is missing, please:
 `Report a Problem <https://github.com/waldhacker/ext-plausibleio/issues/new>`__

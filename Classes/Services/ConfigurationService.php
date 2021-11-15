@@ -276,7 +276,7 @@ class ConfigurationService
 
         if ($value !== null) {
             trigger_error(
-                'Setting apiKey within "$GLOBALS[\'TYPO3_CONF_VARS\'][\'EXTENSIONS\'][\'plausibleio\'][\'siteId\']" is deprecated and will stop working in Version 3. Use the site configuration instead.',
+                'Setting siteId within "$GLOBALS[\'TYPO3_CONF_VARS\'][\'EXTENSIONS\'][\'plausibleio\'][\'siteId\']" is deprecated and will stop working in Version 3. Use the site configuration instead.',
                 E_USER_DEPRECATED
             );
         }
@@ -297,7 +297,7 @@ class ConfigurationService
 
         if ($value !== null) {
             trigger_error(
-                'Setting apiKey within "$GLOBALS[\'TYPO3_CONF_VARS\'][\'EXTENSIONS\'][\'plausibleio\'][\'baseUrl\']" is deprecated and will stop working in Version 3. Use the site configuration instead.',
+                'Setting baseUrl within "$GLOBALS[\'TYPO3_CONF_VARS\'][\'EXTENSIONS\'][\'plausibleio\'][\'baseUrl\']" is deprecated and will stop working in Version 3. Use the site configuration instead.',
                 E_USER_DEPRECATED
             );
         }

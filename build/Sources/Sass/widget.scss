@@ -8,6 +8,29 @@
     }
 }
 
+.widget-content-selectors {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-right: 20px;
+    margin-top: -10px;
+
+    span {
+        display: inline-block;
+        font-size: 0.75rem;
+        font-weight: normal;
+    }
+
+    div {
+        display: flex;
+        justify-content: center;
+    }
+
+    .icon {
+        margin-right: 0.15em;
+    }
+}
+
 .widget-content-main {
     display: flex;
     flex-direction: column;
@@ -94,4 +117,8 @@
         width: 500px;
         height: 500px;
     }
+}
+
+.noborder {
+    border: 0;
 }

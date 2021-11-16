@@ -1,53 +1,59 @@
 <html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers" xmlns:wh="http://typo3.org/ns/Waldhacker/Plausibleio/ViewHelpers" data-namespace-typo3-fluid="true">
-<div class="widget-content-title">
-    <div style="display: flex; justify-content: space-between;">
+<div class="widget-content-title noborder">
         <span><f:translate key="LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:{label}" /></span>
-
-        <f:if condition="{predefinedSiteId}">
-            <f:then>
-                {predefinedSiteId}
-            </f:then>
-            <f:else>
-                <div class="input-group">
-                    <select class="form-select" id="plausible-sites" data-widget-plausible-sites-select aria-label="{f:translate(key: 'LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widget.general.site_select.aria')}" title="{f:translate(key: 'LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widget.general.site_select.label')}">
-                        <f:for each="{siteSelectorConfig.items}" as="item">
-                            <f:if condition="{siteSelectorConfig.selected}=={item}">
-                                <f:then>
-                                    <option value="{item}" selected="selected">{item}</option>
-                                </f:then>
-                                <f:else>
-                                    <option value="{item}">{item}</option>
-                                </f:else>
-                            </f:if>
-                        </f:for>
-                    </select>
-                </div>
-            </f:else>
-        </f:if>
-
-        <f:if condition="{predefinedTimeFrame}">
-            <f:then>
-                <f:if condition="{predefinedSiteId}"> (</f:if><wh:format.timeFrameLabel value="{predefinedTimeFrame}" /><f:if condition="{predefinedSiteId}">)</f:if>
-            </f:then>
-            <f:else>
-                <div class="input-group">
-                    <select class="form-select" id="plausible-timeframe" data-widget-plausible-timeframe-select aria-label="{f:translate(key: 'LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widget.general.timeframe_select.aria')}" title="{f:translate(key: 'LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widget.general.timeframe_select.label')}">
-                        <f:for each="{timeSelectorConfig.items}" as="item">
-                            <f:if condition="{timeSelectorConfig.selected}=={item.value}">
-                                <f:then>
-                                    <option value="{item.value}" selected="selected">{item.label}</option>
-                                </f:then>
-                                <f:else>
-                                    <option value="{item.value}">{item.label}</option>
-                                </f:else>
-                            </f:if>
-                        </f:for>
-                    </select>
-                </div>
-            </f:else>
-        </f:if>
-    </div>
 </div>
+<div class="widget-content-title widget-content-selectors">
+    <f:if condition="{predefinedSiteId}">
+        <f:then>
+            <div>
+                <core:icon identifier="actions-globe-alt" size="small" />
+                <span>{predefinedSiteId}</span>
+            </div>
+        </f:then>
+        <f:else>
+            <div class="input-group">
+                <select class="form-select" id="plausible-sites" data-widget-plausible-sites-select aria-label="{f:translate(key: 'LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widget.general.site_select.aria')}" title="{f:translate(key: 'LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widget.general.site_select.label')}">
+                    <f:for each="{siteSelectorConfig.items}" as="item">
+                        <f:if condition="{siteSelectorConfig.selected}=={item}">
+                            <f:then>
+                                <option value="{item}" selected="selected">{item}</option>
+                            </f:then>
+                            <f:else>
+                                <option value="{item}">{item}</option>
+                            </f:else>
+                        </f:if>
+                    </f:for>
+                </select>
+            </div>
+        </f:else>
+    </f:if>
+
+    <f:if condition="{predefinedTimeFrame}">
+        <f:then>
+            <div>
+                <core:icon identifier="actions-clock" size="small" />
+                <span> <wh:format.timeFrameLabel value="{predefinedTimeFrame}" /></span>
+            </div>
+        </f:then>
+        <f:else>
+            <div class="input-group">
+                <select class="form-select" id="plausible-timeframe" data-widget-plausible-timeframe-select aria-label="{f:translate(key: 'LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widget.general.timeframe_select.aria')}" title="{f:translate(key: 'LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widget.general.timeframe_select.label')}">
+                    <f:for each="{timeSelectorConfig.items}" as="item">
+                        <f:if condition="{timeSelectorConfig.selected}=={item.value}">
+                            <f:then>
+                                <option value="{item.value}" selected="selected">{item.label}</option>
+                            </f:then>
+                            <f:else>
+                                <option value="{item.value}">{item.label}</option>
+                            </f:else>
+                        </f:if>
+                    </f:for>
+                </select>
+            </div>
+        </f:else>
+    </f:if>
+</div>
+
 
 <f:if condition="!{validConfiguration}">
     <div class="alert alert-warning">

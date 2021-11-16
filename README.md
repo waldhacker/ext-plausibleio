@@ -1,3 +1,5 @@
+[![CI](https://github.com/waldhacker/ext-plausibleio/actions/workflows/ci.yml/badge.svg)](https://github.com/waldhacker/ext-plausibleio/actions/workflows/ci.yml)
+
 # Privacy-friendly analytics integration for TYPO3 CMS with Plausible Analytics.
 
 Analyze your audience with Plausible Analytics and see nice dashboards with analytics data directly in the TYPO3 backend.

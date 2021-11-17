@@ -7,42 +7,94 @@ services:
   Waldhacker\Plausibleio\:
     resource: '../Classes/*'
 
-  Waldhacker\Plausibleio\Controller\VisitorTimeSeriesController:
+  Waldhacker\Plausibleio\Controller\VisitorsOverTimeWidgetController:
+    public: true
+  Waldhacker\Plausibleio\Controller\CountryMapDataWidgetController:
+    public: true
+  Waldhacker\Plausibleio\Controller\PageDataWidgetController:
+    public: true
+  Waldhacker\Plausibleio\Controller\DeviceDataWidgetController:
+    public: true
+  Waldhacker\Plausibleio\Controller\SourceDataWidgetController:
+    public: true
+  Waldhacker\Plausibleio\Services\ConfigurationService:
     public: true
 
+  Waldhacker\Plausibleio\EventListener\AssetRenderer\BeforeJavaScriptsRenderingEventListener:
+    tags:
+      - name: event.listener
+        identifier: 'plausible.addTrackingScript'
+        event: TYPO3\CMS\Core\Page\Event\BeforeJavaScriptsRenderingEvent
+        method: 'perform'
+
   waldhacker.plausibleio.widget.visitorsovertime:
-    class: 'Waldhacker\Plausibleio\Dashboard\Widget\VisitorsOverTime'
+    class: 'Waldhacker\Plausibleio\Dashboard\Widget\VisitorsOverTimeWidget'
     arguments:
-      $dataProvider: '@Waldhacker\Plausibleio\Dashboard\DataProvider\TimeSeriesDataProvider'
       $view: '@dashboard.views.widget'
       $configurationService: '@Waldhacker\Plausibleio\Services\ConfigurationService'
       $options:
         siteId: null
+        timeFrame: null
     tags:
       - name: dashboard.widget
         identifier: 'plausible.visitorsovertime'
         groupNames: 'plausibleio'
-        title: 'LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widgets.visitorsOverTime.label'
-        description: 'LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widgets.visitorsOverTime.description'
+        title: 'LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widget.visitorsOverTime.label'
+        description: 'LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widget.visitorsOverTime.description'
         iconIdentifier: 'content-widget-chart-bar'
         height: 'large'
         width: 'medium'
 
-  waldhacker.plausibleio.widget.browser:
-    class: 'Waldhacker\Plausibleio\Dashboard\Widget\BrowserDataWidget'
+  waldhacker.plausibleio.widget.country:
+    class: 'Waldhacker\Plausibleio\Dashboard\Widget\CountryMapDataWidget'
     arguments:
-      $dataProvider: '@Waldhacker\Plausibleio\Dashboard\DataProvider\BrowserDataProvider'
       $view: '@dashboard.views.widget'
       $configurationService: '@Waldhacker\Plausibleio\Services\ConfigurationService'
       $options:
         siteId: null
-        timeFrame: 7d
+        timeFrame: null
     tags:
       - name: dashboard.widget
-        identifier: 'plausible.browserdata'
+        identifier: 'plausible.countrymapdata'
         groupNames: 'plausibleio'
-        title: 'LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widgets.browserData.label'
-        description: 'LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widgets.browserData.description'
+        title: 'LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widget.countryMapData.label'
+        description: 'LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widget.countryMapData.description'
+        iconIdentifier: 'content-widget-chart-bar'
+        height: 'medium'
+        width: 'medium'
+
+  waldhacker.plausibleio.widget.page:
+    class: 'Waldhacker\Plausibleio\Dashboard\Widget\PageDataWidget'
+    arguments:
+      $view: '@dashboard.views.widget'
+      $configurationService: '@Waldhacker\Plausibleio\Services\ConfigurationService'
+      $options:
+        siteId: null
+        timeFrame: null
+    tags:
+      - name: dashboard.widget
+        identifier: 'plausible.pagedata'
+        groupNames: 'plausibleio'
+        title: 'LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widget.pageData.label'
+        description: 'LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widget.pageData.description'
+        iconIdentifier: 'content-widget-chart-bar'
+        height: 'medium'
+        width: 'medium'
+
+  waldhacker.plausibleio.widget.source:
+    class: 'Waldhacker\Plausibleio\Dashboard\Widget\SourceDataWidget'
+    arguments:
+      $view: '@dashboard.views.widget'
+      $configurationService: '@Waldhacker\Plausibleio\Services\ConfigurationService'
+      $options:
+        siteId: null
+        timeFrame: null
+    tags:
+      - name: dashboard.widget
+        identifier: 'plausible.sourcedata'
+        groupNames: 'plausibleio'
+        title: 'LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widget.sourceData.label'
+        description: 'LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widget.sourceData.description'
         iconIdentifier: 'content-widget-chart-bar'
         height: 'medium'
         width: 'medium'
@@ -51,20 +103,17 @@ services:
   waldhacker.plausibleio.widget.device:
     class: 'Waldhacker\Plausibleio\Dashboard\Widget\DeviceDataWidget'
     arguments:
-      $dataProvider: '@Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider'
       $view: '@dashboard.views.widget'
       $configurationService: '@Waldhacker\Plausibleio\Services\ConfigurationService'
       $options:
         siteId: null
-        timeFrame: 7d
+        timeFrame: null
     tags:
       - name: dashboard.widget
         identifier: 'plausible.devicedata'
         groupNames: 'plausibleio'
-        title: 'LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widgets.deviceData.label'
-        description: 'LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widgets.deviceData.description'
+        title: 'LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widget.deviceData.label'
+        description: 'LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widget.deviceData.description'
         iconIdentifier: 'content-widget-chart-bar'
         height: 'medium'
         width: 'medium'
-
-

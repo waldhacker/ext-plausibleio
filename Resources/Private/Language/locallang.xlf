@@ -1,7 +1,92 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <xliff version="1.0">
-	<file source-language="en" datatype="plaintext" original="messages" date="2019-08-19T13:37:00Z">
+	<file source-language="en" datatype="plaintext" original="messages" date="2021-11-13T13:37:00Z">
 		<body>
+			<trans-unit id="widget_group.plausibleio">
+				<source>Site Analytics (Plausible)</source>
+			</trans-unit>
+
+			<trans-unit id="widget.visitorsOverTime.label">
+				<source>Visitors over Time (Plausible Analytics)</source>
+			</trans-unit>
+			<trans-unit id="widget.visitorsOverTime.description">
+				<source>Show page visitors of your page in a line graph with selectable reporting time frame.</source>
+			</trans-unit>
+			<trans-unit id="widget.visitorsOverTime.overview.uniqueVisitors">
+				<source>Unique visitors</source>
+			</trans-unit>
+			<trans-unit id="widget.visitorsOverTime.overview.totalPageviews">
+				<source>Total pageviews</source>
+			</trans-unit>
+			<trans-unit id="widget.visitorsOverTime.overview.visitDuration">
+				<source>Visit duration</source>
+			</trans-unit>
+			<trans-unit id="widget.visitorsOverTime.overview.currentVisitors">
+				<source>Current visitors</source>
+			</trans-unit>
+
+			<trans-unit id="widget.sourceData.label">
+				<source>Sources (Plausible Analytics)</source>
+			</trans-unit>
+			<trans-unit id="widget.sourceData.description">
+				<source>Show statistics about sources of the page views.</source>
+			</trans-unit>
+			<trans-unit id="widget.sourceData.tabs.allsources">
+				<source>All</source>
+			</trans-unit>
+			<trans-unit id="widget.sourceData.tabs.mediumsource">
+				<source>Medium</source>
+			</trans-unit>
+			<trans-unit id="widget.sourceData.tabs.sourcesource">
+				<source>Source</source>
+			</trans-unit>
+			<trans-unit id="widget.sourceData.tabs.campaignsource">
+				<source>Campaign</source>
+			</trans-unit>
+
+			<trans-unit id="widget.deviceData.label">
+				<source>Device usage and visitors (Plausible Analytics)</source>
+			</trans-unit>
+			<trans-unit id="widget.deviceData.description">
+				<source>Show statistics about visitors and their devices.</source>
+			</trans-unit>
+			<trans-unit id="widget.deviceData.tabs.browser">
+				<source>Browser</source>
+			</trans-unit>
+			<trans-unit id="widget.deviceData.tabs.device">
+				<source>Screen size</source>
+			</trans-unit>
+			<trans-unit id="widget.deviceData.tabs.operatingsystem">
+				<source>OS</source>
+			</trans-unit>
+
+			<trans-unit id="widget.pageData.label">
+				<source>Visited pages (Plausible Analytics)</source>
+			</trans-unit>
+			<trans-unit id="widget.pageData.description">
+				<source>Show statistics about the number of page views, entries and exits.</source>
+			</trans-unit>
+			<trans-unit id="widget.pageData.tabs.toppage">
+				<source>Top pages</source>
+			</trans-unit>
+			<trans-unit id="widget.pageData.tabs.entrypage">
+				<source>Entry pages</source>
+			</trans-unit>
+			<trans-unit id="widget.pageData.tabs.exitpage">
+				<source>Exit pages</source>
+			</trans-unit>
+
+			<trans-unit id="widget.countryMapData.label">
+				<source>Countries (Plausible Analytics)</source>
+			</trans-unit>
+			<trans-unit id="widget.countryMapData.description">
+				<source>Shows the countries of origin of the page views.</source>
+			</trans-unit>
+
+			<trans-unit id="widget.general.invalidConfiguration">
+				<source>Invalid configuration. Please check the settings.</source>
+			</trans-unit>
+
 			<trans-unit id="timeframes.d">
 				<source>Last %s days</source>
 			</trans-unit>
@@ -9,46 +94,28 @@
 				<source>Last %s months</source>
 			</trans-unit>
 			<trans-unit id="timeframes.month">
-				<source>This Month</source>
+				<source>This month</source>
 			</trans-unit>
 			<trans-unit id="timeframes.day">
 				<source>Today</source>
 			</trans-unit>
-			<trans-unit id="timeframeselect_label">
-				<source>Choose Time Frame to Show</source>
+
+			<trans-unit id="widget.general.timeframe_select.label">
+				<source>Choose time frame to show</source>
 			</trans-unit>
-			<trans-unit id="timeframeselect_aria">
-				<source>Time Frame Selector</source>
+			<trans-unit id="widget.general.timeframe_select.aria">
+				<source>Time frame selector</source>
 			</trans-unit>
-			<trans-unit id="widgets.visitorsOverTime.label">
-				<source>Visitors over Time (Plausible Analytics)</source>
+
+			<trans-unit id="widget.general.site_select.label">
+				<source>Choose a Plausible site to show</source>
 			</trans-unit>
-			<trans-unit id="widgets.visitorsOverTime.description">
-				<source>Show page visitors of your page in a line graph with selectable reporting time frame.</source>
+			<trans-unit id="widget.general.site_select.aria">
+				<source>Plausible site id selector</source>
 			</trans-unit>
-			<trans-unit id="widgets.browserData.label">
-				<source>Browser Usage and Visitors (Plausible Analytics)</source>
-			</trans-unit>
-			<trans-unit id="widgets.deviceData.label">
-				<source>Device Usage and Visitors (Plausible Analytics)</source>
-			</trans-unit>
-			<trans-unit id="plausible.browserdata.label">
-				<source>Browser Usage and Visitors in the last %s for %s (Plausible Analytics)</source>
-			</trans-unit>
-			<trans-unit id="plausible.devicedata.label">
-				<source>Device Usage and Visitors in the last %s for %s (Plausible Analytics)</source>
-			</trans-unit>
-			<trans-unit id="widgets.browserData.description">
-				<source>Show statistics about visitors and their browsers.</source>
-			</trans-unit>
-			<trans-unit id="widgets.deviceData.description">
-				<source>Show statistics about visitors and their devices.</source>
-			</trans-unit>
+
 			<trans-unit id="visitors">
 				<source>Visitors</source>
-			</trans-unit>
-			<trans-unit id="widget_group.plausibleio">
-				<source>Site Analytics (Plausible)</source>
 			</trans-unit>
 		</body>
 	</file>

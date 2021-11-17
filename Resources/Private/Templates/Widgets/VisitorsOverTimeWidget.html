@@ -1,0 +1,31 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers" data-namespace-typo3-fluid="true">
+<f:layout name="Plausible" />
+<f:section name="main">
+    <div class="chartOverview">
+        <div class="chartOverviewItem">
+            <div class="chartOverviewItemCaption"><f:translate key="LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widget.visitorsOverTime.overview.uniqueVisitors" /></div>
+            <div data-widget-chart-overview-item="uniqueVisitors" class="chartOverviewItemValue"></div>
+        </div>
+        <div class="chartOverviewItem border-l">
+            <div class="chartOverviewItemCaption"><f:translate key="LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widget.visitorsOverTime.overview.totalPageviews" /></div>
+            <div data-widget-chart-overview-item="totalPageviews" class="chartOverviewItemValue"></div>
+        </div>
+        <div class="chartOverviewItem border-l">
+            <div class="chartOverviewItemCaption"><f:translate key="LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widget.visitorsOverTime.overview.visitDuration" /></div>
+            <div data-widget-chart-overview-item="visitDuration" class="chartOverviewItemValue"></div>
+        </div>
+        <div class="chartOverviewItem border-l">
+            <div class="chartOverviewItemCaption"><f:translate key="LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widget.visitorsOverTime.overview.currentVisitors" /></div>
+            <div data-widget-chart-overview-item="currentVisitors" class="chartOverviewItemValue"></div>
+        </div>
+    </div>
+
+    <div class="widget-chart" data-widget-type="visitorsChart">
+        <canvas></canvas>
+    </div>
+</f:section>
+
+<f:section name="footer">
+    <f:render partial="Widget/Button" arguments="{button: button}" />
+</f:section>
+</html>

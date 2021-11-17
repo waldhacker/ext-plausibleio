@@ -2,6 +2,20 @@
 
 declare(strict_types=1);
 
+/*
+ * This file is part of the plausibleio extension for TYPO3
+ * - (c) 2021 waldhacker UG (haftungsbeschränkt)
+ *
+ * It is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License, either version 2
+ * of the License, or any later version.
+ *
+ * For the full copyright and license information, please read the
+ * LICENSE file that was distributed with this source code.
+ *
+ * The TYPO3 project - inspiring people to share!
+ */
+
 namespace Waldhacker\Plausibleio\Tests\Unit\Services;
 
 use GuzzleHttp\Client;
@@ -9,6 +23,7 @@ use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
 use GuzzleHttp\Psr7\Response;
+use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\Log\LoggerInterface;
 use TYPO3\CMS\Core\Http\RequestFactory;
@@ -23,101 +38,19 @@ class PlausibleServiceTest extends UnitTestCase
     /**
      * @test
      * @covers \Waldhacker\Plausibleio\Services\PlausibleService::__construct
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::getVisitors
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::sendAuthorizedRequest
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::getRandomId
      */
-    public function getVisitorDataReturnsVisitorDataTimeLineFromAPI(): void
+    public function getRandomIdReturnsRandomWithPrefix(): void
     {
-        $set1 = new \stdClass();
-        $set1->date = '2021-04-16';
-        $set1->visitors = 57;
-
-        $set2 = new \stdClass();
-        $set2->date = '2021-04-17';
-        $set2->visitors = 15;
-
-        $expected = [$set1, $set2];
-        $historyContainer = [];
-        $client = $this->createClientWithHistory(
-            [new Response(200, [], file_get_contents(__DIR__ . '/Fixtures/200_visitors_timeline_response.json'))],
-            $historyContainer
-        );
-
-        $plausibleService = new PlausibleService(new RequestFactory(), $client, $this->setupConfigurationService()->reveal());
-        $result = $plausibleService->getVisitors('30d', 'example.com');
-
-        self::assertEquals($expected, $result);
-        self::assertCount(1, $historyContainer);
-        self::assertSame('https://example.comapi/v1/stats/timeseries?site_id=example.com&period=30d', (string)$historyContainer[0]['request']->getUri());
-    }
-
-    /**
-     * @test
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::getBrowserData()
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::__construct
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::sendAuthorizedRequest
-     */
-    public function getBrowserDataReturnsBrowserDataFromAPI(): void
-    {
-        $set1 = new \stdClass();
-        $set1->browser = 'Chrome';
-        $set1->visitors = 899;
-
-        $set2 = new \stdClass();
-        $set2->browser = 'Firefox';
-        $set2->visitors = 263;
-        $expected = [$set1, $set2];
-
-        $historyContainer = [];
-        $client = $this->createClientWithHistory(
-            [new Response(200, [], file_get_contents(__DIR__ . '/Fixtures/200_browser_breakdown_response.json'))],
-            $historyContainer
-        );
-
-        $plausibleService = new PlausibleService(new RequestFactory(), $client, $this->setupConfigurationService()->reveal());
-        $result = $plausibleService->getBrowserData('30d', 'example.com');
-
-        self::assertEquals($expected, $result);
-        self::assertCount(1, $historyContainer);
-        self::assertSame('https://example.comapi/v1/stats/breakdown?site_id=example.com&period=30d&property=visit%3Abrowser&metrics=visitors', (string)$historyContainer[0]['request']->getUri());
-    }
-
-    /**
-     * @test
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::getDeviceData
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::__construct
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::sendAuthorizedRequest
-     */
-    public function getDeviceDataReturnsBrowserDataFromAPI(): void
-    {
-        $set1 = new \stdClass();
-        $set1->device = 'Desktop';
-        $set1->visitors = 1054;
-
-        $set2 = new \stdClass();
-        $set2->device = 'Laptop';
-        $set2->visitors = 215;
-        $expected = [$set1, $set2];
-
-        $historyContainer = [];
-        $client = $this->createClientWithHistory(
-            [new Response(200, [], file_get_contents(__DIR__ . '/Fixtures/200_device_breakdown_response.json'))],
-            $historyContainer
-        );
-
-        $plausibleService = new PlausibleService(new RequestFactory(), $client, $this->setupConfigurationService()->reveal());
-        $result = $plausibleService->getDeviceData('30d', 'example.com');
-
-        self::assertEquals($expected, $result);
-        self::assertCount(1, $historyContainer);
-        self::assertSame('https://example.comapi/v1/stats/breakdown?site_id=example.com&period=30d&property=visit%3Adevice&metrics=visitors', (string)$historyContainer[0]['request']->getUri());
+        $configurationServiceProphecy = $this->prophesize(ConfigurationService::class);
+        $subject = new PlausibleService(new RequestFactory(), new Client(), $configurationServiceProphecy->reveal());
+        self::assertMatchesRegularExpression('/foo-[0-9a-f]{16}/i', $subject->getRandomId('foo'));
     }
 
     /**
      * @test
      * @covers \Waldhacker\Plausibleio\Services\PlausibleService::__construct
      * @covers \Waldhacker\Plausibleio\Services\PlausibleService::sendAuthorizedRequest
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::getDeviceData
      */
     public function nonOkStatusCodeIsLoggedAsWarning(): void
     {
@@ -127,14 +60,149 @@ class PlausibleServiceTest extends UnitTestCase
             $historyContainer
         );
 
-        $plausibleService = new PlausibleService(new RequestFactory(), $client, $this->setupConfigurationService()->reveal());
         $loggerProphecy = $this->prophesize(LoggerInterface::class);
-        $plausibleService->setLogger($loggerProphecy->reveal());
 
-        $result = $plausibleService->getDeviceData('30d', 'example.com');
+        $endpoint = 'api/v1/stats/breakdown?';
+        $params = [
+            'site_id' => 'waldhacker.dev',
+            'period' => '30d',
+            'property' => 'visit:device',
+            'metrics' => 'visitors',
+        ];
 
-        self::assertSame([], $result);
-        $loggerProphecy->warning('Something went wrong while fetching analytics. Bad Request')->shouldHaveBeenCalled();
+        $subject = new PlausibleService(new RequestFactory(), $client, $this->setupConfigurationServiceProphecy('waldhacker.dev')->reveal());
+        $subject->setLogger($loggerProphecy->reveal());
+
+        self::assertNull($subject->sendAuthorizedRequest('waldhacker.dev', $endpoint, $params));
+        self::assertCount(1, $historyContainer);
+        $loggerProphecy->warning('Something went wrong while fetching plausible endpoint "api/v1/stats/breakdown?" for site "waldhacker.dev": Bad Request')->shouldBeCalled();
+    }
+
+    /**
+     * @test
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::__construct
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::sendAuthorizedRequest
+     */
+    public function numericResponsesAreReturnedAsInteger(): void
+    {
+        $historyContainer = [];
+        $client = $this->createClientWithHistory(
+            [new Response(200, [], trim(file_get_contents(__DIR__ . '/Fixtures/200_stats_realtime_visitors_response.json')))],
+            $historyContainer
+        );
+
+        $endpoint = '/api/v1/stats/realtime/visitors?';
+        $params = [
+            'site_id' => 'waldhacker.dev',
+        ];
+
+        $subject = new PlausibleService(new RequestFactory(), $client, $this->setupConfigurationServiceProphecy('waldhacker.dev')->reveal());
+
+        self::assertSame(42, $subject->sendAuthorizedRequest('waldhacker.dev', $endpoint, $params));
+        self::assertCount(1, $historyContainer);
+        self::assertSame('https://plausible.io/api/v1/stats/realtime/visitors?site_id=waldhacker.dev', (string)$historyContainer[0]['request']->getUri());
+    }
+
+    /**
+     * @test
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::__construct
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::sendAuthorizedRequest
+     */
+    public function invalidJsonResponseIsLoggedAsWarning(): void
+    {
+        $historyContainer = [];
+        $client = $this->createClientWithHistory(
+            [new Response(200, [], trim(file_get_contents(__DIR__ . '/Fixtures/200_invalid_json_response.json')))],
+            $historyContainer
+        );
+
+        $loggerProphecy = $this->prophesize(LoggerInterface::class);
+
+        $endpoint = 'api/v1/stats/breakdown?';
+        $params = [
+            'site_id' => 'waldhacker.dev',
+            'period' => '30d',
+            'property' => 'visit:device',
+            'metrics' => 'visitors',
+        ];
+
+        $subject = new PlausibleService(new RequestFactory(), $client, $this->setupConfigurationServiceProphecy('waldhacker.dev')->reveal());
+        $subject->setLogger($loggerProphecy->reveal());
+
+        self::assertNull($subject->sendAuthorizedRequest('waldhacker.dev', $endpoint, $params));
+        $loggerProphecy->warning('Something went wrong while decoding data from plausible endpoint "api/v1/stats/breakdown?" for site "waldhacker.dev": Syntax error')->shouldBeCalled();
+    }
+
+    /**
+     * @test
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::__construct
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::sendAuthorizedRequest
+     */
+    public function validJsonResponseWithNoResultsIsLoggedAsWarning(): void
+    {
+        $historyContainer = [];
+        $client = $this->createClientWithHistory(
+            [new Response(200, [], trim(file_get_contents(__DIR__ . '/Fixtures/200_valid_json_without_results_response.json')))],
+            $historyContainer
+        );
+
+        $loggerProphecy = $this->prophesize(LoggerInterface::class);
+
+        $endpoint = 'api/v1/stats/breakdown?';
+        $params = [
+            'site_id' => 'waldhacker.dev',
+            'period' => '30d',
+            'property' => 'visit:browser',
+            'metrics' => 'visitors',
+        ];
+
+        $subject = new PlausibleService(new RequestFactory(), $client, $this->setupConfigurationServiceProphecy('waldhacker.dev')->reveal());
+        $subject->setLogger($loggerProphecy->reveal());
+
+        self::assertNull($subject->sendAuthorizedRequest('waldhacker.dev', $endpoint, $params));
+        $loggerProphecy->warning('Something went wrong while fetching plausible endpoint "api/v1/stats/breakdown?" for site "waldhacker.dev"')->shouldBeCalled();
+    }
+
+    /**
+     * @test
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::__construct
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::sendAuthorizedRequest
+     */
+    public function validJsonResponseReturnsApiDataAsArray(): void
+    {
+        $historyContainer = [];
+        $client = $this->createClientWithHistory(
+            [new Response(200, [], trim(file_get_contents(__DIR__ . '/Fixtures/200_browser_breakdown_response.json')))],
+            $historyContainer
+        );
+
+        $loggerProphecy = $this->prophesize(LoggerInterface::class);
+
+        $endpoint = 'api/v1/stats/breakdown?';
+        $params = [
+            'site_id' => 'waldhacker.dev',
+            'period' => '30d',
+            'property' => 'visit:browser',
+            'metrics' => 'visitors',
+        ];
+
+        $subject = new PlausibleService(new RequestFactory(), $client, $this->setupConfigurationServiceProphecy('waldhacker.dev')->reveal());
+        $subject->setLogger($loggerProphecy->reveal());
+
+        self::assertSame(
+            [
+                [
+                    'browser' => 'Chrome',
+                    'visitors' => 899,
+                ],
+                [
+                    'browser' => 'Firefox',
+                    'visitors' => 263,
+                ]
+            ],
+            $subject->sendAuthorizedRequest('waldhacker.dev', $endpoint, $params)
+        );
+        $loggerProphecy->warning(Argument::cetera())->shouldNotBeCalled();
     }
 
     private function createClientWithHistory(array $responses, array &$historyContainer): Client
@@ -151,14 +219,11 @@ class PlausibleServiceTest extends UnitTestCase
         return new Client(['handler' => $handlerStack]);
     }
 
-    /**
-     * @return \Prophecy\Prophecy\ObjectProphecy|ConfigurationService
-     */
-    private function setupConfigurationService()
+    private function setupConfigurationServiceProphecy(string $plausibleSiteId): \Prophecy\Prophecy\ObjectProphecy
     {
-        $configurationService = $this->prophesize(ConfigurationService::class);
-        $configurationService->getBaseUrl()->willReturn('https://example.com');
-        $configurationService->getApiKey()->willReturn('super-secret-key');
-        return $configurationService;
+        $configurationServiceProphecy = $this->prophesize(ConfigurationService::class);
+        $configurationServiceProphecy->getApiBaseUrl($plausibleSiteId)->willReturn('https://plausible.io/');
+        $configurationServiceProphecy->getApiKey($plausibleSiteId)->willReturn('super-secret-key');
+        return $configurationServiceProphecy;
     }
 }

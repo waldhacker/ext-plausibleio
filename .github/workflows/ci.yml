@@ -18,12 +18,6 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v2
 
-      - name: Set up MySQL ${{ matrix.mysql }}
-        uses: mirromutth/mysql-action@v1.1
-        with:
-          mysql version: ${{ matrix.mysql }}
-          mysql root password: 'root'
-
       - name: Set up PHP version ${{ matrix.php }}
         uses: shivammathur/setup-php@v2
         with:
@@ -50,6 +44,7 @@ jobs:
         run: |
           composer run ci:lint:php
           composer run ci:lint:yaml
+          composer run ci:lint:assets
 
       - name: CGL
         run: composer run ci:cgl:check

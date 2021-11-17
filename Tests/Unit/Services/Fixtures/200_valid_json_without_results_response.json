@@ -1,0 +1,11 @@
+{
+    "foo": [
+        {
+            "browser": "Chrome",
+            "visitors": 899
+        }, {
+            "browser": "Firefox",
+            "visitors": 263
+        }
+    ]
+}

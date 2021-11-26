@@ -107,7 +107,6 @@ class SourceDataWidget implements WidgetInterface, AdditionalCssInterface, Requi
     public function getRequireJsModules(): array
     {
         return [
-            'TYPO3/CMS/Plausibleio/Contrib/d3-format',
             'TYPO3/CMS/Plausibleio/SourceDataWidget',
             'TYPO3/CMS/Plausibleio/WidgetService',
         ];

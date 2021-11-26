@@ -107,7 +107,6 @@ class PageDataWidget implements WidgetInterface, AdditionalCssInterface, Require
     public function getRequireJsModules(): array
     {
         return [
-            'TYPO3/CMS/Plausibleio/Contrib/d3-format',
             'TYPO3/CMS/Plausibleio/PageDataWidget',
             'TYPO3/CMS/Plausibleio/WidgetService',
         ];

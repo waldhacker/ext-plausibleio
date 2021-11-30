@@ -16,7 +16,8 @@ define([
   'TYPO3/CMS/Core/Ajax/AjaxRequest',
   'TYPO3/CMS/Core/Event/RegularEvent',
   'TYPO3/CMS/Plausibleio/WidgetService',
-], function (AjaxRequest, RegularEvent, WidgetService) {
+  'TYPO3/CMS/Plausibleio/Tabs',
+], function (AjaxRequest, RegularEvent, WidgetService, Tabs) {
   'use strict';
 
   class PageDataWidget {
@@ -58,7 +59,7 @@ define([
         });
       }
     }
-    
+
     initialize() {
       let that = this;
 
@@ -89,6 +90,8 @@ define([
           // request and render data
           let configuration = WidgetService.getSiteAndTimeFrameFromDashboardItem(widget);
           WidgetService.dispatchTimeFrameChange(widget, configuration.site, configuration.timeFrame);
+
+          Tabs.registerTabsForSessionHandling(widget);
         }
       }).delegateTo(document, this.options.dashboardItemSelector);
     }

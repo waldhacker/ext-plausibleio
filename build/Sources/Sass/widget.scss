@@ -1,3 +1,5 @@
+$barChartBarPaddingSide: 0.5rem;
+
 .widget-chart {
     height: 85%;
 }
@@ -38,6 +40,20 @@
 
     .tabs {
         width: 100%;
+
+        .tab-content {
+            .header {
+                display: flex;
+                justify-content: space-between;
+                font-weight: bold;
+                color: #5a5a5a;
+                padding-left: $barChartBarPaddingSide;
+                padding-right: $barChartBarPaddingSide;
+            }
+
+            .headerText {
+            }
+        }
     }
 
     .barchart {
@@ -69,7 +85,7 @@
                     display: flex;
                     position: relative;
                     z-index: 10;
-                    padding: 0.375rem 0.5rem;
+                    padding: $barChartBarPaddingSide 0.5rem;
                 }
             }
 

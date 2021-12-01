@@ -14,16 +14,13 @@
 
 define([
   'lit',
-  'TYPO3/CMS/Plausibleio/Contrib/d3-format',
-  'TYPO3/CMS/Backend/Storage/BrowserSession',
-], function (lit, D3Format, BrowserSession) {
+  'TYPO3/CMS/Plausibleio/Contrib/d3-format'
+], function (lit, D3Format) {
   'use strict';
 
   class WidgetService {
     constructor() {
       this.options = {
-        sessionTimeframeId: 'plausible-timeFrame-last-value',
-        sessionSelectedSiteId: 'plausible-selected-site-last-value',
         dashBoardGridSelector: '.dashboard-grid',
         dashboardItemSelector: '.dashboard-item',
         timeFrameSelector: '[data-widget-plausible-timeframe-select]',
@@ -69,19 +66,12 @@ define([
           return;
       }
 
-      // set last selected time frame
-      let lastSelectedTimeFrame = BrowserSession.get(that.options.sessionTimeframeId);
-      if (lastSelectedTimeFrame)
-        selectElement.value = lastSelectedTimeFrame;
-
       selectElement.addEventListener('change', function (e) {
         let callingSelect = e.target;
         let dashboardGrid = callingSelect.closest(that.options.dashBoardGridSelector);
         let dashboardItem = callingSelect.closest(that.options.dashboardItemSelector);
         let widgets = dashboardGrid.querySelectorAll(that.options.dashboardItemSelector);
         let widgetsTimeFrameSelects = dashboardGrid.querySelectorAll(that.options.timeFrameSelector);
-
-        BrowserSession.set(that.options.sessionTimeframeId, callingSelect.value);
 
         widgetsTimeFrameSelects.forEach(function (select) {
           if (select !== callingSelect) {
@@ -103,19 +93,12 @@ define([
         return;
       }
 
-      // set last selected site
-      let lastSelectedSite = BrowserSession.get(that.options.sessionSelectedSiteId);
-      if (lastSelectedSite)
-        selectElement.value = lastSelectedSite;
-
       selectElement.addEventListener('change', function (e) {
         let callingSelect = e.target;
         let dashboardGrid = callingSelect.closest(that.options.dashBoardGridSelector);
         let dashboardItem = callingSelect.closest(that.options.dashboardItemSelector);
         let widgets = dashboardGrid.querySelectorAll(that.options.dashboardItemSelector);
         let widgetsSiteSelects = dashboardGrid.querySelectorAll(that.options.siteSelector);
-
-        BrowserSession.set(that.options.sessionSelectedSiteId, callingSelect.value);
 
         widgetsSiteSelects.forEach(function (select) {
           if (select !== callingSelect) {

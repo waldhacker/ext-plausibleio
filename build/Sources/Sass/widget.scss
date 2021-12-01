@@ -1,5 +1,3 @@
-$barChartBarPaddingSide: 0.5rem;
-
 .widget-chart {
     height: 85%;
 }
@@ -40,17 +38,6 @@ $barChartBarPaddingSide: 0.5rem;
 
     .tabs {
         width: 100%;
-
-        .tab-content {
-            .header {
-                display: flex;
-                justify-content: space-between;
-                font-weight: bold;
-                color: #5a5a5a;
-                padding-left: $barChartBarPaddingSide;
-                padding-right: $barChartBarPaddingSide;
-            }
-        }
     }
 
     .barchart {
@@ -82,14 +69,14 @@ $barChartBarPaddingSide: 0.5rem;
                     display: flex;
                     position: relative;
                     z-index: 10;
-                    padding: $barChartBarPaddingSide 0.5rem;
+                    padding: 0.375rem 0.5rem 0.375rem 0.5rem 0.5rem;
                 }
             }
 
             > span {
                 text-align: right;
                 width: 5rem;
-                padding: 0.375rem 0.5rem;
+                padding: 0.375rem 0.5rem 0.375rem 0.5rem 0.5rem;
             }
         }
     }

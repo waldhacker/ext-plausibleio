@@ -64,8 +64,9 @@ define([
         tab.setAttribute('href', '#' + newHref);
         // set id of corresponding content div
         let contentDiv = widget.querySelector(oldHref);
-        if (contentDiv != null)
+        if (contentDiv != null) {
           contentDiv.id = newHref;
+        }
 
         newTabId++;
       });
@@ -123,8 +124,9 @@ define([
      * @param {string} target
      */
     storeActiveTab(id, target) {
-      if (id !== '' && target !== '')
+      if (id !== '' && target !== '') {
         BrowserSession.set(id, target);
+      }
     }
 
   }

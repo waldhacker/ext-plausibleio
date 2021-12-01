@@ -26,16 +26,7 @@
                 <f:for each="{tabs}" as="tab" iteration="iteration">
                     <div role="tabpanel" class="tab-pane {f:if(condition: '{iteration.cycle} == {defaultTabIndex}', then: 'active')}" id="{id}-{iteration.cycle}">
                         <div class="panel panel-tab">
-                            <div class="panel-body">
-                                <f:if condition="{tab.header -> f:count()}">
-                                <div class="header">
-                                    <f:for each="{tab.header}" as="header">
-                                        <span class="headerText"><f:translate key="LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:{header}" /></span>
-                                    </f:for>
-                                </div>
-                                </f:if>
-                                <div class="panel-content" data-widget-tab-id="{tab.id}">
-                                </div>
+                            <div class="panel-body" data-widget-tab-id="{tab.id}">
                             </div>
                         </div>
                     </div>

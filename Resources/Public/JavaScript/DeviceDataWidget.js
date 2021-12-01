@@ -16,8 +16,7 @@ define([
   'TYPO3/CMS/Core/Ajax/AjaxRequest',
   'TYPO3/CMS/Core/Event/RegularEvent',
   'TYPO3/CMS/Plausibleio/WidgetService',
-  'TYPO3/CMS/Plausibleio/Tabs',
-], function (AjaxRequest, RegularEvent, WidgetService, Tabs) {
+], function (AjaxRequest, RegularEvent, WidgetService) {
   'use strict';
 
   class DeviceDataWidget {
@@ -90,8 +89,6 @@ define([
           // request and render data
           let configuration = WidgetService.getSiteAndTimeFrameFromDashboardItem(widget);
           WidgetService.dispatchTimeFrameChange(widget, configuration.site, configuration.timeFrame);
-
-          Tabs.registerTabsForSessionHandling(widget);
         }
       }).delegateTo(document, this.options.dashboardItemSelector);
     }

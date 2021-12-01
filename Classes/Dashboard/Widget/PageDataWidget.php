@@ -82,14 +82,26 @@ class PageDataWidget implements WidgetInterface, AdditionalCssInterface, Require
                 [
                     'label' => 'widget.pageData.tabs.toppage',
                     'id' => 'toppage',
+                    'header' => [
+                        'barChart.labels.pageUrl',
+                        'barChart.labels.visitors',
+                    ],
                 ],
                 [
                     'label' => 'widget.pageData.tabs.entrypage',
                     'id' => 'entrypage',
+                    'header' => [
+                        'barChart.labels.pageUrl',
+                        'barChart.labels.uniqueEntrances',
+                    ],
                 ],
                 [
                     'label' => 'widget.pageData.tabs.exitpage',
                     'id' => 'exitpage',
+                    'header' => [
+                        'barChart.labels.pageUrl',
+                        'barChart.labels.uniqueExits',
+                    ],
                 ],
             ],
         ]);
@@ -107,7 +119,6 @@ class PageDataWidget implements WidgetInterface, AdditionalCssInterface, Require
     public function getRequireJsModules(): array
     {
         return [
-            'TYPO3/CMS/Plausibleio/Contrib/d3-format',
             'TYPO3/CMS/Plausibleio/PageDataWidget',
             'TYPO3/CMS/Plausibleio/WidgetService',
         ];

@@ -17,6 +17,8 @@ services:
     public: true
   Waldhacker\Plausibleio\Controller\SourceDataWidgetController:
     public: true
+  Waldhacker\Plausibleio\Controller\GoalDataWidgetController:
+    public: true
   Waldhacker\Plausibleio\Services\ConfigurationService:
     public: true
 
@@ -26,6 +28,24 @@ services:
         identifier: 'plausible.addTrackingScript'
         event: TYPO3\CMS\Core\Page\Event\BeforeJavaScriptsRenderingEvent
         method: 'perform'
+
+  waldhacker.plausibleio.widget.goal:
+    class: 'Waldhacker\Plausibleio\Dashboard\Widget\GoalDataWidget'
+    arguments:
+      $view: '@dashboard.views.widget'
+      $configurationService: '@Waldhacker\Plausibleio\Services\ConfigurationService'
+      $options:
+        siteId: null
+        timeFrame: null
+    tags:
+      - name: dashboard.widget
+        identifier: 'plausible.goaldata'
+        groupNames: 'plausibleio'
+        title: 'LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widget.goalData.label'
+        description: 'LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widget.goalData.description'
+        iconIdentifier: 'content-widget-chart-bar'
+        height: 'medium'
+        width: 'medium'
 
   waldhacker.plausibleio.widget.visitorsovertime:
     class: 'Waldhacker\Plausibleio\Dashboard\Widget\VisitorsOverTimeWidget'

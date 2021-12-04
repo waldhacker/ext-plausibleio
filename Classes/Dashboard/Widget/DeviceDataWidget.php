@@ -132,4 +132,9 @@ class DeviceDataWidget implements WidgetInterface, AdditionalCssInterface, Requi
             ],
         ]);
     }
+
+    public function getOptions(): array
+    {
+        return $this->options;
+    }
 }

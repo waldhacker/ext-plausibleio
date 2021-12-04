@@ -118,4 +118,12 @@ class CountryMapDataWidget implements WidgetInterface, RequireJsModuleInterface,
             ],
         ]);
     }
+
+    /**
+     * @return array
+     */
+    public function getOptions(): array
+    {
+        return $this->options;
+    }
 }

@@ -136,4 +136,9 @@ class PageDataWidget implements WidgetInterface, AdditionalCssInterface, Require
             ],
         ]);
     }
+
+    public function getOptions(): array
+    {
+        return $this->options;
+    }
 }

@@ -123,4 +123,9 @@ class VisitorsOverTimeWidget implements WidgetInterface, EventDataInterface, Add
             ],
         ]);
     }
+
+    public function getOptions(): array
+    {
+        return $this->options;
+    }
 }

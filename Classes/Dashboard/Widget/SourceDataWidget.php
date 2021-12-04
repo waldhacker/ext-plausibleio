@@ -140,4 +140,9 @@ class SourceDataWidget implements WidgetInterface, AdditionalCssInterface, Requi
             ],
         ]);
     }
+
+    public function getOptions(): array
+    {
+        return $this->options;
+    }
 }

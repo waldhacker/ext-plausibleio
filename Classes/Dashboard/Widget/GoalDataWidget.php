@@ -104,6 +104,11 @@ class GoalDataWidget implements WidgetInterface, AdditionalCssInterface, Require
         ];
     }
 
+    public function getOptions(): array
+    {
+        return $this->options;
+    }
+
     private function preparePageRenderer(): void
     {
         $this->pageRenderer->addRequireJsConfiguration([

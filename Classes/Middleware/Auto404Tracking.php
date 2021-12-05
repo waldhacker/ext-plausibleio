@@ -21,13 +21,13 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Adminpanel\Controller\MainController;
 use TYPO3\CMS\Adminpanel\Utility\StateUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\StringUtility;
-
 use TYPO3\CMS\Core\Context\Context;
+use Waldhacker\Plausibleio\Services\ConfigurationService;
+use Waldhacker\Plausibleio\Services\PlausibleService;
 
 /**
  * PSR-15 Middleware to initialize the admin panel
@@ -36,21 +36,19 @@ use TYPO3\CMS\Core\Context\Context;
  */
 class Auto404Tracking implements MiddlewareInterface
 {
-    private SiteFinder $siteFinder;
+    private PlausibleService $plausibleService;
+    private ConfigurationService $configurationService;
 
     public function __construct(
-        //ExtensionConfiguration $extensionConfiguration,
-        SiteFinder $siteFinder
+        PlausibleService $plausibleService,
+        ConfigurationService $configurationService
     ) {
-        //$this->extensionConfiguration = $extensionConfiguration;
-        $this->siteFinder = $siteFinder;
-        /*if ($this->getLanguageService() !== null) {
-            $this->getLanguageService()->includeLLFile('EXT:' . self::EXT_KEY . '/Resources/Private/Language/locallang.xlf');
-        }*/
+        $this->plausibleService = $plausibleService;
+        $this->configurationService = $configurationService;
     }
 
     /**
-     * Catches and tracks the 404 error it if the corresponding tracking
+     * Catches and tracks the 404 error if the corresponding tracking
      * is activated.
      *
      * @param ServerRequestInterface $request
@@ -62,19 +60,11 @@ class Auto404Tracking implements MiddlewareInterface
         $response = $handler->handle($request);
 
         if ($response->getStatusCode() == 404) {
-            $config = $request->getAttribute('language')->toArray();
+            $config = $this->configurationService->getPlausibleConfigurationFromSiteLanguage($request->getAttribute('language'));
 
-            if (array_key_exists('plausible_auto404Tracking', $config)) {
-                if ($config['plausible_auto404Tracking']) {
-                    $url = $request->getAttribute('normalizedParams')->getRequestUrl();
-                    $path = $request->getAttribute('normalizedParams')->getRequestUri();
-                    $referrer = $request->getServerParams()['HTTP_REFERER'] ?? '';
-                    $userAgent = $request->getServerParams()['HTTP_USER_AGENT'] ?? '';
-                    $xForwardedFor = $request->getServerParams()['HTTP_X_FORWARDED_FOR'] ?? '';
-                    $host = $request->getAttribute('normalizedParams')->getRequestHost();
-
-                    debug($request->getAttribute('language')->toArray());
-                }
+            if ($config['auto404Tracking']) {
+                $cp = ['path' => $request->getAttribute('normalizedParams')->getRequestUri()];
+                $this->plausibleService->recordEvent($config['siteId'], $config['apiUrl'], '404', $request, $cp);
             }
         }
 

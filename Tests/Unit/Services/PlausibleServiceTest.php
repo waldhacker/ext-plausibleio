@@ -23,9 +23,12 @@ use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
 use GuzzleHttp\Psr7\Response;
+use GuzzleHttp\Psr7\ServerRequest;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\Log\LoggerInterface;
+use Psr\Http\Message\RequestFactoryInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Http\RequestFactory;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 use Waldhacker\Plausibleio\Services\ConfigurationService;
@@ -203,6 +206,32 @@ class PlausibleServiceTest extends UnitTestCase
             $subject->sendAuthorizedRequest('waldhacker.dev', $endpoint, $params)
         );
         $loggerProphecy->warning(Argument::cetera())->shouldNotBeCalled();
+    }
+
+    /**
+     * @test
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::__construct
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::recordEvent
+     */
+    public function invalidParametersOnRecordEventIsLoggedAsWarning(): void
+    {
+        /*
+        $loggerProphecy = $this->prophesize(LoggerInterface::class);
+
+        $endpoint = 'api/v1/stats/breakdown?';
+        $params = [
+            'site_id' => 'waldhacker.dev',
+            'period' => '30d',
+            'property' => 'visit:device',
+            'metrics' => 'visitors',
+        ];
+
+        $subject = new PlausibleService(new RequestFactory(), new Client(), $this->setupConfigurationServiceProphecy('waldhacker.dev')->reveal());
+        $subject->setLogger($loggerProphecy->reveal());
+
+        self::assertFalse($subject->recordEvent($params['site_id'], 'https://plausible.io/', '404', new ServerRequest()));
+        //self::assertCount(1, $historyContainer);
+        */
     }
 
     private function createClientWithHistory(array $responses, array &$historyContainer): Client

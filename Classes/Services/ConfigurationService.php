@@ -212,6 +212,7 @@ class ConfigurationService
             'includeTrackingScript' => $languageData['plausible_includeTrackingScript'],
             'trackingScriptBaseUrl' => $languageData['plausible_trackingScriptBaseUrl'],
             'trackingScriptType' => $languageData['plausible_trackingScriptType'],
+            'auto404Tracking' => $languageData['plausible_auto404Tracking'],
         ];
     }
 

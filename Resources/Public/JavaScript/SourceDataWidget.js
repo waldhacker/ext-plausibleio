@@ -23,7 +23,7 @@ define([
   class SourceDataWidget {
     constructor() {
       this.options = {
-        dashboardItemSelector: '[data-widget-key="plausible.sourcedata"]',
+        dashboardItemSelector: '[data-widget-key^="plausible.sourcedata"]',
         widgetContainerSelector: '[data-widget-type="sourceChart"]',
         tabSelector: '[data-widget-tab-id="${tabId}"]',
         timeframeSelectSelector: '[data-widget-plausible-timeframe-select]',

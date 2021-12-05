@@ -25,7 +25,7 @@ define([
   class CountryMapDataWidget {
     constructor() {
       this.options = {
-        dashboardItemSelector: '[data-widget-key="plausible.countrymapdata"]',
+        dashboardItemSelector: '[data-widget-key^="plausible.countrymapdata"]',
         widgetContainerSelector: '[data-widget-type="countryMapData"]',
         timeframeSelectSelector: '[data-widget-plausible-timeframe-select]',
         siteSelector: '[data-widget-plausible-sites-select]',

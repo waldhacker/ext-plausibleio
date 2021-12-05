@@ -130,7 +130,7 @@ into your site package :file:`Configuration/Services.yaml` file and adjust the c
       timeFrame: 30d
   tags:
     - name: dashboard.widget
-      identifier: 'yourname.countrymapdata'
+      identifier: 'yourname.countrymapdata.site1'
       groupNames: 'plausibleio'
       title: 'LLL:EXT:yourpackage/Resources/Private/Language/locallang.xlf:widgets.countryMapData.label'
       description: 'LLL:EXT:yourpackage/Resources/Private/Language/locallang.xlf:widgets.countryMapData.description'
@@ -149,7 +149,7 @@ into your site package :file:`Configuration/Services.yaml` file and adjust the c
       timeFrame: 30d
   tags:
     - name: dashboard.widget
-      identifier: 'yourname.countrymapdata'
+      identifier: 'yourname.countrymapdata.site2'
       groupNames: 'plausibleio'
       title: 'LLL:EXT:yourpackage/Resources/Private/Language/locallang.xlf:widgets.countryMapData.label'
       description: 'LLL:EXT:yourpackage/Resources/Private/Language/locallang.xlf:widgets.countryMapData.description'

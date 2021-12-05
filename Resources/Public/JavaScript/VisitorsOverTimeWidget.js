@@ -28,7 +28,7 @@ define([
   class VisitorsOverTimeWidget {
     constructor() {
       this.options = {
-        dashboardItemSelector: '[data-widget-key="plausible.visitorsovertime"]',
+        dashboardItemSelector: '[data-widget-key^="plausible.visitorsovertime"]',
         widgetContainerSelector: '[data-widget-type="visitorsChart"]',
         timeframeSelectSelector: '[data-widget-plausible-timeframe-select]',
         siteSelector: '[data-widget-plausible-sites-select]',
@@ -71,7 +71,7 @@ define([
         let visitorsWidgetChart = null;
         chartjs_1.default.helpers.each(chartjs_1.default.instances, function (instance) {
           const widgetKey = instance.canvas.closest(that.options.dashboardItemSelector).dataset.widgetKey;
-          if (widgetKey === 'plausible.visitorsovertime') {
+          if (widgetKey.indexOf('plausible.visitorsovertime', 0) === 0) {
             visitorsWidgetChart = instance;
           }
         });

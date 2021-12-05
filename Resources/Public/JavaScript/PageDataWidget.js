@@ -23,7 +23,7 @@ define([
   class PageDataWidget {
     constructor() {
       this.options = {
-        dashboardItemSelector: '[data-widget-key="plausible.pagedata"]',
+        dashboardItemSelector: '[data-widget-key^="plausible.pagedata"]',
         widgetContainerSelector: '[data-widget-type="pageChart"]',
         tabSelector: '[data-widget-tab-id="${tabId}"]',
         timeframeSelectSelector: '[data-widget-plausible-timeframe-select]',

@@ -23,7 +23,7 @@ define([
   class DeviceDataWidget {
     constructor() {
       this.options = {
-        dashboardItemSelector: '[data-widget-key="plausible.devicedata"]',
+        dashboardItemSelector: '[data-widget-key^="plausible.devicedata"]',
         widgetContainerSelector: '[data-widget-type="deviceChart"]',
         tabSelector: '[data-widget-tab-id="${tabId}"]',
         timeframeSelectSelector: '[data-widget-plausible-timeframe-select]',

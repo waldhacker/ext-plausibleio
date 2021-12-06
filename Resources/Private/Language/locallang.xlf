@@ -130,8 +130,8 @@
 			<trans-unit id="barChart.labels.os">
 				<source>Operating system</source>
 			</trans-unit>
-			<trans-unit id="barChart.labels.">
-				<source></source>
+			<trans-unit id="barChart.labels.goal">
+				<source>Goals</source>
 			</trans-unit>
 
 			<trans-unit id="timeframes.d">

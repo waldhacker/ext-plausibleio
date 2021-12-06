@@ -19,6 +19,8 @@ declare(strict_types=1);
 namespace Waldhacker\Plausibleio\Tests\Unit\Dashboard\DataProvider;
 
 use Prophecy\PhpUnit\ProphecyTrait;
+use Prophecy\Prophecy\ObjectProphecy;
+use TYPO3\CMS\Core\Localization\LanguageService;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 use Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider;
 use Waldhacker\Plausibleio\Services\PlausibleService;
@@ -27,18 +29,40 @@ class DeviceDataProviderTest extends UnitTestCase
 {
     use ProphecyTrait;
 
+    private ObjectProphecy $languageServiceProphecy;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->languageServiceProphecy = $this->prophesize(LanguageService::class);
+        $GLOBALS['LANG'] = $this->languageServiceProphecy->reveal();
+    }
+
     public function getBrowserDataReturnsProperValuesDataProvider(): \Generator
     {
         yield 'all items are transformed' => [
             'plausibleSiteId' => 'waldhacker.dev',
             'timeFrame' => '7d',
             'endpointData' => [
-                ['browser' => 'Firefox', 'visitors' => 3],
-                ['browser' => 'Chrome', 'visitors' => 4],
+                ['browser' => 'Firefox', 'visitors' => 12],
+                ['browser' => 'Chrome', 'visitors' => 8],
             ],
             'expected' => [
-                ['label' => 'Firefox',  'visitors' => 3],
-                ['label' => 'Chrome',  'visitors' => 4],
+                'data' => [
+                    ['browser' => 'Firefox', 'visitors' => 12, 'percentage' => 60.0],
+                    ['browser' => 'Chrome', 'visitors' => 8, 'percentage' => 40.0],
+                ],
+                'columns' => [
+                    [
+                        'name' => 'browser',
+                        'label' => 'Browser'
+                    ],
+                    [
+                        'name' => 'visitors',
+                        'label' => 'Visitors'
+                    ],
+                ],
             ],
         ];
 
@@ -46,13 +70,25 @@ class DeviceDataProviderTest extends UnitTestCase
             'plausibleSiteId' => 'waldhacker.dev',
             'timeFrame' => '7d',
             'endpointData' => [
-                ['browser' => 'Firefox', 'visitors' => 3],
-                ['browser' => '', 'visitors' => 4],
+                ['browser' => 'Firefox', 'visitors' => 8],
+                ['browser' => '', 'visitors' => 12],
                 ['visitors' => 4],
             ],
             'expected' => [
-                ['label' => 'Firefox',  'visitors' => 3],
-                ['label' => '',  'visitors' => 4],
+                'data' => [
+                    ['browser' => 'Firefox', 'visitors' => 8, 'percentage' => 40.0],
+                    ['browser' => '', 'visitors' => 12, 'percentage' => 60.0],
+                ],
+                'columns' => [
+                    [
+                        'name' => 'browser',
+                        'label' => 'Browser'
+                    ],
+                    [
+                        'name' => 'visitors',
+                        'label' => 'Visitors'
+                    ],
+                ],
             ],
         ];
 
@@ -60,12 +96,24 @@ class DeviceDataProviderTest extends UnitTestCase
             'plausibleSiteId' => 'waldhacker.dev',
             'timeFrame' => '7d',
             'endpointData' => [
-                ['browser' => 'Firefox', 'visitors' => 3],
+                ['browser' => 'Firefox', 'visitors' => 99],
                 ['browser' => 'Chrome', 'visitors' => null],
                 ['browser' => 'Chrome'],
             ],
             'expected' => [
-                ['label' => 'Firefox',  'visitors' => 3],
+                'data' => [
+                    ['browser' => 'Firefox', 'visitors' => 99, 'percentage' => 100],
+                ],
+                'columns' => [
+                    [
+                        'name' => 'browser',
+                        'label' => 'Browser'
+                    ],
+                    [
+                        'name' => 'visitors',
+                        'label' => 'Visitors'
+                    ],
+                ],
             ],
         ];
     }
@@ -76,6 +124,8 @@ class DeviceDataProviderTest extends UnitTestCase
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::__construct
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::getBrowserData
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::getData
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::calcPercentage
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::getLanguageService
      */
     public function getBrowserDataReturnsProperValues(
         string $plausibleSiteId,
@@ -84,6 +134,9 @@ class DeviceDataProviderTest extends UnitTestCase
         array $expected
     ): void {
         $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
+
+        $this->languageServiceProphecy->getLL('barChart.labels.visitors')->willReturn('Visitors');
+        $this->languageServiceProphecy->getLL('barChart.labels.browser')->willReturn('Browser');
 
         $plausibleServiceProphecy->sendAuthorizedRequest(
             $plausibleSiteId,
@@ -108,12 +161,24 @@ class DeviceDataProviderTest extends UnitTestCase
             'plausibleSiteId' => 'waldhacker.dev',
             'timeFrame' => '7d',
             'endpointData' => [
-                ['os' => 'Windows', 'visitors' => 3],
-                ['os' => 'Linux', 'visitors' => 4],
+                ['os' => 'Windows', 'visitors' => 32],
+                ['os' => 'Linux', 'visitors' => 48],
             ],
             'expected' => [
-                ['label' => 'Windows',  'visitors' => 3],
-                ['label' => 'Linux',  'visitors' => 4],
+                'data' => [
+                    ['os' => 'Windows', 'visitors' => 32, 'percentage' => 40.0],
+                    ['os' => 'Linux', 'visitors' => 48, 'percentage' => 60.0],
+                ],
+                'columns' => [
+                    [
+                        'name' => 'os',
+                        'label' => 'Operating system'
+                    ],
+                    [
+                        'name' => 'visitors',
+                        'label' => 'Visitors'
+                    ],
+                ],
             ],
         ];
 
@@ -121,13 +186,25 @@ class DeviceDataProviderTest extends UnitTestCase
             'plausibleSiteId' => 'waldhacker.dev',
             'timeFrame' => '7d',
             'endpointData' => [
-                ['os' => 'Windows', 'visitors' => 3],
-                ['os' => '', 'visitors' => 4],
+                ['os' => 'Windows', 'visitors' => 5],
+                ['os' => '', 'visitors' => 15],
                 ['visitors' => 4],
             ],
             'expected' => [
-                ['label' => 'Windows',  'visitors' => 3],
-                ['label' => '',  'visitors' => 4],
+                'data' => [
+                    ['os' => 'Windows', 'visitors' => 5, 'percentage' => 25.0],
+                    ['os' => '', 'visitors' => 15, 'percentage' => 75.0],
+                ],
+                'columns' => [
+                    [
+                        'name' => 'os',
+                        'label' => 'Operating system'
+                    ],
+                    [
+                        'name' => 'visitors',
+                        'label' => 'Visitors'
+                    ],
+                ],
             ],
         ];
 
@@ -140,7 +217,19 @@ class DeviceDataProviderTest extends UnitTestCase
                 ['os' => 'Linux'],
             ],
             'expected' => [
-                ['label' => 'Windows',  'visitors' => 3],
+                'data' => [
+                    ['os' => 'Windows', 'visitors' => 3, 'percentage' => 100],
+                ],
+                'columns' => [
+                    [
+                        'name' => 'os',
+                        'label' => 'Operating system'
+                    ],
+                    [
+                        'name' => 'visitors',
+                        'label' => 'Visitors'
+                    ],
+                ],
             ],
         ];
     }
@@ -151,6 +240,8 @@ class DeviceDataProviderTest extends UnitTestCase
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::__construct
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::getOSData
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::getData
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::calcPercentage
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::getLanguageService
      */
     public function getOSDataReturnsProperValues(
         string $plausibleSiteId,
@@ -159,6 +250,9 @@ class DeviceDataProviderTest extends UnitTestCase
         array $expected
     ): void {
         $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
+
+        $this->languageServiceProphecy->getLL('barChart.labels.visitors')->willReturn('Visitors');
+        $this->languageServiceProphecy->getLL('barChart.labels.os')->willReturn('Operating system');
 
         $plausibleServiceProphecy->sendAuthorizedRequest(
             $plausibleSiteId,
@@ -184,11 +278,23 @@ class DeviceDataProviderTest extends UnitTestCase
             'timeFrame' => '7d',
             'endpointData' => [
                 ['device' => 'Tablet', 'visitors' => 3],
-                ['device' => 'Desktop', 'visitors' => 4],
+                ['device' => 'Desktop', 'visitors' => 9],
             ],
             'expected' => [
-                ['label' => 'Tablet',  'visitors' => 3],
-                ['label' => 'Desktop',  'visitors' => 4],
+                'data' => [
+                    ['device' => 'Tablet', 'visitors' => 3, 'percentage' => 25.0],
+                    ['device' => 'Desktop', 'visitors' => 9, 'percentage' => 75.0],
+                ],
+                'columns' => [
+                    [
+                        'name' => 'device',
+                        'label' => 'Screen Size'
+                    ],
+                    [
+                        'name' => 'visitors',
+                        'label' => 'Visitors'
+                    ],
+                ],
             ],
         ];
 
@@ -196,13 +302,25 @@ class DeviceDataProviderTest extends UnitTestCase
             'plausibleSiteId' => 'waldhacker.dev',
             'timeFrame' => '7d',
             'endpointData' => [
-                ['device' => 'Tablet', 'visitors' => 3],
-                ['device' => '', 'visitors' => 4],
+                ['device' => 'Tablet', 'visitors' => 9],
+                ['device' => '', 'visitors' => 3],
                 ['visitors' => 4],
             ],
             'expected' => [
-                ['label' => 'Tablet',  'visitors' => 3],
-                ['label' => '',  'visitors' => 4],
+                'data' => [
+                    ['device' => 'Tablet', 'visitors' => 9, 'percentage' => 75.0],
+                    ['device' => '', 'visitors' => 3, 'percentage' => 25.0],
+                ],
+                'columns' => [
+                    [
+                        'name' => 'device',
+                        'label' => 'Screen Size'
+                    ],
+                    [
+                        'name' => 'visitors',
+                        'label' => 'Visitors'
+                    ],
+                ],
             ],
         ];
 
@@ -215,7 +333,17 @@ class DeviceDataProviderTest extends UnitTestCase
                 ['device' => 'Desktop'],
             ],
             'expected' => [
-                ['label' => 'Tablet',  'visitors' => 3],
+                'data' => [['device' => 'Tablet', 'visitors' => 3, 'percentage' => 100]],
+                'columns' => [
+                    [
+                        'name' => 'device',
+                        'label' => 'Screen Size'
+                    ],
+                    [
+                        'name' => 'visitors',
+                        'label' => 'Visitors'
+                    ],
+                ],
             ],
         ];
     }
@@ -226,6 +354,8 @@ class DeviceDataProviderTest extends UnitTestCase
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::__construct
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::getDeviceData
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::getData
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::getLanguageService
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::calcPercentage
      */
     public function getDeviceDataReturnsProperValues(
         string $plausibleSiteId,
@@ -234,6 +364,9 @@ class DeviceDataProviderTest extends UnitTestCase
         array $expected
     ): void {
         $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
+
+        $this->languageServiceProphecy->getLL('barChart.labels.visitors')->willReturn('Visitors');
+        $this->languageServiceProphecy->getLL('barChart.labels.screenSize')->willReturn('Screen Size');
 
         $plausibleServiceProphecy->sendAuthorizedRequest(
             $plausibleSiteId,
@@ -250,5 +383,27 @@ class DeviceDataProviderTest extends UnitTestCase
 
         $subject = new DeviceDataProvider($plausibleServiceProphecy->reveal());
         self::assertSame($expected, $subject->getDeviceData($plausibleSiteId, $timeFrame));
+    }
+
+    /**
+     * @test
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::__construct
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::calcPercentage
+     */
+    public function calcPercentageReturnsProperValue()
+    {
+        $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
+        $subject = new DeviceDataProvider($plausibleServiceProphecy->reveal());
+
+        self::assertSame(
+            [
+                ['device' => 'Tablet', 'visitors' => 3, 'percentage' => 25.0],
+                ['device' => 'Desktop', 'visitors' => 9, 'percentage' => 75.0],
+            ],
+            $subject->calcPercentage([
+                ['device' => 'Tablet', 'visitors' => 3,],
+                ['device' => 'Desktop', 'visitors' => 9,],
+            ])
+        );
     }
 }

@@ -18,6 +18,7 @@ declare(strict_types=1);
 
 namespace Waldhacker\Plausibleio\Dashboard\DataProvider;
 
+use TYPO3\CMS\Core\Localization\LanguageService;
 use Waldhacker\Plausibleio\Services\PlausibleService;
 
 class SourceDataProvider
@@ -32,61 +33,109 @@ class SourceDataProvider
     public function getAllSourcesData(string $plausibleSiteId, string $timeFrame): array
     {
         $map = [];
-        $result = $this->getData($plausibleSiteId, $timeFrame, 'visit:source');
+        $responseData = $this->getData($plausibleSiteId, $timeFrame, 'visit:source');
 
-        foreach ($result as $item) {
+        // clean up data
+        foreach ($responseData['data'] as $item) {
             if (!isset($item['source']) || !isset($item['visitors'])) {
                 continue;
             }
-            $map[] = ['label' => $item['source'], 'visitors' => $item['visitors']];
+            $map[] = $item;
         }
 
-        return $map;
+        $map = $this->calcPercentage($map);
+        $responseData['data'] = $map;
+
+        array_unshift(
+            $responseData['columns'],
+            [
+                'name' => 'source',
+                'label' => $this->getLanguageService()->getLL('barChart.labels.source'),
+            ]
+        );
+
+        return $responseData;
     }
 
     public function getMediumData(string $plausibleSiteId, string $timeFrame): array
     {
         $map = [];
-        $result = $this->getData($plausibleSiteId, $timeFrame, 'visit:utm_medium');
+        $responseData = $this->getData($plausibleSiteId, $timeFrame, 'visit:utm_medium');
 
-        foreach ($result as $item) {
+        // clean up data
+        foreach ($responseData['data'] as $item) {
             if (!isset($item['utm_medium']) || !isset($item['visitors'])) {
                 continue;
             }
-            $map[] = ['label' => $item['utm_medium'], 'visitors' => $item['visitors']];
+            $map[] = $item;
         }
 
-        return $map;
+        $map = $this->calcPercentage($map);
+        $responseData['data'] = $map;
+
+        array_unshift(
+            $responseData['columns'],
+            [
+                'name' => 'utm_medium',
+                'label' => $this->getLanguageService()->getLL('barChart.labels.UTMMedium'),
+            ]
+        );
+
+        return $responseData;
     }
 
     public function getSourceData(string $plausibleSiteId, string $timeFrame): array
     {
         $map = [];
-        $result = $this->getData($plausibleSiteId, $timeFrame, 'visit:utm_source');
+        $responseData = $this->getData($plausibleSiteId, $timeFrame, 'visit:utm_source');
 
-        foreach ($result as $item) {
+        // clean up data
+        foreach ($responseData['data'] as $item) {
             if (!isset($item['utm_source']) || !isset($item['visitors'])) {
                 continue;
             }
-            $map[] = ['label' => $item['utm_source'], 'visitors' => $item['visitors']];
+            $map[] = $item;
         }
 
-        return $map;
+        $map = $this->calcPercentage($map);
+        $responseData['data'] = $map;
+
+        array_unshift(
+            $responseData['columns'],
+            [
+                'name' => 'utm_source',
+                'label' => $this->getLanguageService()->getLL('barChart.labels.UTMSource'),
+            ]
+        );
+
+        return $responseData;
     }
 
     public function getCampaignData(string $plausibleSiteId, string $timeFrame): array
     {
         $map = [];
-        $result = $this->getData($plausibleSiteId, $timeFrame, 'visit:utm_campaign');
+        $responseData = $this->getData($plausibleSiteId, $timeFrame, 'visit:utm_campaign');
 
-        foreach ($result as $item) {
+        // clean up data
+        foreach ($responseData['data'] as $item) {
             if (!isset($item['utm_campaign']) || !isset($item['visitors'])) {
                 continue;
             }
-            $map[] = ['label' => $item['utm_campaign'], 'visitors' => $item['visitors']];
+            $map[] = $item;
         }
 
-        return $map;
+        $map = $this->calcPercentage($map);
+        $responseData['data'] = $map;
+
+        array_unshift(
+            $responseData['columns'],
+            [
+                'name' => 'utm_campaign',
+                'label' => $this->getLanguageService()->getLL('barChart.labels.UTMCampaign'),
+            ]
+        );
+
+        return $responseData;
     }
 
     private function getData(string $plausibleSiteId, string $timeFrame, string $property): array
@@ -99,7 +148,36 @@ class SourceDataProvider
             'metrics' => 'visitors',
         ];
 
-        $responseData = $this->plausibleService->sendAuthorizedRequest($plausibleSiteId, $endpoint, $params);
-        return is_array($responseData) ? $responseData : [];
+        $responseData = [];
+        $responseData['data'] = $this->plausibleService->sendAuthorizedRequest($plausibleSiteId, $endpoint, $params);
+        if (!is_array($responseData['data'])) {
+            $responseData['data'] = [];
+        }
+
+        $responseData['columns'][] = [
+            'name' => 'visitors',
+            'label' => $this->getLanguageService()->getLL('barChart.labels.visitors'),
+        ];
+
+        return $responseData;
+    }
+
+    public function calcPercentage(array $dataArray): array
+    {
+        $visitorsSum = 0;
+
+        foreach ($dataArray as $item) {
+            $visitorsSum = $visitorsSum + $item['visitors'];
+        }
+        foreach ($dataArray as $key => $value) {
+            $dataArray[$key]['percentage'] = $value['visitors'] / $visitorsSum * 100;
+        }
+
+        return $dataArray;
+    }
+
+    private function getLanguageService(): LanguageService
+    {
+        return $GLOBALS['LANG'];
     }
 }

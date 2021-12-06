@@ -78,34 +78,18 @@ class SourceDataWidget implements WidgetInterface, AdditionalCssInterface, Requi
                 [
                     'label' => 'widget.sourceData.tabs.allsources',
                     'id' => 'allsources',
-                    'header' => [
-                        'barChart.labels.source',
-                        'barChart.labels.visitors',
-                    ],
                 ],
                 [
                     'label' => 'widget.sourceData.tabs.mediumsource',
                     'id' => 'mediumsource',
-                    'header' => [
-                        'barChart.labels.UTMMedium',
-                        'barChart.labels.visitors',
-                    ],
                 ],
                 [
                     'label' => 'widget.sourceData.tabs.sourcesource',
                     'id' => 'sourcesource',
-                    'header' => [
-                        'barChart.labels.UTMSource',
-                        'barChart.labels.visitors',
-                    ],
                 ],
                 [
                     'label' => 'widget.sourceData.tabs.campaignsource',
                     'id' => 'campaignsource',
-                    'header' => [
-                        'barChart.labels.UTMCampaign',
-                        'barChart.labels.visitors',
-                    ],
                 ],
             ],
         ]);

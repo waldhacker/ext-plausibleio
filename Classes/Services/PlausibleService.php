@@ -150,7 +150,7 @@ class PlausibleService implements LoggerAwareInterface
         if ($apiUrl == '') {
             $this->logWarning(sprintf(
                 'Plausible API base url can\'t be blank on recording event at endpoint "%s" for site "%s"',
-                $apiUrl,
+                $endpoint,
                 $plausibleSiteId
             ));
             return false;

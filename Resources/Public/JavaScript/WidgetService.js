@@ -26,7 +26,9 @@ define([
         timeFrameSelector: '[data-widget-plausible-timeframe-select]',
         siteSelector: '[data-widget-plausible-sites-select]',
         predefinedTimeframeSelectSelector: '[data-widget-plausible-predefined-timeframe]',
-        predefinedSiteSelector: '[data-widget-plausible-predefined-site]'
+        predefinedSiteSelector: '[data-widget-plausible-predefined-site]',
+        tabBodyContainerSelector: '.panel-body',
+        headingsContainerSelector: '.header',
       };
     }
 
@@ -147,24 +149,39 @@ define([
         return;
       }
 
-      let visitorsSum = 0;
-      data.forEach(function (item) {
-        visitorsSum += item.visitors;
+      let columns = null;
+      if (data.columns !== undefined)
+        columns = data.columns;
+      if (columns == null || columns.length == 0)
+        return;
+      let hitColumns = [];
+      // skip first item (label of the bar), so we get only the columns on the right side of the bar
+      columns.slice(1).forEach(function (value) {
+        hitColumns[hitColumns.length] = value;
       });
+      let rowsData = data.data;
+
+      const barLabelTemplate = (row) => lit.html`
+        <div>
+          <div style="width: ${row.percentage}%; "></div>
+          <span>${row[columns[0].name]}</span>
+        </div>
+      `;
+      const hitColumnsTemplate = (row) => lit.html`${hitColumns.map((col) =>
+        lit.html`
+        <span>${D3Format.format('.2~s')(row[col.name])}</span>
+        `)
+      }`;
 
       let template = lit.html`
-        ${data.map((item) => {
-        let percentage = item.visitors / visitorsSum * 100;
+        ${rowsData.map((row) => {
         return lit.html`
           <div class="bar">
-            <div>
-              <div style="width: ${percentage}%; "></div>
-              <span >${item.label}</span>
-            </div>
-            <span>${D3Format.format('.2~s')(item.visitors)}</span>
-          </div>`
-      })}
-    `;
+            ${barLabelTemplate(row)}
+            ${hitColumnsTemplate(row)}
+          </div>
+        `})}
+      `;
 
       if (clear) {
         parentElement.innerHTML = '';
@@ -175,6 +192,25 @@ define([
       let targetElement = parentElement.appendChild(newChild);
 
       lit.render(template, targetElement);
+
+      let tabBodyContainer = parentElement.closest(this.options.tabBodyContainerSelector);
+      if (tabBodyContainer != null) {
+        let headingsContainer = tabBodyContainer.querySelector(this.options.headingsContainerSelector);
+        if (headingsContainer !== null)
+          this.renderBarChartHeadings(headingsContainer, columns);
+      }
+    }
+
+    renderBarChartHeadings(container, columns, clear = true) {
+      const headingsTemplate = lit.html`
+        ${columns.map((col) => lit.html`<span class="headerText">${col.label}</span>`)}
+      `;
+
+      if (clear) {
+        container.innerHTML = '';
+      }
+
+      lit.render(headingsTemplate, container);
     }
   }
 

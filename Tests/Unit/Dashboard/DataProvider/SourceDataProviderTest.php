@@ -19,13 +19,25 @@ declare(strict_types=1);
 namespace Waldhacker\Plausibleio\Tests\Unit\Dashboard\DataProvider;
 
 use Prophecy\PhpUnit\ProphecyTrait;
+use Prophecy\Prophecy\ObjectProphecy;
+use TYPO3\CMS\Core\Localization\LanguageService;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 use Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider;
 use Waldhacker\Plausibleio\Services\PlausibleService;
 
 class SourceDataProviderTest extends UnitTestCase
 {
+    private ObjectProphecy $languageServiceProphecy;
+
     use ProphecyTrait;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->languageServiceProphecy = $this->prophesize(LanguageService::class);
+        $GLOBALS['LANG'] = $this->languageServiceProphecy->reveal();
+    }
 
     public function getAllSourcesDataReturnsProperValuesDataProvider(): \Generator
     {
@@ -33,12 +45,24 @@ class SourceDataProviderTest extends UnitTestCase
             'plausibleSiteId' => 'waldhacker.dev',
             'timeFrame' => '7d',
             'endpointData' => [
-                ['source' => 'source1', 'visitors' => 3],
-                ['source' => 'source2', 'visitors' => 4],
+                ['source' => 'source1', 'visitors' => 4],
+                ['source' => 'source2', 'visitors' => 12],
             ],
             'expected' => [
-                ['label' => 'source1',  'visitors' => 3],
-                ['label' => 'source2',  'visitors' => 4],
+                'data' => [
+                    ['source' => 'source1', 'visitors' => 4, 'percentage' => 25.0],
+                    ['source' => 'source2', 'visitors' => 12, 'percentage' => 75.0],
+                ],
+                'columns' => [
+                    [
+                        'name' => 'source',
+                        'label' => 'Source'
+                    ],
+                    [
+                        'name' => 'visitors',
+                        'label' => 'Visitors'
+                    ],
+                ],
             ],
         ];
 
@@ -46,13 +70,25 @@ class SourceDataProviderTest extends UnitTestCase
             'plausibleSiteId' => 'waldhacker.dev',
             'timeFrame' => '7d',
             'endpointData' => [
-                ['source' => 'source1', 'visitors' => 3],
-                ['source' => '', 'visitors' => 4],
+                ['source' => 'source1', 'visitors' => 4],
+                ['source' => '', 'visitors' => 12],
                 ['visitors' => 4],
             ],
             'expected' => [
-                ['label' => 'source1',  'visitors' => 3],
-                ['label' => '',  'visitors' => 4],
+                'data' => [
+                    ['source' => 'source1', 'visitors' => 4, 'percentage' => 25.0],
+                    ['source' => '', 'visitors' => 12, 'percentage' => 75.0],
+                ],
+                'columns' => [
+                    [
+                        'name' => 'source',
+                        'label' => 'Source'
+                    ],
+                    [
+                        'name' => 'visitors',
+                        'label' => 'Visitors'
+                    ],
+                ],
             ],
         ];
 
@@ -60,12 +96,24 @@ class SourceDataProviderTest extends UnitTestCase
             'plausibleSiteId' => 'waldhacker.dev',
             'timeFrame' => '7d',
             'endpointData' => [
-                ['source' => 'source1', 'visitors' => 3],
+                ['source' => 'source1', 'visitors' => 4],
                 ['source' => 'source2', 'visitors' => null],
                 ['source' => 'source2'],
             ],
             'expected' => [
-                ['label' => 'source1',  'visitors' => 3],
+                'data' => [
+                    ['source' => 'source1', 'visitors' => 4, 'percentage' => 100],
+                ],
+                'columns' => [
+                    [
+                        'name' => 'source',
+                        'label' => 'Source'
+                    ],
+                    [
+                        'name' => 'visitors',
+                        'label' => 'Visitors'
+                    ],
+                ],
             ],
         ];
     }
@@ -76,6 +124,8 @@ class SourceDataProviderTest extends UnitTestCase
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider::__construct
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider::getAllSourcesData
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider::getData
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider::calcPercentage
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider::getLanguageService
      */
     public function getAllSourcesDataReturnsProperValues(
         string $plausibleSiteId,
@@ -84,6 +134,9 @@ class SourceDataProviderTest extends UnitTestCase
         array $expected
     ): void {
         $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
+
+        $this->languageServiceProphecy->getLL('barChart.labels.visitors')->willReturn('Visitors');
+        $this->languageServiceProphecy->getLL('barChart.labels.source')->willReturn('Source');
 
         $plausibleServiceProphecy->sendAuthorizedRequest(
             $plausibleSiteId,
@@ -108,12 +161,24 @@ class SourceDataProviderTest extends UnitTestCase
             'plausibleSiteId' => 'waldhacker.dev',
             'timeFrame' => '7d',
             'endpointData' => [
-                ['utm_medium' => 'source1', 'visitors' => 3],
-                ['utm_medium' => 'source2', 'visitors' => 4],
+                ['utm_medium' => 'source1', 'visitors' => 4],
+                ['utm_medium' => 'source2', 'visitors' => 12],
             ],
             'expected' => [
-                ['label' => 'source1',  'visitors' => 3],
-                ['label' => 'source2',  'visitors' => 4],
+                'data' => [
+                    ['utm_medium' => 'source1', 'visitors' => 4, 'percentage' => 25.0],
+                    ['utm_medium' => 'source2', 'visitors' => 12, 'percentage' => 75.0],
+                ],
+                'columns' => [
+                    [
+                        'name' => 'utm_medium',
+                        'label' => 'UTM Medium'
+                    ],
+                    [
+                        'name' => 'visitors',
+                        'label' => 'Visitors'
+                    ],
+                ],
             ],
         ];
 
@@ -121,13 +186,25 @@ class SourceDataProviderTest extends UnitTestCase
             'plausibleSiteId' => 'waldhacker.dev',
             'timeFrame' => '7d',
             'endpointData' => [
-                ['utm_medium' => 'source1', 'visitors' => 3],
-                ['utm_medium' => '', 'visitors' => 4],
+                ['utm_medium' => 'source1', 'visitors' => 4],
+                ['utm_medium' => '', 'visitors' => 12],
                 ['visitors' => 4],
             ],
             'expected' => [
-                ['label' => 'source1',  'visitors' => 3],
-                ['label' => '',  'visitors' => 4],
+                'data' => [
+                    ['utm_medium' => 'source1', 'visitors' => 4, 'percentage' => 25.0],
+                    ['utm_medium' => '', 'visitors' => 12, 'percentage' => 75.0],
+                ],
+                'columns' => [
+                    [
+                        'name' => 'utm_medium',
+                        'label' => 'UTM Medium'
+                    ],
+                    [
+                        'name' => 'visitors',
+                        'label' => 'Visitors'
+                    ],
+                ],
             ],
         ];
 
@@ -135,12 +212,24 @@ class SourceDataProviderTest extends UnitTestCase
             'plausibleSiteId' => 'waldhacker.dev',
             'timeFrame' => '7d',
             'endpointData' => [
-                ['utm_medium' => 'source1', 'visitors' => 3],
+                ['utm_medium' => 'source1', 'visitors' => 33],
                 ['utm_medium' => 'source2', 'visitors' => null],
                 ['utm_medium' => 'source2'],
             ],
             'expected' => [
-                ['label' => 'source1',  'visitors' => 3],
+                'data' => [
+                    ['utm_medium' => 'source1', 'visitors' => 33, 'percentage' => 100],
+                ],
+                'columns' => [
+                    [
+                        'name' => 'utm_medium',
+                        'label' => 'UTM Medium'
+                    ],
+                    [
+                        'name' => 'visitors',
+                        'label' => 'Visitors'
+                    ],
+                ],
             ],
         ];
     }
@@ -151,6 +240,8 @@ class SourceDataProviderTest extends UnitTestCase
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider::__construct
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider::getMediumData
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider::getData
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider::calcPercentage
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider::getLanguageService
      */
     public function getMediumDataReturnsProperValues(
         string $plausibleSiteId,
@@ -159,6 +250,9 @@ class SourceDataProviderTest extends UnitTestCase
         array $expected
     ): void {
         $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
+
+        $this->languageServiceProphecy->getLL('barChart.labels.visitors')->willReturn('Visitors');
+        $this->languageServiceProphecy->getLL('barChart.labels.UTMMedium')->willReturn('UTM Medium');
 
         $plausibleServiceProphecy->sendAuthorizedRequest(
             $plausibleSiteId,
@@ -183,12 +277,24 @@ class SourceDataProviderTest extends UnitTestCase
             'plausibleSiteId' => 'waldhacker.dev',
             'timeFrame' => '7d',
             'endpointData' => [
-                ['utm_source' => 'source1', 'visitors' => 3],
+                ['utm_source' => 'source1', 'visitors' => 12],
                 ['utm_source' => 'source2', 'visitors' => 4],
             ],
             'expected' => [
-                ['label' => 'source1',  'visitors' => 3],
-                ['label' => 'source2',  'visitors' => 4],
+                'data' => [
+                    ['utm_source' => 'source1', 'visitors' => 12, 'percentage' => 75.0],
+                    ['utm_source' => 'source2', 'visitors' => 4, 'percentage' => 25.0],
+                ],
+                'columns' => [
+                    [
+                        'name' => 'utm_source',
+                        'label' => 'UTM Source'
+                    ],
+                    [
+                        'name' => 'visitors',
+                        'label' => 'Visitors'
+                    ],
+                ],
             ],
         ];
 
@@ -196,13 +302,25 @@ class SourceDataProviderTest extends UnitTestCase
             'plausibleSiteId' => 'waldhacker.dev',
             'timeFrame' => '7d',
             'endpointData' => [
-                ['utm_source' => 'source1', 'visitors' => 3],
+                ['utm_source' => 'source1', 'visitors' => 12],
                 ['utm_source' => '', 'visitors' => 4],
                 ['visitors' => 4],
             ],
             'expected' => [
-                ['label' => 'source1',  'visitors' => 3],
-                ['label' => '',  'visitors' => 4],
+                'data' => [
+                    ['utm_source' => 'source1', 'visitors' => 12, 'percentage' => 75.0],
+                    ['utm_source' => '', 'visitors' => 4, 'percentage' => 25.0],
+                ],
+                'columns' => [
+                    [
+                        'name' => 'utm_source',
+                        'label' => 'UTM Source'
+                    ],
+                    [
+                        'name' => 'visitors',
+                        'label' => 'Visitors'
+                    ],
+                ],
             ],
         ];
 
@@ -210,12 +328,24 @@ class SourceDataProviderTest extends UnitTestCase
             'plausibleSiteId' => 'waldhacker.dev',
             'timeFrame' => '7d',
             'endpointData' => [
-                ['utm_source' => 'source1', 'visitors' => 3],
+                ['utm_source' => 'source1', 'visitors' => 33],
                 ['utm_source' => 'source2', 'visitors' => null],
                 ['utm_source' => 'source2'],
             ],
             'expected' => [
-                ['label' => 'source1',  'visitors' => 3],
+                'data' => [
+                    ['utm_source' => 'source1', 'visitors' => 33, 'percentage' => 100],
+                ],
+                'columns' => [
+                    [
+                        'name' => 'utm_source',
+                        'label' => 'UTM Source'
+                    ],
+                    [
+                        'name' => 'visitors',
+                        'label' => 'Visitors'
+                    ],
+                ],
             ],
         ];
     }
@@ -226,6 +356,8 @@ class SourceDataProviderTest extends UnitTestCase
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider::__construct
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider::getSourceData
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider::getData
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider::calcPercentage
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider::getLanguageService
      */
     public function getSourceDataReturnsProperValues(
         string $plausibleSiteId,
@@ -234,6 +366,9 @@ class SourceDataProviderTest extends UnitTestCase
         array $expected
     ): void {
         $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
+
+        $this->languageServiceProphecy->getLL('barChart.labels.visitors')->willReturn('Visitors');
+        $this->languageServiceProphecy->getLL('barChart.labels.UTMSource')->willReturn('UTM Source');
 
         $plausibleServiceProphecy->sendAuthorizedRequest(
             $plausibleSiteId,
@@ -258,12 +393,24 @@ class SourceDataProviderTest extends UnitTestCase
             'plausibleSiteId' => 'waldhacker.dev',
             'timeFrame' => '7d',
             'endpointData' => [
-                ['utm_campaign' => 'source1', 'visitors' => 3],
-                ['utm_campaign' => 'source2', 'visitors' => 4],
+                ['utm_campaign' => 'source1', 'visitors' => 4],
+                ['utm_campaign' => 'source2', 'visitors' => 12],
             ],
             'expected' => [
-                ['label' => 'source1',  'visitors' => 3],
-                ['label' => 'source2',  'visitors' => 4],
+                'data' => [
+                    ['utm_campaign' => 'source1', 'visitors' => 4, 'percentage' => 25.0],
+                    ['utm_campaign' => 'source2', 'visitors' => 12, 'percentage' => 75.0],
+                ],
+                'columns' => [
+                    [
+                        'name' => 'utm_campaign',
+                        'label' => 'UTM Campaign'
+                    ],
+                    [
+                        'name' => 'visitors',
+                        'label' => 'Visitors'
+                    ],
+                ],
             ],
         ];
 
@@ -271,13 +418,25 @@ class SourceDataProviderTest extends UnitTestCase
             'plausibleSiteId' => 'waldhacker.dev',
             'timeFrame' => '7d',
             'endpointData' => [
-                ['utm_campaign' => 'source1', 'visitors' => 3],
+                ['utm_campaign' => 'source1', 'visitors' => 12],
                 ['utm_campaign' => '', 'visitors' => 4],
                 ['visitors' => 4],
             ],
             'expected' => [
-                ['label' => 'source1',  'visitors' => 3],
-                ['label' => '',  'visitors' => 4],
+                'data' => [
+                    ['utm_campaign' => 'source1', 'visitors' => 12, 'percentage' => 75.0],
+                    ['utm_campaign' => '', 'visitors' => 4, 'percentage' => 25.0],
+                ],
+                'columns' => [
+                    [
+                        'name' => 'utm_campaign',
+                        'label' => 'UTM Campaign'
+                    ],
+                    [
+                        'name' => 'visitors',
+                        'label' => 'Visitors'
+                    ],
+                ],
             ],
         ];
 
@@ -290,7 +449,19 @@ class SourceDataProviderTest extends UnitTestCase
                 ['utm_campaign' => 'source2'],
             ],
             'expected' => [
-                ['label' => 'source1',  'visitors' => 3],
+                'data' => [
+                    ['utm_campaign' => 'source1', 'visitors' => 3, 'percentage' => 100],
+                ],
+                'columns' => [
+                    [
+                        'name' => 'utm_campaign',
+                        'label' => 'UTM Campaign'
+                    ],
+                    [
+                        'name' => 'visitors',
+                        'label' => 'Visitors'
+                    ],
+                ],
             ],
         ];
     }
@@ -301,6 +472,8 @@ class SourceDataProviderTest extends UnitTestCase
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider::__construct
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider::getCampaignData
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider::getData
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider::calcPercentage
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider::getLanguageService
      */
     public function getCampaignDataReturnsProperValues(
         string $plausibleSiteId,
@@ -309,6 +482,9 @@ class SourceDataProviderTest extends UnitTestCase
         array $expected
     ): void {
         $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
+
+        $this->languageServiceProphecy->getLL('barChart.labels.visitors')->willReturn('Visitors');
+        $this->languageServiceProphecy->getLL('barChart.labels.UTMCampaign')->willReturn('UTM Campaign');
 
         $plausibleServiceProphecy->sendAuthorizedRequest(
             $plausibleSiteId,
@@ -325,5 +501,27 @@ class SourceDataProviderTest extends UnitTestCase
 
         $subject = new SourceDataProvider($plausibleServiceProphecy->reveal());
         self::assertSame($expected, $subject->getCampaignData($plausibleSiteId, $timeFrame));
+    }
+
+    /**
+     * @test
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider::__construct
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider::calcPercentage
+     */
+    public function calcPercentageReturnsProperValue()
+    {
+        $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
+        $subject = new SourceDataProvider($plausibleServiceProphecy->reveal());
+
+        self::assertSame(
+            [
+                ['device' => 'Tablet', 'visitors' => 3, 'percentage' => 25.0],
+                ['device' => 'Desktop', 'visitors' => 9, 'percentage' => 75.0],
+            ],
+            $subject->calcPercentage([
+                ['device' => 'Tablet', 'visitors' => 3,],
+                ['device' => 'Desktop', 'visitors' => 9,],
+            ])
+        );
     }
 }

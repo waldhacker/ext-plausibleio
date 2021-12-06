@@ -78,26 +78,14 @@ class DeviceDataWidget implements WidgetInterface, AdditionalCssInterface, Requi
                 [
                     'label' => 'widget.deviceData.tabs.browser',
                     'id' => 'browser',
-                    'header' => [
-                        'barChart.labels.browser',
-                        'barChart.labels.visitors',
-                    ],
                 ],
                 [
                     'label' => 'widget.deviceData.tabs.device',
                     'id' => 'device',
-                    'header' => [
-                        'barChart.labels.screenSize',
-                        'barChart.labels.visitors',
-                    ],
                 ],
                 [
                     'label' => 'widget.deviceData.tabs.operatingsystem',
                     'id' => 'operatingsystem',
-                    'header' => [
-                        'barChart.labels.os',
-                        'barChart.labels.visitors',
-                    ],
                 ],
             ],
         ]);

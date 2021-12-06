@@ -29,6 +29,7 @@ use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\Log\LoggerInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use TYPO3\CMS\Core\Http\NormalizedParams;
 use TYPO3\CMS\Core\Http\RequestFactory;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 use Waldhacker\Plausibleio\Services\ConfigurationService;
@@ -54,6 +55,7 @@ class PlausibleServiceTest extends UnitTestCase
      * @test
      * @covers \Waldhacker\Plausibleio\Services\PlausibleService::__construct
      * @covers \Waldhacker\Plausibleio\Services\PlausibleService::sendAuthorizedRequest
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::logWarning
      */
     public function nonOkStatusCodeIsLoggedAsWarning(): void
     {
@@ -110,6 +112,7 @@ class PlausibleServiceTest extends UnitTestCase
      * @test
      * @covers \Waldhacker\Plausibleio\Services\PlausibleService::__construct
      * @covers \Waldhacker\Plausibleio\Services\PlausibleService::sendAuthorizedRequest
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::logWarning
      */
     public function invalidJsonResponseIsLoggedAsWarning(): void
     {
@@ -140,6 +143,7 @@ class PlausibleServiceTest extends UnitTestCase
      * @test
      * @covers \Waldhacker\Plausibleio\Services\PlausibleService::__construct
      * @covers \Waldhacker\Plausibleio\Services\PlausibleService::sendAuthorizedRequest
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::logWarning
      */
     public function validJsonResponseWithNoResultsIsLoggedAsWarning(): void
     {
@@ -212,26 +216,48 @@ class PlausibleServiceTest extends UnitTestCase
      * @test
      * @covers \Waldhacker\Plausibleio\Services\PlausibleService::__construct
      * @covers \Waldhacker\Plausibleio\Services\PlausibleService::recordEvent
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::logWarning
      */
     public function invalidParametersOnRecordEventIsLoggedAsWarning(): void
     {
-        /*
         $loggerProphecy = $this->prophesize(LoggerInterface::class);
-
-        $endpoint = 'api/v1/stats/breakdown?';
-        $params = [
-            'site_id' => 'waldhacker.dev',
-            'period' => '30d',
-            'property' => 'visit:device',
-            'metrics' => 'visitors',
-        ];
+        $serverRequestProphecy = $this->prophesize(ServerRequest::class);
+        $normalizedParamsProphecy = $this->prophesize(NormalizedParams::class);
+        $normalizedParamsProphecy->getRequestUrl()->willReturn('');
+        $serverRequestProphecy->getAttribute('normalizedParams')->willReturn($normalizedParamsProphecy->reveal());
+        $serverRequestProphecy->getServerParams()->willReturn(
+            [
+                'HTTP_REFERER' => '',
+                'HTTP_USER_AGENT' => '',
+                'HTTP_X_FORWARDED_FOR' => '',
+            ]
+        );
 
         $subject = new PlausibleService(new RequestFactory(), new Client(), $this->setupConfigurationServiceProphecy('waldhacker.dev')->reveal());
         $subject->setLogger($loggerProphecy->reveal());
 
-        self::assertFalse($subject->recordEvent($params['site_id'], 'https://plausible.io/', '404', new ServerRequest()));
-        //self::assertCount(1, $historyContainer);
-        */
+        // no plausibleSiteId given
+        self::assertFalse($subject->recordEvent('', 'https://plausible.io/', '404', $serverRequestProphecy->reveal()));
+        $loggerProphecy->warning('Plausible site id can\'t be blank on recording event at endpoint "api/event"')->shouldBeCalled();
+        // no Plausible API base given
+        self::assertFalse($subject->recordEvent('waldhacker.dev', '', '404', $serverRequestProphecy->reveal()));
+        $loggerProphecy->warning('Plausible API base url can\'t be blank on recording event at endpoint "api/event" for site "waldhacker.dev"')->shouldBeCalled();
+        // no $pageUrl given -> comes from $request->getAttribute('normalizedParams')->getRequestUrl()
+        self::assertFalse($subject->recordEvent('waldhacker.dev', 'https://plausible.io/', '404', $serverRequestProphecy->reveal()));
+        $loggerProphecy->warning('Plausible page url can\'t be blank on recording event at endpoint "api/event" for site "waldhacker.dev"')->shouldBeCalled();
+        // no eventName given
+        $normalizedParamsProphecy->getRequestUrl()->willReturn('/no/site/');
+        self::assertFalse($subject->recordEvent('waldhacker.dev', 'https://plausible.io/', '', $serverRequestProphecy->reveal()));
+        $loggerProphecy->warning('Plausible event name can\'t be blank on recording event at endpoint "api/event" for site "waldhacker.dev"')->shouldBeCalled();
+        // invalid custom property given -> only scalar values allowed as array items
+        self::assertFalse($subject->recordEvent(
+            'waldhacker.dev',
+            'https://plausible.io/',
+            '404',
+            $serverRequestProphecy->reveal(),
+            ['method' => 'http', 'countries' => ['AT', 'AF']])
+        );
+        $loggerProphecy->warning('Plausible custom properties only accepts scalar values on recording event at endpoint "api/event" for site "waldhacker.dev". The key of the faulty data is: "countries"')->shouldBeCalled();
     }
 
     private function createClientWithHistory(array $responses, array &$historyContainer): Client

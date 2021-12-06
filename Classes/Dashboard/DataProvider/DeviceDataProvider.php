@@ -18,6 +18,7 @@ declare(strict_types=1);
 
 namespace Waldhacker\Plausibleio\Dashboard\DataProvider;
 
+use TYPO3\CMS\Core\Localization\LanguageService;
 use Waldhacker\Plausibleio\Services\PlausibleService;
 
 class DeviceDataProvider
@@ -32,46 +33,82 @@ class DeviceDataProvider
     public function getBrowserData(string $plausibleSiteId, string $timeFrame): array
     {
         $map = [];
-        $result = $this->getData($plausibleSiteId, $timeFrame, 'visit:browser');
+        $responseData = $this->getData($plausibleSiteId, $timeFrame, 'visit:browser');
 
-        foreach ($result as $item) {
+        array_unshift(
+            $responseData['columns'],
+            [
+               'name' => 'browser',
+                'label' => $this->getLanguageService()->getLL('barChart.labels.browser'),
+            ]
+        );
+
+        // clean up data
+        foreach ($responseData['data'] as $item) {
             if (!isset($item['browser']) || !isset($item['visitors'])) {
                 continue;
             }
-            $map[] = ['label' => $item['browser'], 'visitors' => $item['visitors']];
+            $map[] = $item;
         }
 
-        return $map;
+        $map = $this->calcPercentage($map);
+        $responseData['data'] = $map;
+
+        return $responseData;
     }
 
     public function getOSData(string $plausibleSiteId, string $timeFrame): array
     {
         $map = [];
-        $result = $this->getData($plausibleSiteId, $timeFrame, 'visit:os');
+        $responseData = $this->getData($plausibleSiteId, $timeFrame, 'visit:os');
 
-        foreach ($result as $item) {
+        array_unshift(
+            $responseData['columns'],
+            [
+                'name' => 'os',
+                'label' => $this->getLanguageService()->getLL('barChart.labels.os'),
+            ]
+        );
+
+        // clean up data
+        foreach ($responseData['data'] as $item) {
             if (!isset($item['os']) || !isset($item['visitors'])) {
                 continue;
             }
-            $map[] = ['label' => $item['os'], 'visitors' => $item['visitors']];
+            $map[] = $item;
         }
 
-        return $map;
+        $map = $this->calcPercentage($map);
+        $responseData['data'] = $map;
+
+        return $responseData;
     }
 
     public function getDeviceData(string $plausibleSiteId, string $timeFrame): array
     {
         $map = [];
-        $result = $this->getData($plausibleSiteId, $timeFrame, 'visit:device');
+        $responseData = $this->getData($plausibleSiteId, $timeFrame, 'visit:device');
 
-        foreach ($result as $item) {
+        // clean up data
+        foreach ($responseData['data'] as $item) {
             if (!isset($item['device']) || !isset($item['visitors'])) {
                 continue;
             }
-            $map[] = ['label' => $item['device'], 'visitors' => $item['visitors']];
+            $map[] = $item;
         }
 
-        return $map;
+        $map = $this->calcPercentage($map);
+        $responseData['data'] = $map;
+
+        array_unshift(
+            $responseData['columns'],
+            [
+                'name' => 'device',
+                'label' => $this->getLanguageService()->getLL('barChart.labels.screenSize'),
+            ]
+        );
+
+        return $responseData;
     }
 
     private function getData(string $plausibleSiteId, string $timeFrame, string $property): array
@@ -84,7 +121,36 @@ class DeviceDataProvider
             'metrics' => 'visitors',
         ];
 
-        $responseData = $this->plausibleService->sendAuthorizedRequest($plausibleSiteId, $endpoint, $params);
-        return is_array($responseData) ? $responseData : [];
+        $responseData = [];
+        $responseData['data'] = $this->plausibleService->sendAuthorizedRequest($plausibleSiteId, $endpoint, $params);
+        if (!is_array($responseData['data'])) {
+            $responseData['data'] = [];
+        }
+
+        $responseData['columns'][] = [
+            'name' => 'visitors',
+            'label' => $this->getLanguageService()->getLL('barChart.labels.visitors'),
+        ];
+
+        return $responseData;
+    }
+
+    public function calcPercentage(array $dataArray): array
+    {
+        $visitorsSum = 0;
+
+        foreach ($dataArray as $item) {
+            $visitorsSum = $visitorsSum + $item['visitors'];
+        }
+        foreach ($dataArray as $key => $value) {
+            $dataArray[$key]['percentage'] = $value['visitors'] / $visitorsSum * 100;
+        }
+
+        return $dataArray;
+    }
+
+    private function getLanguageService(): LanguageService
+    {
+        return $GLOBALS['LANG'];
     }
 }

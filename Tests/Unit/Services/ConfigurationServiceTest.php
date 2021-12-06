@@ -456,6 +456,7 @@ class ConfigurationServiceTest extends UnitTestCase
             'plausible_includeTrackingScript' => true,
             'plausible_trackingScriptBaseUrl' => 'https://example.com/',
             'plausible_trackingScriptType' => 'plausible.js',
+            'plausible_auto404Tracking' => false,
         ]);
         $siteLanguage2Prophecy->toArray()->willReturn([
             'plausible_baseUrl' => 'https://de.example.com/',
@@ -464,6 +465,7 @@ class ConfigurationServiceTest extends UnitTestCase
             'plausible_includeTrackingScript' => true,
             'plausible_trackingScriptBaseUrl' => 'https://de.example.com/',
             'plausible_trackingScriptType' => 'plausible.js',
+            'plausible_auto404Tracking' => true,
         ]);
         $siteLanguage3Prophecy->toArray()->willReturn([
             'plausible_baseUrl' => 'https://zz.example.com/',
@@ -472,6 +474,7 @@ class ConfigurationServiceTest extends UnitTestCase
             'plausible_includeTrackingScript' => true,
             'plausible_trackingScriptBaseUrl' => 'https://zz.example.com/',
             'plausible_trackingScriptType' => 'plausible.js',
+            'plausible_auto404Tracking' => false,
         ]);
         $siteLanguage4Prophecy->toArray()->willReturn([
             'plausible_baseUrl' => 'https://yy.example.com/',
@@ -480,6 +483,7 @@ class ConfigurationServiceTest extends UnitTestCase
             'plausible_includeTrackingScript' => true,
             'plausible_trackingScriptBaseUrl' => 'https://yy.example.com/',
             'plausible_trackingScriptType' => 'plausible.js',
+            'plausible_auto404Tracking' => false,
         ]);
         $siteLanguage5Prophecy->toArray()->willReturn([
             'plausible_baseUrl' => 'https://dd.example.com/',
@@ -488,6 +492,7 @@ class ConfigurationServiceTest extends UnitTestCase
             'plausible_includeTrackingScript' => true,
             'plausible_trackingScriptBaseUrl' => 'https://dd.example.com/',
             'plausible_trackingScriptType' => 'plausible.js',
+            'plausible_auto404Tracking' => true,
         ]);
 
         $site1Prophecy->getRootPageId()->willReturn(1);
@@ -534,6 +539,7 @@ class ConfigurationServiceTest extends UnitTestCase
                     'includeTrackingScript' => true,
                     'trackingScriptBaseUrl' => 'https://example.com/',
                     'trackingScriptType' => 'plausible.js',
+                    'auto404Tracking' => false,
                 ],
                 'de.example.com' => [
                     'apiUrl' => 'https://de.example.com/',
@@ -542,6 +548,7 @@ class ConfigurationServiceTest extends UnitTestCase
                     'includeTrackingScript' => true,
                     'trackingScriptBaseUrl' => 'https://de.example.com/',
                     'trackingScriptType' => 'plausible.js',
+                    'auto404Tracking' => true,
                 ],
             ],
             $subject->getAvailablePlausibleSiteIdConfigurations()
@@ -636,6 +643,7 @@ class ConfigurationServiceTest extends UnitTestCase
             'plausible_includeTrackingScript' => true,
             'plausible_trackingScriptBaseUrl' => 'https://example.com/',
             'plausible_trackingScriptType' => 'plausible.js',
+            'plausible_auto404Tracking' => false,
         ]);
 
         self::assertSame(
@@ -646,6 +654,7 @@ class ConfigurationServiceTest extends UnitTestCase
                 'includeTrackingScript' => true,
                 'trackingScriptBaseUrl' => 'https://example.com/',
                 'trackingScriptType' => 'plausible.js',
+                'auto404Tracking' => false,
             ],
             $this->subject->getPlausibleConfigurationFromSiteLanguage($siteLanguageProphecy->reveal())
         );

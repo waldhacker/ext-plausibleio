@@ -203,7 +203,17 @@ define([
 
     renderBarChartHeadings(container, columns, clear = true) {
       const headingsTemplate = lit.html`
-        ${columns.map((col) => lit.html`<span class="headerText">${col.label}</span>`)}
+        ${columns.map((col, i, columns) => {
+            let extraClass = '';
+
+            if (i == 0)
+              extraClass = ' firstHeader';
+            if (i == columns.length-1)
+              extraClass = ' lastHeader';
+
+            return lit.html`<span class="headerText${extraClass}">${col.label}</span>`
+          })
+        }
       `;
 
       if (clear) {

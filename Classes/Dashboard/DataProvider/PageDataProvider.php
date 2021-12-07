@@ -18,6 +18,7 @@ declare(strict_types=1);
 
 namespace Waldhacker\Plausibleio\Dashboard\DataProvider;
 
+use TYPO3\CMS\Core\Localization\LanguageService;
 use Waldhacker\Plausibleio\Services\PlausibleService;
 
 class PageDataProvider
@@ -32,46 +33,88 @@ class PageDataProvider
     public function getTopPageData(string $plausibleSiteId, string $timeFrame): array
     {
         $map = [];
-        $result = $this->getData($plausibleSiteId, $timeFrame, 'event:page');
+        $responseData = $this->getData($plausibleSiteId, $timeFrame, 'event:page');
 
-        foreach ($result as $item) {
+        // clean up data
+        foreach ($responseData['data'] as $item) {
             if (!isset($item['page']) || !isset($item['visitors'])) {
                 continue;
             }
-            $map[] = ['label' => $item['page'], 'visitors' => $item['visitors']];
+            $map[] = $item;
         }
 
-        return $map;
+        $map = $this->calcPercentage($map);
+        $responseData['data'] = $map;
+        $responseData['columns'] = [
+            [
+                'name' => 'page',
+                'label' => $this->getLanguageService()->getLL('barChart.labels.pageUrl'),
+            ],
+            [
+                'name' => 'visitors',
+                'label' => $this->getLanguageService()->getLL('barChart.labels.visitors'),
+            ],
+        ];
+
+        return $responseData;
     }
 
     public function getEntryPageData(string $plausibleSiteId, string $timeFrame): array
     {
         $map = [];
-        $result = $this->getData($plausibleSiteId, $timeFrame, 'visit:entry_page');
+        $responseData = $this->getData($plausibleSiteId, $timeFrame, 'visit:entry_page');
 
-        foreach ($result as $item) {
+        // clean up data
+        foreach ($responseData['data'] as $item) {
             if (!isset($item['entry_page']) || !isset($item['visitors'])) {
                 continue;
             }
-            $map[] = ['label' => $item['entry_page'], 'visitors' => $item['visitors']];
+            $map[] = $item;
         }
 
-        return $map;
+        $map = $this->calcPercentage($map);
+        $responseData['data'] = $map;
+        $responseData['columns'] = [
+            [
+                'name' => 'entry_page',
+                'label' => $this->getLanguageService()->getLL('barChart.labels.pageUrl'),
+            ],
+            [
+                'name' => 'visitors',
+                'label' => $this->getLanguageService()->getLL('barChart.labels.uniqueEntrances'),
+            ],
+        ];
+
+        return $responseData;
     }
 
     public function getExitPageData(string $plausibleSiteId, string $timeFrame): array
     {
         $map = [];
-        $result = $this->getData($plausibleSiteId, $timeFrame, 'visit:exit_page');
+        $responseData = $this->getData($plausibleSiteId, $timeFrame, 'visit:exit_page');
 
-        foreach ($result as $item) {
+        // clean up data
+        foreach ($responseData['data'] as $item) {
             if (!isset($item['exit_page']) || !isset($item['visitors'])) {
                 continue;
             }
-            $map[] = ['label' => $item['exit_page'], 'visitors' => $item['visitors']];
+            $map[] = $item;
         }
 
-        return $map;
+        $map = $this->calcPercentage($map);
+        $responseData['data'] = $map;
+        $responseData['columns'] =  [
+            [
+                'name' => 'exit_page',
+                'label' => $this->getLanguageService()->getLL('barChart.labels.pageUrl'),
+            ],
+            [
+                'name' => 'visitors',
+                'label' => $this->getLanguageService()->getLL('barChart.labels.uniqueExits'),
+            ],
+        ];
+
+        return $responseData;
     }
 
     private function getData(string $plausibleSiteId, string $timeFrame, string $property): array
@@ -83,7 +126,32 @@ class PageDataProvider
             'property' => $property
         ];
 
-        $responseData = $this->plausibleService->sendAuthorizedRequest($plausibleSiteId, $endpoint, $params);
-        return is_array($responseData) ? $responseData : [];
+        $responseData = [];
+        $responseData['data'] = $this->plausibleService->sendAuthorizedRequest($plausibleSiteId, $endpoint, $params);
+        if (!is_array($responseData['data'])) {
+            $responseData['data'] = [];
+        }
+
+        return $responseData;
+    }
+
+
+    public function calcPercentage(array $dataArray): array
+    {
+        $visitorsSum = 0;
+
+        foreach ($dataArray as $item) {
+            $visitorsSum = $visitorsSum + $item['visitors'];
+        }
+        foreach ($dataArray as $key => $value) {
+            $dataArray[$key]['percentage'] = $value['visitors'] / $visitorsSum * 100;
+        }
+
+        return $dataArray;
+    }
+
+    private function getLanguageService(): LanguageService
+    {
+        return $GLOBALS['LANG'];
     }
 }

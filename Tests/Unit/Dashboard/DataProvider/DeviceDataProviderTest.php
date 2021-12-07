@@ -387,8 +387,8 @@ class DeviceDataProviderTest extends UnitTestCase
 
     /**
      * @test
-     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::__construct
-     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::calcPercentage
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::__construct
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::calcPercentage
      */
     public function calcPercentageReturnsProperValue()
     {

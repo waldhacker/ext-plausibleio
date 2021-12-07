@@ -44,11 +44,17 @@ $barChartBarPaddingSide: 0.5rem;
         .tab-content {
             .header {
                 display: flex;
-                justify-content: space-between;
                 font-weight: bold;
                 color: #5a5a5a;
-                padding-left: $barChartBarPaddingSide;
-                padding-right: $barChartBarPaddingSide;
+
+                .headerText {
+                    padding-left: $barChartBarPaddingSide;
+                    padding-right: $barChartBarPaddingSide;
+                }
+
+                .firstHeader {
+                    margin-right: auto;
+                }
             }
         }
     }

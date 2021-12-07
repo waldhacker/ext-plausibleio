@@ -43,7 +43,8 @@ class GoalDataProvider
             'period' => $timeFrame,
             'property' => 'event:goal',
             //'property' => 'event:name',
-            'metrics' => 'visitors,pageviews',
+            //'metrics' => 'visitors,pageviews',
+            //'metrics' => 'events',
         ];
 
         $responseData = $this->plausibleService->sendAuthorizedRequest($plausibleSiteId, $endpoint, $params);
@@ -65,10 +66,6 @@ class GoalDataProvider
                 [
                     'name' => 'goal',
                     'label' => $this->getLanguageService()->getLL('barChart.labels.goal'),
-                ],
-                [
-                    'name' => 'pageviews',
-                    'label' => 'Page Views',
                 ],
                 [
                     'name' => 'visitors',

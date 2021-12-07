@@ -19,6 +19,8 @@ declare(strict_types=1);
 namespace Waldhacker\Plausibleio\Tests\Unit\Dashboard\DataProvider;
 
 use Prophecy\PhpUnit\ProphecyTrait;
+use Prophecy\Prophecy\ObjectProphecy;
+use TYPO3\CMS\Core\Localization\LanguageService;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 use Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider;
 use Waldhacker\Plausibleio\Services\PlausibleService;
@@ -27,18 +29,40 @@ class PageDataProviderTest extends UnitTestCase
 {
     use ProphecyTrait;
 
+    private ObjectProphecy $languageServiceProphecy;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->languageServiceProphecy = $this->prophesize(LanguageService::class);
+        $GLOBALS['LANG'] = $this->languageServiceProphecy->reveal();
+    }
+
     public function getTopPageDataReturnsProperValuesDataProvider(): \Generator
     {
         yield 'all items are transformed' => [
             'plausibleSiteId' => 'waldhacker.dev',
             'timeFrame' => '7d',
             'endpointData' => [
-                ['page' => '/de', 'visitors' => 3],
+                ['page' => '/de', 'visitors' => 12],
                 ['page' => '/en', 'visitors' => 4],
             ],
             'expected' => [
-                ['label' => '/de',  'visitors' => 3],
-                ['label' => '/en',  'visitors' => 4],
+                'data' => [
+                    ['page' => '/de', 'visitors' => 12, 'percentage' => 75.0],
+                    ['page' => '/en', 'visitors' => 4, 'percentage' => 25.0],
+                ],
+                'columns' => [
+                    [
+                        'name' => 'page',
+                        'label' => 'Page url'
+                    ],
+                    [
+                        'name' => 'visitors',
+                        'label' => 'Visitors'
+                    ],
+                ],
             ],
         ];
 
@@ -46,13 +70,25 @@ class PageDataProviderTest extends UnitTestCase
             'plausibleSiteId' => 'waldhacker.dev',
             'timeFrame' => '7d',
             'endpointData' => [
-                ['page' => '/de', 'visitors' => 3],
+                ['page' => '/de', 'visitors' => 12],
                 ['page' => '', 'visitors' => 4],
                 ['visitors' => 4],
             ],
             'expected' => [
-                ['label' => '/de',  'visitors' => 3],
-                ['label' => '',  'visitors' => 4],
+                'data' => [
+                    ['page' => '/de', 'visitors' => 12, 'percentage' => 75.0],
+                    ['page' => '', 'visitors' => 4, 'percentage' => 25.0],
+                ],
+                'columns' => [
+                    [
+                        'name' => 'page',
+                        'label' => 'Page url'
+                    ],
+                    [
+                        'name' => 'visitors',
+                        'label' => 'Visitors'
+                    ],
+                ],
             ],
         ];
 
@@ -65,7 +101,19 @@ class PageDataProviderTest extends UnitTestCase
                 ['page' => '/en'],
             ],
             'expected' => [
-                ['label' => '/de',  'visitors' => 3],
+                'data' => [
+                    ['page' => '/de', 'visitors' => 3, 'percentage' => 100],
+                ],
+                'columns' => [
+                    [
+                        'name' => 'page',
+                        'label' => 'Page url'
+                    ],
+                    [
+                        'name' => 'visitors',
+                        'label' => 'Visitors'
+                    ],
+                ],
             ],
         ];
     }
@@ -84,6 +132,9 @@ class PageDataProviderTest extends UnitTestCase
         array $expected
     ): void {
         $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
+
+        $this->languageServiceProphecy->getLL('barChart.labels.pageUrl')->willReturn('Page url');
+        $this->languageServiceProphecy->getLL('barChart.labels.visitors')->willReturn('Visitors');
 
         $plausibleServiceProphecy->sendAuthorizedRequest(
             $plausibleSiteId,
@@ -107,12 +158,24 @@ class PageDataProviderTest extends UnitTestCase
             'plausibleSiteId' => 'waldhacker.dev',
             'timeFrame' => '7d',
             'endpointData' => [
-                ['entry_page' => '/de', 'visitors' => 3],
+                ['entry_page' => '/de', 'visitors' => 12],
                 ['entry_page' => '/en', 'visitors' => 4],
             ],
             'expected' => [
-                ['label' => '/de',  'visitors' => 3],
-                ['label' => '/en',  'visitors' => 4],
+                'data' => [
+                    ['entry_page' => '/de', 'visitors' => 12, 'percentage' => 75.0],
+                    ['entry_page' => '/en', 'visitors' => 4, 'percentage' => 25.0],
+                ],
+                'columns' => [
+                    [
+                        'name' => 'entry_page',
+                        'label' => 'Page url'
+                    ],
+                    [
+                        'name' => 'visitors',
+                        'label' => 'Unique Entrances'
+                    ],
+                ],
             ],
         ];
 
@@ -120,13 +183,25 @@ class PageDataProviderTest extends UnitTestCase
             'plausibleSiteId' => 'waldhacker.dev',
             'timeFrame' => '7d',
             'endpointData' => [
-                ['entry_page' => '/de', 'visitors' => 3],
+                ['entry_page' => '/de', 'visitors' => 12],
                 ['entry_page' => '', 'visitors' => 4],
                 ['visitors' => 4],
             ],
             'expected' => [
-                ['label' => '/de',  'visitors' => 3],
-                ['label' => '',  'visitors' => 4],
+                'data' => [
+                    ['entry_page' => '/de', 'visitors' => 12, 'percentage' => 75.0],
+                    ['entry_page' => '', 'visitors' => 4, 'percentage' => 25.0],
+                ],
+                'columns' => [
+                    [
+                        'name' => 'entry_page',
+                        'label' => 'Page url'
+                    ],
+                    [
+                        'name' => 'visitors',
+                        'label' => 'Unique Entrances'
+                    ],
+                ],
             ],
         ];
 
@@ -139,7 +214,19 @@ class PageDataProviderTest extends UnitTestCase
                 ['entry_page' => '/en'],
             ],
             'expected' => [
-                ['label' => '/de',  'visitors' => 3],
+                'data' => [
+                    ['entry_page' => '/de', 'visitors' => 3, 'percentage' => 100],
+                ],
+                'columns' => [
+                    [
+                        'name' => 'entry_page',
+                        'label' => 'Page url'
+                    ],
+                    [
+                        'name' => 'visitors',
+                        'label' => 'Unique Entrances'
+                    ],
+                ],
             ],
         ];
     }
@@ -158,6 +245,9 @@ class PageDataProviderTest extends UnitTestCase
         array $expected
     ): void {
         $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
+
+        $this->languageServiceProphecy->getLL('barChart.labels.pageUrl')->willReturn('Page url');
+        $this->languageServiceProphecy->getLL('barChart.labels.uniqueEntrances')->willReturn('Unique Entrances');
 
         $plausibleServiceProphecy->sendAuthorizedRequest(
             $plausibleSiteId,
@@ -181,12 +271,24 @@ class PageDataProviderTest extends UnitTestCase
             'plausibleSiteId' => 'waldhacker.dev',
             'timeFrame' => '7d',
             'endpointData' => [
-                ['exit_page' => '/de', 'visitors' => 3],
+                ['exit_page' => '/de', 'visitors' => 12],
                 ['exit_page' => '/en', 'visitors' => 4],
             ],
             'expected' => [
-                ['label' => '/de',  'visitors' => 3],
-                ['label' => '/en',  'visitors' => 4],
+                'data' => [
+                    ['exit_page' => '/de', 'visitors' => 12, 'percentage' => 75.0],
+                    ['exit_page' => '/en', 'visitors' => 4, 'percentage' => 25.0],
+                ],
+                'columns' => [
+                    [
+                        'name' => 'exit_page',
+                        'label' => 'Page url'
+                    ],
+                    [
+                        'name' => 'visitors',
+                        'label' => 'Unique Exits'
+                    ],
+                ],
             ],
         ];
 
@@ -194,13 +296,25 @@ class PageDataProviderTest extends UnitTestCase
             'plausibleSiteId' => 'waldhacker.dev',
             'timeFrame' => '7d',
             'endpointData' => [
-                ['exit_page' => '/de', 'visitors' => 3],
+                ['exit_page' => '/de', 'visitors' => 12],
                 ['exit_page' => '', 'visitors' => 4],
                 ['visitors' => 4],
             ],
             'expected' => [
-                ['label' => '/de',  'visitors' => 3],
-                ['label' => '',  'visitors' => 4],
+                'data' => [
+                    ['exit_page' => '/de', 'visitors' => 12, 'percentage' => 75.0],
+                    ['exit_page' => '', 'visitors' => 4, 'percentage' => 25.0],
+                ],
+                'columns' => [
+                    [
+                        'name' => 'exit_page',
+                        'label' => 'Page url'
+                    ],
+                    [
+                        'name' => 'visitors',
+                        'label' => 'Unique Exits'
+                    ],
+                ],
             ],
         ];
 
@@ -213,7 +327,19 @@ class PageDataProviderTest extends UnitTestCase
                 ['exit_page' => '/en'],
             ],
             'expected' => [
-                ['label' => '/de',  'visitors' => 3],
+                'data' => [
+                    ['exit_page' => '/de', 'visitors' => 3, 'percentage' => 100],
+                ],
+                'columns' => [
+                    [
+                        'name' => 'exit_page',
+                        'label' => 'Page url'
+                    ],
+                    [
+                        'name' => 'visitors',
+                        'label' => 'Unique Exits'
+                    ],
+                ],
             ],
         ];
     }
@@ -224,6 +350,8 @@ class PageDataProviderTest extends UnitTestCase
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::__construct
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::getExitPageData
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::getData
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::__construct
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::calcPercentage
      */
     public function getExitPageDataReturnsProperValues(
         string $plausibleSiteId,
@@ -232,6 +360,9 @@ class PageDataProviderTest extends UnitTestCase
         array $expected
     ): void {
         $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
+
+        $this->languageServiceProphecy->getLL('barChart.labels.pageUrl')->willReturn('Page url');
+        $this->languageServiceProphecy->getLL('barChart.labels.uniqueExits')->willReturn('Unique Exits');
 
         $plausibleServiceProphecy->sendAuthorizedRequest(
             $plausibleSiteId,
@@ -247,5 +378,27 @@ class PageDataProviderTest extends UnitTestCase
 
         $subject = new PageDataProvider($plausibleServiceProphecy->reveal());
         self::assertSame($expected, $subject->getExitPageData($plausibleSiteId, $timeFrame));
+    }
+
+    /**
+     * @test
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::__construct
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::calcPercentage
+     */
+    public function calcPercentageReturnsProperValue()
+    {
+        $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
+        $subject = new PageDataProvider($plausibleServiceProphecy->reveal());
+
+        self::assertSame(
+            [
+                ['device' => 'Tablet', 'visitors' => 3, 'percentage' => 25.0],
+                ['device' => 'Desktop', 'visitors' => 9, 'percentage' => 75.0],
+            ],
+            $subject->calcPercentage([
+                ['device' => 'Tablet', 'visitors' => 3,],
+                ['device' => 'Desktop', 'visitors' => 9,],
+            ])
+        );
     }
 }

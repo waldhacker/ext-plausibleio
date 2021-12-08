@@ -114,14 +114,21 @@ define([
 
     renderOverviewData(widget, data) {
       if (typeof(widget) !== 'undefined' && widget !== null && data) {
-        widget.querySelector(this.options.uniqueVisitorsOverviewItemSelector).innerHTML = this.formatSIPrefix(data.visitors);
-        widget.querySelector(this.options.totalPageviewsOverviewItemSelector).innerHTML = this.formatSIPrefix(data.pageviews);
-        widget.querySelector(this.options.currentVisitorsOverviewItemSelector).innerHTML = this.formatSIPrefix(data.current_visitors);
+        let visitors = data.visitors ? this.formatSIPrefix(data.visitors) : '-';
+        let pageViews = data.pageviews ? this.formatSIPrefix(data.pageviews) : '-';
+        let currentVisitors = data.current_visitors ? this.formatSIPrefix(data.current_visitors) : '-';
+        widget.querySelector(this.options.uniqueVisitorsOverviewItemSelector).innerHTML = visitors;
+        widget.querySelector(this.options.totalPageviewsOverviewItemSelector).innerHTML = pageViews;
+        widget.querySelector(this.options.currentVisitorsOverviewItemSelector).innerHTML = currentVisitors;
 
-        // full minutes
-        let minutes = Math.floor(data.visit_duration / 60);
-        // remaining seconds
-        let seconds = data.visit_duration - minutes * 60;
+        let minutes = 0;
+        let seconds = 0;
+        if (data.visit_duration) {
+          // full minutes
+          minutes = Math.floor(data.visit_duration / 60);
+          // remaining seconds
+          seconds = data.visit_duration - minutes * 60;
+        }
         widget.querySelector(this.options.visitDurationOverviewItemSelector).innerHTML = (minutes > 0 ? minutes + 'm ' : '') + (seconds > 0 ? seconds + 's' : '');
       }
     }

@@ -147,16 +147,48 @@ define([
       widget.dispatchEvent(event);
     }
 
+    dispatchFilterChanged(container) {
+      let dashboardGrid = container.closest(this.options.dashBoardGridSelector);
+      if (dashboardGrid) {
+        let widgets = dashboardGrid.querySelectorAll(this.options.dashboardItemSelector);
+
+        widgets.forEach(function (widget) {
+          let event = new CustomEvent('plausible:filterchange');
+          widget.dispatchEvent(event);
+        });
+      }
+    }
+
+    filterBadgeRemoveButtonOnClick(e, widgetService) {
+      let badge = e.target.closest('.filterBadge');
+
+      if (badge) {
+        let type = badge.dataset.widgetPlausibleFilter ? badge.dataset.widgetPlausibleFilter : null;
+        if (type) {
+          widgetService.removeFilterByType(type);
+          widgetService.dispatchFilterChanged(badge);
+        }
+      }
+    }
+
     renderFilterBar(container) {
       let template = lit.html``;
       let filterData = JSON.parse(BrowserSession.get(this.options.sessionFilterKey));
       let extraClass = 'p-0';
 
+      // render filter badges
       if (Array.isArray(filterData)) {
         template = lit.html`
           ${filterData.map((filter) => {
           return lit.html`
-                <span class="filterBadge">${filter.label} <b>${filter.value}</b></span>
+                <span class="filterBadge" data-widget-plausible-filter="${filter.name}">
+                  <span class="filterBadgeText">${filter.label} <b>${filter.value}</b></span>
+                  <span class="icon icon-size-small icon-state-default" @click=${(event) => this.filterBadgeRemoveButtonOnClick(event, this)}>
+                    <span class="icon-markup">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><g class="icon-color"><path d="M11.9 5.5L9.4 8l2.5 2.5c.2.2.2.5 0 .7l-.7.7c-.2.2-.5.2-.7 0L8 9.4l-2.5 2.5c-.2.2-.5.2-.7 0l-.7-.7c-.2-.2-.2-.5 0-.7L6.6 8 4.1 5.5c-.2-.2-.2-.5 0-.7l.7-.7c.2-.2.5-.2.7 0L8 6.6l2.5-2.5c.2-.2.5-.2.7 0l.7.7c.2.2.2.5 0 .7z"/></g></svg>
+                    </span>
+                  </span>
+                </span>
               `
         })
         }`;
@@ -167,7 +199,13 @@ define([
           container.classList.remove(extraClass);
       }
 
-      lit.render(template, container);
+      container.innerHTML = '';
+
+      let newChild = document.createElement('div');
+      //newChild.classList.add('barchart');
+      let targetElement = container.appendChild(newChild);
+
+      lit.render(template, targetElement);
     }
 
     removeFilterByType(name) {
@@ -184,43 +222,33 @@ define([
       BrowserSession.set(this.options.sessionFilterKey, JSON.stringify(newFilterArray));
     }
 
-    setFilterActionsForBarChart(barChartContainer) {
-      let that = this;
-      let filterLinks = barChartContainer.querySelectorAll(this.options.filterLinkSelector);
+    chartBarOnClick(e, widgetService) {
+      let link = e.target;
 
-      filterLinks.forEach(link =>
-        link.addEventListener('click', function (e) {
-          // add Filter to filter bar and rerender filter bar
-          if (link.dataset.widgetPlausibleFilter && link.dataset.widgetPlausibleFilter !== '') {
-            let value = link.dataset.widgetPlausibleFilterValue;
-            let label = link.dataset.widgetPlausibleFilterLabel ? link.dataset.widgetPlausibleFilterLabel : '';
+      // add Filter to filter bar and rerender filter bar
+      if (link.dataset.widgetPlausibleFilter && link.dataset.widgetPlausibleFilter !== '') {
+        let value = link.dataset.widgetPlausibleFilterValue;
+        let label = link.dataset.widgetPlausibleFilterLabel ? link.dataset.widgetPlausibleFilterLabel : '';
 
-            if (value) {
-              // There may only ever be one filter of each type
-              that.removeFilterByType(link.dataset.widgetPlausibleFilter);
-              let savedFilter = JSON.parse(BrowserSession.get(that.options.sessionFilterKey));
-              if (!Array.isArray(savedFilter))
-                savedFilter = [];
-              savedFilter.push({name: link.dataset.widgetPlausibleFilter, value: value, label: label});
-              BrowserSession.set(that.options.sessionFilterKey, JSON.stringify(savedFilter));
-            }
+        if (value) {
+          // There may only ever be one filter of each type
+          widgetService.removeFilterByType(link.dataset.widgetPlausibleFilter);
+          let savedFilter = JSON.parse(BrowserSession.get(widgetService.options.sessionFilterKey));
+          if (!Array.isArray(savedFilter))
+            savedFilter = [];
+          savedFilter.push({name: link.dataset.widgetPlausibleFilter, value: value, label: label});
+          BrowserSession.set(widgetService.options.sessionFilterKey, JSON.stringify(savedFilter));
+        }
 
-            let dashboardGrid = barChartContainer.closest(that.options.dashBoardGridSelector);
-            let widgets = dashboardGrid.querySelectorAll(that.options.dashboardItemSelector);
-            widgets.forEach(function (widget) {
-              let event = new CustomEvent('plausible:filterchange');
-              widget.dispatchEvent(event);
-            });
-          }
-        })
-      );
+        widgetService.dispatchFilterChanged(link);
+      }
     }
 
     renderBarChartRowCell(rowData, colData) {
       let cell = lit.html`<span>${rowData[colData.name]}</span>`;
 
       if (colData.filter && colData.filter.name !== '')
-        cell = lit.html`<span><a href="#" data-widget-plausible-filter="${colData.filter.name}" data-widget-plausible-filter-value="${rowData[colData.name]}"  data-widget-plausible-filter-label="${colData.filter.label}">${rowData[colData.name]}</a></span>`;
+        cell = lit.html`<span><a href="#" @click=${(event) => this.chartBarOnClick(event, this)} data-widget-plausible-filter="${colData.filter.name}" data-widget-plausible-filter-value="${rowData[colData.name]}"  data-widget-plausible-filter-label="${colData.filter.label}">${rowData[colData.name]}</a></span>`;
 
       return cell;
     }
@@ -275,8 +303,6 @@ define([
 
       lit.render(template, targetElement);
 
-      this.setFilterActionsForBarChart(parentElement);
-
       let tabBodyContainer = parentElement.closest(this.options.tabBodyContainerSelector);
       if (tabBodyContainer != null) {
         let headingsContainer = tabBodyContainer.querySelector(this.options.headingsContainerSelector);
@@ -304,7 +330,11 @@ define([
         container.innerHTML = '';
       }
 
-      lit.render(headingsTemplate, container);
+      let newChild = document.createElement('div');
+      //newChild.classList.add('barchart');
+      let targetElement = container.appendChild(newChild);
+
+      lit.render(headingsTemplate, targetElement);
     }
   }
 

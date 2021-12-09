@@ -35,22 +35,41 @@ $barChartBarPaddingSide: 0.5rem;
 
 .widget-content {
     .widget-content-filter {
+        display: flex;
         padding-top: 0;
         padding-right: 20px;
+        padding-left: calc(20px - 0.25em);
         line-height: 1ex;
 
-        span {
-            color: #fff;
-            background-color: #007bff;
-            display: inline-block;
-            padding: 0.25em 0.4em;
-            font-size: 75%;
-            font-weight: normal;
-            line-height: 1;
-            text-align: center;
-            white-space: nowrap;
-            vertical-align: baseline;
-            border-radius: 0.25rem;
+        div {
+            display: flex;
+
+            .filterBadge {
+                color: black;
+                background-color: white;
+                display: flex;
+                margin-left: 0.25em;
+                font-size: 80%;
+                font-weight: normal;
+                line-height: 1;
+                text-align: center;
+                white-space: nowrap;
+                vertical-align: baseline;
+                border-radius: 0.25rem;
+                border: 1px solid #bbb;
+                box-shadow: inset 0 0 3px 0 rgba(0, 0, 0, 0.075);
+
+                .filterBadgeText {
+                    padding: 0.25em 0.4em;
+                    padding-right: 0;
+                }
+
+                .icon {
+                    align-self: center;
+                    margin: 0 0.25em;
+                    cursor: pointer;
+                }
+            }
         }
     }
 }
@@ -65,17 +84,19 @@ $barChartBarPaddingSide: 0.5rem;
 
         .tab-content {
             .header {
-                display: flex;
-                font-weight: bold;
-                color: #5a5a5a;
+                div {
+                    display: flex;
+                    font-weight: bold;
+                    color: #5a5a5a;
 
-                .headerText {
-                    padding-left: $barChartBarPaddingSide;
-                    padding-right: $barChartBarPaddingSide;
-                }
+                    .headerText {
+                        padding-left: $barChartBarPaddingSide;
+                        padding-right: $barChartBarPaddingSide;
+                    }
 
-                .firstHeader {
-                    margin-right: auto;
+                    .firstHeader {
+                        margin-right: auto;
+                    }
                 }
             }
         }

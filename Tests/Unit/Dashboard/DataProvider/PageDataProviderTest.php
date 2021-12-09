@@ -56,11 +56,15 @@ class PageDataProviderTest extends UnitTestCase
                 'columns' => [
                     [
                         'name' => 'page',
-                        'label' => 'Page url'
+                        'label' => 'Page url',
+                        'filter' => [
+                            'name' => 'page',
+                            'label' => 'Page is',
+                        ],
                     ],
                     [
                         'name' => 'visitors',
-                        'label' => 'Visitors'
+                        'label' => 'Visitors',
                     ],
                 ],
             ],
@@ -82,11 +86,15 @@ class PageDataProviderTest extends UnitTestCase
                 'columns' => [
                     [
                         'name' => 'page',
-                        'label' => 'Page url'
+                        'label' => 'Page url',
+                        'filter' => [
+                            'name' => 'page',
+                            'label' => 'Page is',
+                        ],
                     ],
                     [
                         'name' => 'visitors',
-                        'label' => 'Visitors'
+                        'label' => 'Visitors',
                     ],
                 ],
             ],
@@ -107,11 +115,15 @@ class PageDataProviderTest extends UnitTestCase
                 'columns' => [
                     [
                         'name' => 'page',
-                        'label' => 'Page url'
+                        'label' => 'Page url',
+                        'filter' => [
+                            'name' => 'page',
+                            'label' => 'Page is',
+                            ],
                     ],
                     [
                         'name' => 'visitors',
-                        'label' => 'Visitors'
+                        'label' => 'Visitors',
                     ],
                 ],
             ],
@@ -124,6 +136,8 @@ class PageDataProviderTest extends UnitTestCase
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::__construct
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::getTopPageData
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::getData
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::calcPercentage
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::getLanguageService
      */
     public function getTopPageDataReturnsProperValues(
         string $plausibleSiteId,
@@ -135,6 +149,7 @@ class PageDataProviderTest extends UnitTestCase
 
         $this->languageServiceProphecy->getLL('barChart.labels.pageUrl')->willReturn('Page url');
         $this->languageServiceProphecy->getLL('barChart.labels.visitors')->willReturn('Visitors');
+        $this->languageServiceProphecy->getLL('filter.pageData.pageIs')->willReturn('Page is');
 
         $plausibleServiceProphecy->sendAuthorizedRequest(
             $plausibleSiteId,
@@ -237,6 +252,8 @@ class PageDataProviderTest extends UnitTestCase
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::__construct
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::getEntryPageData
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::getData
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::calcPercentage
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::getLanguageService
      */
     public function getEntryPageDataReturnsProperValues(
         string $plausibleSiteId,
@@ -352,7 +369,8 @@ class PageDataProviderTest extends UnitTestCase
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::getData
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::__construct
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::calcPercentage
-     */
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::getLanguageService
+ */
     public function getExitPageDataReturnsProperValues(
         string $plausibleSiteId,
         string $timeFrame,

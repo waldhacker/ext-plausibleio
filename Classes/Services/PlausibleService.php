@@ -50,7 +50,7 @@ class PlausibleService implements LoggerAwareInterface
         return $prefix . '-' . bin2hex(random_bytes(8));
     }
 
-    private function logWarning(string $text)
+    private function logWarning(string $text): void
     {
         if ($this->logger !== null)
             $this->logger->warning(trim($text));

@@ -66,6 +66,7 @@ define([
       new RegularEvent('widgetContentRendered', function (evt) {
         evt.preventDefault();
         let widget = evt.target;
+        let filterBar = widget.querySelector(WidgetService.options.filterBarSelector);
 
         let pageChartElement = widget.querySelector(that.options.widgetContainerSelector);
         if (typeof(pageChartElement) !== 'undefined' && pageChartElement !== null) {
@@ -75,6 +76,12 @@ define([
 
           widget.addEventListener('plausible:sitechange', function (evt) {
             that.requestUpdatedData(evt, pageChartElement);
+          });
+
+          widget.addEventListener('plausible:filterchange', function (evt) {
+            if (filterBar) {
+              WidgetService.renderFilterBar(filterBar);
+            }
           });
 
           let timeFrameSelect = widget.querySelector(that.options.timeframeSelectSelector);
@@ -90,6 +97,8 @@ define([
           // request and render data
           let configuration = WidgetService.getSiteAndTimeFrameFromDashboardItem(widget);
           WidgetService.dispatchTimeFrameChange(widget, configuration.site, configuration.timeFrame);
+
+          WidgetService.renderFilterBar(filterBar);
 
           Tabs.registerTabsForSessionHandling(widget);
         }

@@ -14,8 +14,9 @@
 
 define([
   'lit',
+  'TYPO3/CMS/Backend/Storage/BrowserSession',
   'TYPO3/CMS/Plausibleio/Contrib/d3-format'
-], function (lit, D3Format) {
+], function (lit, BrowserSession, D3Format) {
   'use strict';
 
   class WidgetService {
@@ -29,6 +30,9 @@ define([
         predefinedSiteSelector: '[data-widget-plausible-predefined-site]',
         tabBodyContainerSelector: '.panel-body',
         headingsContainerSelector: '.header',
+        filterBarSelector: '.widget-content-filter',
+        filterLinkSelector: '[data-widget-plausible-filter]',
+        sessionFilterKey: 'plausible-filter',
       };
     }
 
@@ -143,6 +147,84 @@ define([
       widget.dispatchEvent(event);
     }
 
+    renderFilterBar(container) {
+      let template = lit.html``;
+      let filterData = JSON.parse(BrowserSession.get(this.options.sessionFilterKey));
+      let extraClass = 'p-0';
+
+      if (Array.isArray(filterData)) {
+        template = lit.html`
+          ${filterData.map((filter) => {
+          return lit.html`
+                <span class="filterBadge">${filter.label} <b>${filter.value}</b></span>
+              `
+        })
+        }`;
+
+        if (filterData.count > 0)
+          container.classList.add(extraClass);
+        else
+          container.classList.remove(extraClass);
+      }
+
+      lit.render(template, container);
+    }
+
+    removeFilterByType(name) {
+      let savedFilter = JSON.parse(BrowserSession.get(this.options.sessionFilterKey));
+      let newFilterArray = [];
+
+      if (Array.isArray(savedFilter)) {
+        savedFilter.forEach(filter => {
+            if (filter.name.toLowerCase() != name.toLowerCase())
+              newFilterArray.push(filter);
+          });
+      }
+
+      BrowserSession.set(this.options.sessionFilterKey, JSON.stringify(newFilterArray));
+    }
+
+    setFilterActionsForBarChart(barChartContainer) {
+      let that = this;
+      let filterLinks = barChartContainer.querySelectorAll(this.options.filterLinkSelector);
+
+      filterLinks.forEach(link =>
+        link.addEventListener('click', function (e) {
+          // add Filter to filter bar and rerender filter bar
+          if (link.dataset.widgetPlausibleFilter && link.dataset.widgetPlausibleFilter !== '') {
+            let value = link.dataset.widgetPlausibleFilterValue;
+            let label = link.dataset.widgetPlausibleFilterLabel ? link.dataset.widgetPlausibleFilterLabel : '';
+
+            if (value) {
+              // There may only ever be one filter of each type
+              that.removeFilterByType(link.dataset.widgetPlausibleFilter);
+              let savedFilter = JSON.parse(BrowserSession.get(that.options.sessionFilterKey));
+              if (!Array.isArray(savedFilter))
+                savedFilter = [];
+              savedFilter.push({name: link.dataset.widgetPlausibleFilter, value: value, label: label});
+              BrowserSession.set(that.options.sessionFilterKey, JSON.stringify(savedFilter));
+            }
+
+            let dashboardGrid = barChartContainer.closest(that.options.dashBoardGridSelector);
+            let widgets = dashboardGrid.querySelectorAll(that.options.dashboardItemSelector);
+            widgets.forEach(function (widget) {
+              let event = new CustomEvent('plausible:filterchange');
+              widget.dispatchEvent(event);
+            });
+          }
+        })
+      );
+    }
+
+    renderBarChartRowCell(rowData, colData) {
+      let cell = lit.html`<span>${rowData[colData.name]}</span>`;
+
+      if (colData.filter && colData.filter.name !== '')
+        cell = lit.html`<span><a href="#" data-widget-plausible-filter="${colData.filter.name}" data-widget-plausible-filter-value="${rowData[colData.name]}"  data-widget-plausible-filter-label="${colData.filter.label}">${rowData[colData.name]}</a></span>`;
+
+      return cell;
+    }
+
     renderBarChart(parentElement, data, clear = false) {
       if (typeof(parentElement) === 'undefined' || parentElement === null) {
         console.error('No parent element was specified for the bar chart.')
@@ -164,12 +246,12 @@ define([
       const barLabelTemplate = (row) => lit.html`
         <div>
           <div style="width: ${row.percentage}%; "></div>
-          <span>${row[columns[0].name]}</span>
+          ${this.renderBarChartRowCell(row, columns[0])}
         </div>
       `;
       const hitColumnsTemplate = (row) => lit.html`${hitColumns.map((col) =>
         lit.html`
-        <span>${D3Format.format('.2~s')(row[col.name])}</span>
+          ${this.renderBarChartRowCell(row, col)}
         `)
       }`;
 
@@ -192,6 +274,8 @@ define([
       let targetElement = parentElement.appendChild(newChild);
 
       lit.render(template, targetElement);
+
+      this.setFilterActionsForBarChart(parentElement);
 
       let tabBodyContainer = parentElement.closest(this.options.tabBodyContainerSelector);
       if (tabBodyContainer != null) {

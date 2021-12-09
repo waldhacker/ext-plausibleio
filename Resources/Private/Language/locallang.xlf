@@ -134,6 +134,13 @@
 				<source>Goals</source>
 			</trans-unit>
 
+			<trans-unit id="filter.pageData.pageIs">
+				<source>Page is</source>
+			</trans-unit>
+			<trans-unit id="filter.deviceData.browserIs">
+				<source>Browser is</source>
+			</trans-unit>
+
 			<trans-unit id="timeframes.d">
 				<source>Last %s days</source>
 			</trans-unit>

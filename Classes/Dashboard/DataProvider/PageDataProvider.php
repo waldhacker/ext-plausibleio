@@ -49,6 +49,10 @@ class PageDataProvider
             [
                 'name' => 'page',
                 'label' => $this->getLanguageService()->getLL('barChart.labels.pageUrl'),
+                'filter' => [
+                    'name' => 'page',
+                    'label' => $this->getLanguageService()->getLL('filter.pageData.pageIs'),
+                ],
             ],
             [
                 'name' => 'visitors',

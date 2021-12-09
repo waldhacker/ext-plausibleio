@@ -62,7 +62,7 @@ class Auto404Tracking implements MiddlewareInterface
         if ($response->getStatusCode() == 404) {
             $config = $this->configurationService->getPlausibleConfigurationFromSiteLanguage($request->getAttribute('language'));
 
-            if ($config['auto404Tracking']) {
+            if (is_array($config) && $config['auto404Tracking']) {
                 $cp = ['path' => $request->getAttribute('normalizedParams')->getRequestUri()];
                 $this->plausibleService->recordEvent($config['siteId'], $config['apiUrl'], '404', $request, $cp);
             }

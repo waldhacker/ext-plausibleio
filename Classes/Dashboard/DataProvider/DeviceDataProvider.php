@@ -38,8 +38,12 @@ class DeviceDataProvider
         array_unshift(
             $responseData['columns'],
             [
-               'name' => 'browser',
+                'name' => 'browser',
                 'label' => $this->getLanguageService()->getLL('barChart.labels.browser'),
+                'filter' => [
+                    'name' => 'browser',
+                    'label' => $this->getLanguageService()->getLL('filter.deviceData.browserIs'),
+                ],
             ]
         );
 

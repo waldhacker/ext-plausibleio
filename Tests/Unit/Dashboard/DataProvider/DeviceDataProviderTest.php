@@ -56,11 +56,15 @@ class DeviceDataProviderTest extends UnitTestCase
                 'columns' => [
                     [
                         'name' => 'browser',
-                        'label' => 'Browser'
+                        'label' => 'Browser',
+                        'filter' => [
+                            'name' => 'browser',
+                            'label' => 'Browser is',
+                        ],
                     ],
                     [
                         'name' => 'visitors',
-                        'label' => 'Visitors'
+                        'label' => 'Visitors',
                     ],
                 ],
             ],
@@ -82,11 +86,15 @@ class DeviceDataProviderTest extends UnitTestCase
                 'columns' => [
                     [
                         'name' => 'browser',
-                        'label' => 'Browser'
+                        'label' => 'Browser',
+                        'filter' => [
+                            'name' => 'browser',
+                            'label' => 'Browser is',
+                        ],
                     ],
                     [
                         'name' => 'visitors',
-                        'label' => 'Visitors'
+                        'label' => 'Visitors',
                     ],
                 ],
             ],
@@ -107,11 +115,15 @@ class DeviceDataProviderTest extends UnitTestCase
                 'columns' => [
                     [
                         'name' => 'browser',
-                        'label' => 'Browser'
+                        'label' => 'Browser',
+                        'filter' => [
+                            'name' => 'browser',
+                            'label' => 'Browser is',
+                        ],
                     ],
                     [
                         'name' => 'visitors',
-                        'label' => 'Visitors'
+                        'label' => 'Visitors',
                     ],
                 ],
             ],
@@ -137,6 +149,7 @@ class DeviceDataProviderTest extends UnitTestCase
 
         $this->languageServiceProphecy->getLL('barChart.labels.visitors')->willReturn('Visitors');
         $this->languageServiceProphecy->getLL('barChart.labels.browser')->willReturn('Browser');
+        $this->languageServiceProphecy->getLL('filter.deviceData.browserIs')->willReturn('Browser is');
 
         $plausibleServiceProphecy->sendAuthorizedRequest(
             $plausibleSiteId,

@@ -38,7 +38,8 @@ define([
       new AjaxRequest(this.options.pageEndpoint)
         .withQueryArguments({
           timeFrame: evt.detail.timeFrame,
-          siteId: evt.detail.siteId
+          siteId: evt.detail.siteId,
+          filter: evt.detail.filter,
         })
         .get()
         .then(async (response) => {
@@ -82,6 +83,7 @@ define([
             if (filterBar) {
               WidgetService.renderFilterBar(filterBar);
             }
+            that.requestUpdatedData(evt, pageChartElement);
           });
 
           let timeFrameSelect = widget.querySelector(that.options.timeframeSelectSelector);
@@ -96,7 +98,7 @@ define([
 
           // request and render data
           let configuration = WidgetService.getSiteAndTimeFrameFromDashboardItem(widget);
-          WidgetService.dispatchTimeFrameChange(widget, configuration.site, configuration.timeFrame);
+          WidgetService.dispatchTimeFrameChange(widget, configuration.site, configuration.timeFrame, WidgetService.getFilters());
 
           WidgetService.renderFilterBar(filterBar);
 

@@ -19,6 +19,7 @@ declare(strict_types=1);
 namespace Waldhacker\Plausibleio\Dashboard\Widget;
 
 use TYPO3\CMS\Core\Page\PageRenderer;
+use TYPO3\CMS\Core\Localization\LanguageService;
 use TYPO3\CMS\Dashboard\Widgets\AdditionalCssInterface;
 use TYPO3\CMS\Dashboard\Widgets\RequireJsModuleInterface;
 use TYPO3\CMS\Dashboard\Widgets\WidgetConfigurationInterface;
@@ -111,6 +112,14 @@ class DeviceDataWidget implements WidgetInterface, AdditionalCssInterface, Requi
     private function preparePageRenderer(): void
     {
         $this->pageRenderer->addRequireJsConfiguration([
+            'config' => [
+                'TYPO3/CMS/Plausibleio/WidgetService' => [
+                    'lang' => [
+                        'barChart.labels.os' => $this->getLanguageService()->getLL('barChart.labels.os'),
+                        'barChart.labels.browser' => $this->getLanguageService()->getLL('barChart.labels.browser'),
+                    ],
+                ],
+            ],
             'shim' => [
                 'TYPO3/CMS/Dashboard/WidgetContentCollector' => [
                     'deps' => [
@@ -124,5 +133,10 @@ class DeviceDataWidget implements WidgetInterface, AdditionalCssInterface, Requi
     public function getOptions(): array
     {
         return $this->options;
+    }
+
+    private function getLanguageService(): LanguageService
+    {
+        return $GLOBALS['LANG'];
     }
 }

@@ -38,7 +38,8 @@ define([
       new AjaxRequest(this.options.pageEndpoint)
         .withQueryArguments({
           timeFrame: evt.detail.timeFrame,
-          siteId: evt.detail.siteId
+          siteId: evt.detail.siteId,
+          filter: evt.detail.filter,
         })
         .get()
         .then(async (response) => {
@@ -68,20 +69,21 @@ define([
         let widget = evt.target;
         let filterBar = widget.querySelector(WidgetService.options.filterBarSelector);
 
-        let pageChartElement = widget.querySelector(that.options.widgetContainerSelector);
-        if (typeof(pageChartElement) !== 'undefined' && pageChartElement !== null) {
+        let deviceChartElement = widget.querySelector(that.options.widgetContainerSelector);
+        if (typeof(deviceChartElement) !== 'undefined' && deviceChartElement !== null) {
           widget.addEventListener('plausible:timeframechange', function (evt) {
-            that.requestUpdatedData(evt, pageChartElement);
+            that.requestUpdatedData(evt, deviceChartElement);
           });
 
           widget.addEventListener('plausible:sitechange', function (evt) {
-            that.requestUpdatedData(evt, pageChartElement);
+            that.requestUpdatedData(evt, deviceChartElement);
           });
 
           widget.addEventListener('plausible:filterchange', function (evt) {
             if (filterBar) {
               WidgetService.renderFilterBar(filterBar);
             }
+            that.requestUpdatedData(evt, deviceChartElement);
           });
 
           let timeFrameSelect = widget.querySelector(that.options.timeframeSelectSelector);
@@ -96,7 +98,7 @@ define([
 
           // request and render data
           let configuration = WidgetService.getSiteAndTimeFrameFromDashboardItem(widget);
-          WidgetService.dispatchTimeFrameChange(widget, configuration.site, configuration.timeFrame);
+          WidgetService.dispatchTimeFrameChange(widget, configuration.site, configuration.timeFrame, WidgetService.getFilters());
 
           WidgetService.renderFilterBar(filterBar);
 

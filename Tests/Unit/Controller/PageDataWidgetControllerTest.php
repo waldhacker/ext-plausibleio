@@ -27,6 +27,7 @@ use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 use Waldhacker\Plausibleio\Controller\PageDataWidgetController;
 use Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider;
 use Waldhacker\Plausibleio\Services\ConfigurationService;
+use Waldhacker\Plausibleio\Services\PlausibleService;
 
 class PageDataWidgetControllerTest extends UnitTestCase
 {
@@ -35,6 +36,50 @@ class PageDataWidgetControllerTest extends UnitTestCase
     public function controllerProcessesValidAndInvalidUserInputCorrectlyDataProvider(): \Generator
     {
         yield 'Valid userinput is processed' => [
+            'queryParameters' => ['siteId' => 'site1', 'timeFrame' => 'day', 'filters' => []],
+            'availablePlausibleSiteIds' => ['site1', 'site2', 'site3', 'site4'],
+            'timeFrameValues' => ['day', '7d', '30d', '12mo'],
+            'siteIdFromConfiguration' => 'site4',
+            'timeFrameFromConfiguration' => '12mo',
+            'expectedSiteId' => 'site1',
+            'expectedTimeFrame' => 'day',
+            'expectedFilters' => [],
+        ];
+
+        yield 'Invalid site is ignored and the value from the user configuration is used instead' => [
+            'queryParameters' => ['siteId' => 'site9', 'timeFrame' => 'day', 'filters' => []],
+            'availablePlausibleSiteIds' => ['site1', 'site2', 'site3', 'site4'],
+            'timeFrameValues' => ['day', '7d', '30d', '12mo'],
+            'siteIdFromConfiguration' => 'site4',
+            'timeFrameFromConfiguration' => '12mo',
+            'expectedSiteId' => 'site4',
+            'expectedTimeFrame' => 'day',
+            'expectedFilters' => [],
+        ];
+
+        yield 'Invalid time frame is ignored and the value from the user configuration is used instead' => [
+            'queryParameters' => ['siteId' => 'site1', 'timeFrame' => 'minute', 'filters' => []],
+            'availablePlausibleSiteIds' => ['site1', 'site2', 'site3', 'site4'],
+            'timeFrameValues' => ['day', '7d', '30d', '12mo'],
+            'siteIdFromConfiguration' => 'site4',
+            'timeFrameFromConfiguration' => '12mo',
+            'expectedSiteId' => 'site1',
+            'expectedTimeFrame' => '12mo',
+            'expectedFilters' => [],
+        ];
+
+        yield 'Invalid site and time frame is ignored and the value from the user configuration is used instead' => [
+            'queryParameters' => ['siteId' => 'site9', 'timeFrame' => 'minute', 'filters' => []],
+            'availablePlausibleSiteIds' => ['site1', 'site2', 'site3', 'site4'],
+            'timeFrameValues' => ['day', '7d', '30d', '12mo'],
+            'siteIdFromConfiguration' => 'site4',
+            'timeFrameFromConfiguration' => '12mo',
+            'expectedSiteId' => 'site4',
+            'expectedTimeFrame' => '12mo',
+            'expectedFilters' => [],
+        ];
+
+        yield 'No filters are passed in the ServerRequest' => [
             'queryParameters' => ['siteId' => 'site1', 'timeFrame' => 'day'],
             'availablePlausibleSiteIds' => ['site1', 'site2', 'site3', 'site4'],
             'timeFrameValues' => ['day', '7d', '30d', '12mo'],
@@ -42,36 +87,7 @@ class PageDataWidgetControllerTest extends UnitTestCase
             'timeFrameFromConfiguration' => '12mo',
             'expectedSiteId' => 'site1',
             'expectedTimeFrame' => 'day',
-        ];
-
-        yield 'Invalid site is ignored and the value from the user configuration is used instead' => [
-            'queryParameters' => ['siteId' => 'site9', 'timeFrame' => 'day'],
-            'availablePlausibleSiteIds' => ['site1', 'site2', 'site3', 'site4'],
-            'timeFrameValues' => ['day', '7d', '30d', '12mo'],
-            'siteIdFromConfiguration' => 'site4',
-            'timeFrameFromConfiguration' => '12mo',
-            'expectedSiteId' => 'site4',
-            'expectedTimeFrame' => 'day',
-        ];
-
-        yield 'Invalid time frame is ignored and the value from the user configuration is used instead' => [
-            'queryParameters' => ['siteId' => 'site1', 'timeFrame' => 'minute'],
-            'availablePlausibleSiteIds' => ['site1', 'site2', 'site3', 'site4'],
-            'timeFrameValues' => ['day', '7d', '30d', '12mo'],
-            'siteIdFromConfiguration' => 'site4',
-            'timeFrameFromConfiguration' => '12mo',
-            'expectedSiteId' => 'site1',
-            'expectedTimeFrame' => '12mo',
-        ];
-
-        yield 'Invalid site and time frame is ignored and the value from the user configuration is used instead' => [
-            'queryParameters' => ['siteId' => 'site9', 'timeFrame' => 'minute'],
-            'availablePlausibleSiteIds' => ['site1', 'site2', 'site3', 'site4'],
-            'timeFrameValues' => ['day', '7d', '30d', '12mo'],
-            'siteIdFromConfiguration' => 'site4',
-            'timeFrameFromConfiguration' => '12mo',
-            'expectedSiteId' => 'site4',
-            'expectedTimeFrame' => '12mo',
+            'expectedFilters' => [],
         ];
     }
 
@@ -88,11 +104,13 @@ class PageDataWidgetControllerTest extends UnitTestCase
         string $siteIdFromConfiguration,
         string $timeFrameFromConfiguration,
         string $expectedSiteId,
-        string $expectedTimeFrame
+        string $expectedTimeFrame,
+        array $expectedFilters
     ): void {
         $serverRequestProphecy = $this->prophesize(ServerRequestInterface::class);
         $configurationServiceProphecy = $this->prophesize(ConfigurationService::class);
         $pageDataProviderProphecy = $this->prophesize(PageDataProvider::class);
+        $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
         $responseFactoryProphecy = $this->prophesize(ResponseFactoryInterface::class);
         $responseProphecy = $this->prophesize(ResponseInterface::class);
         $streamProphecy = $this->prophesize(StreamInterface::class);
@@ -107,21 +125,25 @@ class PageDataWidgetControllerTest extends UnitTestCase
         $configurationServiceProphecy->getPlausibleSiteIdFromUserConfiguration()->willReturn($siteIdFromConfiguration);
         $configurationServiceProphecy->getTimeFrameValueFromUserConfiguration()->willReturn($timeFrameFromConfiguration);
 
-        $pageDataProviderProphecy->getTopPageData($expectedSiteId, $expectedTimeFrame)->willReturn(['toppage' => 'data']);
-        $pageDataProviderProphecy->getEntryPageData($expectedSiteId, $expectedTimeFrame)->willReturn(['entrypage' => 'data']);
-        $pageDataProviderProphecy->getExitPageData($expectedSiteId, $expectedTimeFrame)->willReturn(['exitpage' => 'data']);
+        $pageDataProviderProphecy->getTopPageData($expectedSiteId, $expectedTimeFrame, $expectedFilters)->willReturn(['toppage' => 'data']);
+        $pageDataProviderProphecy->getEntryPageData($expectedSiteId, $expectedTimeFrame, $expectedFilters)->willReturn(['entrypage' => 'data']);
+        $pageDataProviderProphecy->getExitPageData($expectedSiteId, $expectedTimeFrame, $expectedFilters)->willReturn(['exitpage' => 'data']);
 
         $configurationServiceProphecy->persistPlausibleSiteIdInUserConfiguration($expectedSiteId)->shouldBeCalled();
         $configurationServiceProphecy->persistTimeFrameValueInUserConfiguration($expectedTimeFrame)->shouldBeCalled();
-        $pageDataProviderProphecy->getTopPageData($expectedSiteId, $expectedTimeFrame)->shouldBeCalled();
-        $pageDataProviderProphecy->getEntryPageData($expectedSiteId, $expectedTimeFrame)->shouldBeCalled();
-        $pageDataProviderProphecy->getExitPageData($expectedSiteId, $expectedTimeFrame)->shouldBeCalled();
+        $pageDataProviderProphecy->getTopPageData($expectedSiteId, $expectedTimeFrame, $expectedFilters)->shouldBeCalled();
+        $pageDataProviderProphecy->getEntryPageData($expectedSiteId, $expectedTimeFrame, $expectedFilters)->shouldBeCalled();
+        $pageDataProviderProphecy->getExitPageData($expectedSiteId, $expectedTimeFrame, $expectedFilters)->shouldBeCalled();
+
+        $plausibleServiceProphecy->checkFilters($expectedFilters)->willReturn([]);
+        $plausibleServiceProphecy->checkFilters($expectedFilters)->shouldBeCalled();
 
         $streamProphecy->write('[{"tab":"toppage","data":{"toppage":"data"}},{"tab":"entrypage","data":{"entrypage":"data"}},{"tab":"exitpage","data":{"exitpage":"data"}}]')->shouldBeCalled();
 
         $subject = new PageDataWidgetController(
             $pageDataProviderProphecy->reveal(),
             $configurationServiceProphecy->reveal(),
+            $plausibleServiceProphecy->reveal(),
             $responseFactoryProphecy->reveal()
         );
 

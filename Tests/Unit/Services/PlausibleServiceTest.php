@@ -260,6 +260,155 @@ class PlausibleServiceTest extends UnitTestCase
         $loggerProphecy->warning('Plausible custom properties only accepts scalar values on recording event at endpoint "api/event" for site "waldhacker.dev". The key of the faulty data is: "countries"')->shouldBeCalled();
     }
 
+    /**
+     * @test
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::__construct
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::checkFilters
+     */
+    public function checkFiltersWillAnUnauthorisedFilterBeRemoved(): void
+    {
+        $configurationServiceProphecy = $this->prophesize(ConfigurationService::class);
+        $subject = new PlausibleService(new RequestFactory(), new Client(), $configurationServiceProphecy->reveal());
+
+        self::assertSame(
+            $subject->checkFilters(
+                [
+                    ['name' => 'event:page'],
+                    ['name' => 'visit:browser_version'],
+                    ['name' => 'illegeal'],
+                    ['name' => 'visit:exit_page'],
+                ]
+            ),
+            [
+                ['name' => 'event:page'],
+                ['name' => 'visit:browser_version'],
+                ['name' => 'visit:exit_page'],
+            ]
+        );
+    }
+
+    /**
+     * @test
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::__construct
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::filtersToPlausibleFilterString
+     */
+    public function filtersToPlausibleFilterStringReturnsValidString(): void
+    {
+        $configurationServiceProphecy = $this->prophesize(ConfigurationService::class);
+        $subject = new PlausibleService(new RequestFactory(), new Client(), $configurationServiceProphecy->reveal());
+
+        self::assertSame(
+            $subject->filtersToPlausibleFilterString(
+                [
+                    ['name' => 'event:page', 'value' => 'page/site'],
+                    ['name' => 'visit:browser_version', 'value' => '46.0'],
+                ]
+            ),
+            'event:page==page/site;visit:browser_version==46.0'
+        );
+        self::assertSame(
+            $subject->filtersToPlausibleFilterString(
+                [
+                    ['name' => 'event:page', 'value' => 'page/site'],
+                    ['name' => 'visit:browser_version', 'value' => '46.0'],
+                    [],
+                ]
+            ),
+            'event:page==page/site;visit:browser_version==46.0'
+        );
+        self::assertSame(
+            $subject->filtersToPlausibleFilterString(
+                [
+                    ['name' => 'event:page', 'value' => 'page/site'],
+                    ['name' => '', 'value' => '46.0'],
+                ]
+            ),
+            'event:page==page/site'
+        );
+        self::assertSame(
+            $subject->filtersToPlausibleFilterString(
+                []
+            ),
+            ''
+        );
+    }
+
+    /**
+     * @test
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::__construct
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::isFilterActivated
+     */
+    public function isFilterActivatedReturnsValidResult(): void
+    {
+        $configurationServiceProphecy = $this->prophesize(ConfigurationService::class);
+        $subject = new PlausibleService(new RequestFactory(), new Client(), $configurationServiceProphecy->reveal());
+
+        // filter is activated
+        self::assertSame(
+            $subject->isFilterActivated(
+                'event:page',
+                [
+                    ['name' => 'event:page', 'value' => 'page/site'],
+                    ['name' => 'visit:browser_version', 'value' => '46.0'],
+                ]
+            ),
+            ['name' => 'event:page', 'value' => 'page/site']
+        );
+        // test case insensitve
+        self::assertSame(
+            $subject->isFilterActivated(
+                'event:page',
+                [
+                    ['name' => 'Event:pagE', 'value' => 'page/site'],
+                    ['name' => 'visit:browser_version', 'value' => '46.0'],
+                ]
+            ),
+            ['name' => 'Event:pagE', 'value' => 'page/site']
+        );
+        // filter is not activated -> return null
+        self::assertNull(
+            $subject->isFilterActivated(
+                'visit:browser',
+                [
+                    ['name' => 'event:page', 'value' => 'page/site'],
+                    ['name' => 'visit:browser_version', 'value' => '46.0'],
+                ]
+            )
+        );
+        // no name was given
+        self::assertNull(
+            $subject->isFilterActivated(
+                '',
+                [
+                    ['name' => 'event:page', 'value' => 'page/site'],
+                    ['name' => 'visit:browser_version', 'value' => '46.0'],
+                ]
+            )
+        );
+        // a filter with an empty name was specified
+        self::assertSame(
+            $subject->isFilterActivated(
+                'event:page',
+                [
+                    ['name' => '', 'value' => '46.0'],
+                    ['name' => 'event:page', 'value' => 'page/site'],
+                ]
+            ),
+            ['name' => 'event:page', 'value' => 'page/site']
+        );
+        // a filter without a name was specified
+        self::assertSame(
+            $subject->isFilterActivated(
+                'event:page',
+                [
+                    ['value' => '46.0'],
+                    ['name' => 'event:page', 'value' => 'page/site'],
+                ]
+            ),
+            ['name' => 'event:page', 'value' => 'page/site']
+        );
+    }
+
     private function createClientWithHistory(array $responses, array &$historyContainer): Client
     {
         $handlerStack = HandlerStack::create(

@@ -13,10 +13,11 @@
  */
 
 define([
+  'module',
   'lit',
   'TYPO3/CMS/Backend/Storage/BrowserSession',
   'TYPO3/CMS/Plausibleio/Contrib/d3-format'
-], function (lit, BrowserSession, D3Format) {
+], function (module, lit, BrowserSession, D3Format) {
   'use strict';
 
   class WidgetService {
@@ -87,7 +88,7 @@ define([
 
         widgets.forEach(function (widget) {
           let configuration = that.getSiteAndTimeFrameFromDashboardItem(widget);
-          that.dispatchTimeFrameChange(widget, configuration.site, configuration.timeFrame);
+          that.dispatchTimeFrameChange(widget, configuration.site, configuration.timeFrame, that.getFilters());
         });
       });
     }
@@ -114,12 +115,19 @@ define([
 
         widgets.forEach(function (widget) {
           let configuration = that.getSiteAndTimeFrameFromDashboardItem(widget);
-          that.dispatchSiteChange(widget, configuration.site, configuration.timeFrame);
+          that.dispatchSiteChange(widget, configuration.site, configuration.timeFrame, that.getFilters());
         });
       });
     }
 
-    dispatchTimeFrameChange(widget, siteId, timeFrame) {
+    /**
+     *
+     * @param Element widget
+     * @param string siteId
+     * @param string timeFrame
+     * @param array[of Filter] filter
+     */
+    dispatchTimeFrameChange(widget, siteId, timeFrame, filter) {
       if (typeof(widget) === 'undefined' || widget === null) {
         return;
       }
@@ -127,13 +135,21 @@ define([
       let event = new CustomEvent('plausible:timeframechange', {
         detail: {
           siteId: siteId,
-          timeFrame: timeFrame
+          timeFrame: timeFrame,
+          filter: filter,
         }
       });
       widget.dispatchEvent(event);
     }
 
-    dispatchSiteChange(widget, siteId, timeFrame) {
+    /**
+     *
+     * @param Element widget receiver of the event
+     * @param string siteId
+     * @param string timeFrame
+     * @param array[of Filter] filter
+     */
+    dispatchSiteChange(widget, siteId, timeFrame, filter) {
       if (typeof(widget) === 'undefined' || widget === null) {
         return;
       }
@@ -141,59 +157,127 @@ define([
       let event = new CustomEvent('plausible:sitechange', {
         detail: {
           siteId: siteId,
-          timeFrame: timeFrame
+          timeFrame: timeFrame,
+          filter: filter,
         }
       });
       widget.dispatchEvent(event);
     }
 
-    dispatchFilterChanged(container) {
-      let dashboardGrid = container.closest(this.options.dashBoardGridSelector);
-      if (dashboardGrid) {
-        let widgets = dashboardGrid.querySelectorAll(this.options.dashboardItemSelector);
+    /**
+     *
+     * @param Element widget. receiver of the event
+     * @param string siteId
+     * @param string timeFrame
+     * @param array[of Filter] filter
+     */
+    dispatchFilterChanged(widget, siteId, timeFrame, filter) {
+      if (typeof (widget) === 'undefined' || widget === null) {
+        return;
+      }
 
-        widgets.forEach(function (widget) {
-          let event = new CustomEvent('plausible:filterchange');
-          widget.dispatchEvent(event);
-        });
+      let event = new CustomEvent('plausible:filterchange', {
+        detail: {
+          siteId: siteId,
+          timeFrame: timeFrame, // filter müssen für jedes dashboard einzeln gespeichert werden
+          filter: filter,
+        }
+      });
+      widget.dispatchEvent(event);
+    }
+
+    /**
+     *
+     * @returns array[of Filter]
+     */
+    getFilters() {
+      let filter = JSON.parse(BrowserSession.get(this.options.sessionFilterKey));
+
+      if (!Array.isArray(filter)) {
+        filter = [];
+      }
+
+      return filter;
+    }
+
+    /**
+     *
+     * @param array[of Filter] filterArray
+     */
+    setFilters(filterArray) {
+      if (Array.isArray(filterArray)) {
+        BrowserSession.set(this.options.sessionFilterKey, JSON.stringify(filterArray));
       }
     }
 
-    filterBadgeRemoveButtonOnClick(e, widgetService) {
-      let badge = e.target.closest('.filterBadge');
-
-      if (badge) {
-        let type = badge.dataset.widgetPlausibleFilter ? badge.dataset.widgetPlausibleFilter : null;
-        if (type) {
-          widgetService.removeFilterByType(type);
-          widgetService.dispatchFilterChanged(badge);
+    /**
+     * Note: The languages must be transmitted via the require.js configuration
+     *         $this->pageRenderer->addRequireJsConfiguration([
+     *            'config' => [
+     *               'TYPO3/CMS/Plausibleio/WidgetService' => [
+     *               'lang' => [
+     *                  'barChart.labels.os' => $this->getLanguageService()->getLL('barChart.labels.os'),
+     *               ],
+     *            ],
+     *         ],
+     *
+     * @param id
+     * @param defaultValue
+     * @returns string
+     */
+    getLL(id, defaultValue) {
+      if (module.config().hasOwnProperty('lang')) {
+        if (module.config().lang.hasOwnProperty(id)) {
+          return module.config().lang[id];
         }
       }
+
+      return defaultValue;
+    }
+
+    /**
+     *
+     * @param string label
+     */
+    labelReplacePlaceholder(label) {
+      let browserFilter = this.getFilterByType('visit:browser');
+      let osFilter = this.getFilterByType('visit:os');
+      let existingLabels = {
+        browser: browserFilter ? browserFilter.value : this.getLL('barChart.labels.browser', 'Browser'),
+        os: osFilter ? osFilter.value : this.getLL('barChart.labels.os', 'Operating system'),
+      }
+
+      Object.entries(existingLabels).forEach(([key, value]) => {
+        label = label.replace('${' + key + '}', value);
+      });
+
+      return label;
     }
 
     renderFilterBar(container) {
       let template = lit.html``;
-      let filterData = JSON.parse(BrowserSession.get(this.options.sessionFilterKey));
+      let filterData = this.getFilters();
       let extraClass = 'p-0';
 
       // render filter badges
       if (Array.isArray(filterData)) {
         template = lit.html`
           ${filterData.map((filter) => {
-          return lit.html`
-                <span class="filterBadge" data-widget-plausible-filter="${filter.name}">
-                  <span class="filterBadgeText">${filter.label} <b>${filter.value}</b></span>
-                  <span class="icon icon-size-small icon-state-default" @click=${(event) => this.filterBadgeRemoveButtonOnClick(event, this)}>
-                    <span class="icon-markup">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><g class="icon-color"><path d="M11.9 5.5L9.4 8l2.5 2.5c.2.2.2.5 0 .7l-.7.7c-.2.2-.5.2-.7 0L8 9.4l-2.5 2.5c-.2.2-.5.2-.7 0l-.7-.7c-.2-.2-.2-.5 0-.7L6.6 8 4.1 5.5c-.2-.2-.2-.5 0-.7l.7-.7c.2-.2.5-.2.7 0L8 6.6l2.5-2.5c.2-.2.5-.2.7 0l.7.7c.2.2.2.5 0 .7z"/></g></svg>
+            let filterLabel = this.labelReplacePlaceholder(filter.label);
+            return lit.html`
+                  <span class="filterBadge" data-widget-plausible-filter="${filter.name}">
+                    <span class="filterBadgeText">${filterLabel} <b>${filter.value}</b></span>
+                    <span class="icon icon-size-small icon-state-default" @click=${(event) => this.filterBadgeRemoveButtonOnClick(event)}>
+                      <span class="icon-markup">
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><g class="icon-color"><path d="M11.9 5.5L9.4 8l2.5 2.5c.2.2.2.5 0 .7l-.7.7c-.2.2-.5.2-.7 0L8 9.4l-2.5 2.5c-.2.2-.5.2-.7 0l-.7-.7c-.2-.2-.2-.5 0-.7L6.6 8 4.1 5.5c-.2-.2-.2-.5 0-.7l.7-.7c.2-.2.5-.2.7 0L8 6.6l2.5-2.5c.2-.2.5-.2.7 0l.7.7c.2.2.2.5 0 .7z"/></g></svg>
+                      </span>
                     </span>
                   </span>
-                </span>
-              `
+                `
         })
         }`;
 
-        if (filterData.count > 0)
+        if (filterData.length == 0)
           container.classList.add(extraClass);
         else
           container.classList.remove(extraClass);
@@ -205,24 +289,57 @@ define([
       //newChild.classList.add('barchart');
       let targetElement = container.appendChild(newChild);
 
-      lit.render(template, targetElement);
+      lit.render(template, targetElement, {eventContext: this});
+    }
+
+    getFilterByType(name) {
+      let savedFilter = this.getFilters();
+      let result = null
+
+      savedFilter.every(filter => {
+        if (filter.name.toLowerCase() == name.toLowerCase()) {
+          result = filter;
+          return false;
+        }
+        return true;
+      });
+
+      return result;
     }
 
     removeFilterByType(name) {
-      let savedFilter = JSON.parse(BrowserSession.get(this.options.sessionFilterKey));
+      let savedFilter = this.getFilters();
       let newFilterArray = [];
 
-      if (Array.isArray(savedFilter)) {
-        savedFilter.forEach(filter => {
-            if (filter.name.toLowerCase() != name.toLowerCase())
-              newFilterArray.push(filter);
-          });
-      }
+      savedFilter.forEach(filter => {
+          if (filter.name.toLowerCase() != name.toLowerCase())
+            newFilterArray.push(filter);
+        });
 
-      BrowserSession.set(this.options.sessionFilterKey, JSON.stringify(newFilterArray));
+      this.setFilters(newFilterArray);
     }
 
-    chartBarOnClick(e, widgetService) {
+    filterBadgeRemoveButtonOnClick(e) {
+      let badge = e.target.closest('.filterBadge');
+
+      if (badge) {
+        let type = badge.dataset.widgetPlausibleFilter ? badge.dataset.widgetPlausibleFilter : null;
+        if (type) {
+          this.removeFilterByType(type);
+
+          let dashboardGrid = badge.closest(this.options.dashBoardGridSelector);
+          if (dashboardGrid) {
+            let widgets = dashboardGrid.querySelectorAll(this.options.dashboardItemSelector);
+            widgets.forEach(function (widget) {
+              let configuration = this.getSiteAndTimeFrameFromDashboardItem(widget);
+              this.dispatchFilterChanged(widget, configuration.site, configuration.timeFrame, this.getFilters());
+            }, this);
+          }
+        }
+      }
+    }
+
+    chartBarOnClick(e) {
       let link = e.target;
 
       // add Filter to filter bar and rerender filter bar
@@ -232,23 +349,35 @@ define([
 
         if (value) {
           // There may only ever be one filter of each type
-          widgetService.removeFilterByType(link.dataset.widgetPlausibleFilter);
-          let savedFilter = JSON.parse(BrowserSession.get(widgetService.options.sessionFilterKey));
-          if (!Array.isArray(savedFilter))
-            savedFilter = [];
-          savedFilter.push({name: link.dataset.widgetPlausibleFilter, value: value, label: label});
-          BrowserSession.set(widgetService.options.sessionFilterKey, JSON.stringify(savedFilter));
-        }
+          this.removeFilterByType(link.dataset.widgetPlausibleFilter);
+          let savedFilters = this.getFilters();
+          if (!Array.isArray(savedFilters))
+            savedFilters = [];
+          savedFilters.push({name: link.dataset.widgetPlausibleFilter, value: value, label: label});
+          this.setFilters(savedFilters);
 
-        widgetService.dispatchFilterChanged(link);
+          let dashboardGrid = link.closest(this.options.dashBoardGridSelector);
+          if (dashboardGrid) {
+            let widgets = dashboardGrid.querySelectorAll(this.options.dashboardItemSelector);
+            widgets.forEach(function (widget) {
+              let configuration = this.getSiteAndTimeFrameFromDashboardItem(widget);
+              this.dispatchFilterChanged(widget, configuration.site, configuration.timeFrame, this.getFilters());
+            }, this);
+          }
+        }
       }
     }
 
     renderBarChartRowCell(rowData, colData) {
-      let cell = lit.html`<span>${rowData[colData.name]}</span>`;
+      let dataValue = rowData[colData.name];
+      let cell = '';
+      if (dataValue != '')
+        cell = lit.html`<span>${dataValue}</span>`;
+      else
+        cell = lit.html`<span>&nbsp;</span>`;
 
-      if (colData.filter && colData.filter.name !== '')
-        cell = lit.html`<span><a href="#" @click=${(event) => this.chartBarOnClick(event, this)} data-widget-plausible-filter="${colData.filter.name}" data-widget-plausible-filter-value="${rowData[colData.name]}"  data-widget-plausible-filter-label="${colData.filter.label}">${rowData[colData.name]}</a></span>`;
+      if (colData.filter && colData.filter.name !== '' && dataValue !== '')
+        cell = lit.html`<span><a href="#" @click=${(event) => this.chartBarOnClick(event)} data-widget-plausible-filter="${colData.filter.name}" data-widget-plausible-filter-value="${dataValue}"  data-widget-plausible-filter-label="${colData.filter.label}">${dataValue}</a></span>`;
 
       return cell;
     }
@@ -301,7 +430,7 @@ define([
       newChild.classList.add('barchart');
       let targetElement = parentElement.appendChild(newChild);
 
-      lit.render(template, targetElement);
+      lit.render(template, targetElement, {eventContext: this});
 
       let tabBodyContainer = parentElement.closest(this.options.tabBodyContainerSelector);
       if (tabBodyContainer != null) {
@@ -315,13 +444,14 @@ define([
       const headingsTemplate = lit.html`
         ${columns.map((col, i, columns) => {
             let extraClass = '';
+            let labelText = this.labelReplacePlaceholder(col.label);
 
             if (i == 0)
               extraClass = ' firstHeader';
             if (i == columns.length-1)
               extraClass = ' lastHeader';
 
-            return lit.html`<span class="headerText${extraClass}">${col.label}</span>`
+            return lit.html`<span class="headerText${extraClass}">${labelText}</span>`
           })
         }
       `;

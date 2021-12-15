@@ -30,26 +30,85 @@ class DeviceDataProvider
         $this->plausibleService = $plausibleService;
     }
 
-    public function getBrowserData(string $plausibleSiteId, string $timeFrame): array
+    public function getBrowserData(string $plausibleSiteId, string $timeFrame, array $filter = []): array
     {
         $map = [];
-        $responseData = $this->getData($plausibleSiteId, $timeFrame, 'visit:browser');
+        $browserFilterActivated = $this->plausibleService->isFilterActivated('visit:browser', $filter);
+        $property = $browserFilterActivated ? 'visit:browser_version' : 'visit:browser';
+        $dataColumnName = $browserFilterActivated ? 'browser_version' : 'browser';
 
+        // show only browser data or, if browser is filtered, show all versions of the selected (filtered) browser
+        $responseData = $this->getData($plausibleSiteId, $timeFrame, $property, $filter);
+
+        // show only browser data or, if browser is filtered, show all versions of the selected (filtered) browser
+        if ($browserFilterActivated) {
+            array_unshift(
+                $responseData['columns'],
+                [
+                    'name' => $dataColumnName,
+                    'label' => $this->getLanguageService()->getLL('barChart.labels.browserVersion'),
+                    'filter' => [
+                        'name' => $property,
+                        'label' => $this->getLanguageService()->getLL('filter.deviceData.browserVersionIs'),
+                    ],
+                ]
+            );
+        }
+        else {
+            array_unshift(
+                $responseData['columns'],
+                [
+                    'name' => $dataColumnName,
+                    'label' => $this->getLanguageService()->getLL('barChart.labels.browser'),
+                    'filter' => [
+                        'name' => $property,
+                        'label' => $this->getLanguageService()->getLL('filter.deviceData.browserIs'),
+                    ],
+                ]
+            );
+        }
+
+        // clean up data
+        foreach ($responseData['data'] as $item) {
+            if (!isset($item[$dataColumnName]) || !isset($item['visitors'])) {
+                continue;
+            }
+            $map[] = $item;
+        }
+
+        $map = $this->calcPercentage($map);
+        $responseData['data'] = $map;
+
+        return $responseData;
+    }
+
+    public function getOSData(string $plausibleSiteId, string $timeFrame, array $filter = []): array
+    {
+        $map = [];
+        $osFilterActivated = $this->plausibleService->isFilterActivated('visit:os', $filter);
+        $property = $osFilterActivated ? 'visit:os_version' : 'visit:os';
+        $dataColumnName = $osFilterActivated ? 'os_version' : 'os';
+        $filterLabel = $osFilterActivated ? 'filter.deviceData.osVersionIs' : 'filter.deviceData.osIs';
+        $columnLabel = $osFilterActivated ? 'barChart.labels.osVersion' : 'barChart.labels.os';
+
+        $responseData = $this->getData($plausibleSiteId, $timeFrame, $property, $filter);
+
+        // show only browser data or, if browser is filtered, show all versions of the selected (filtered) browser
         array_unshift(
             $responseData['columns'],
             [
-                'name' => 'browser',
-                'label' => $this->getLanguageService()->getLL('barChart.labels.browser'),
+                'name' => $dataColumnName,
+                'label' => $this->getLanguageService()->getLL($columnLabel),
                 'filter' => [
-                    'name' => 'browser',
-                    'label' => $this->getLanguageService()->getLL('filter.deviceData.browserIs'),
+                    'name' => $property,
+                    'label' => $this->getLanguageService()->getLL($filterLabel),
                 ],
             ]
         );
 
         // clean up data
         foreach ($responseData['data'] as $item) {
-            if (!isset($item['browser']) || !isset($item['visitors'])) {
+            if (!isset($item[$dataColumnName]) || !isset($item['visitors'])) {
                 continue;
             }
             $map[] = $item;
@@ -61,37 +120,10 @@ class DeviceDataProvider
         return $responseData;
     }
 
-    public function getOSData(string $plausibleSiteId, string $timeFrame): array
+    public function getDeviceData(string $plausibleSiteId, string $timeFrame, array $filter = []): array
     {
         $map = [];
-        $responseData = $this->getData($plausibleSiteId, $timeFrame, 'visit:os');
-
-        array_unshift(
-            $responseData['columns'],
-            [
-                'name' => 'os',
-                'label' => $this->getLanguageService()->getLL('barChart.labels.os'),
-            ]
-        );
-
-        // clean up data
-        foreach ($responseData['data'] as $item) {
-            if (!isset($item['os']) || !isset($item['visitors'])) {
-                continue;
-            }
-            $map[] = $item;
-        }
-
-        $map = $this->calcPercentage($map);
-        $responseData['data'] = $map;
-
-        return $responseData;
-    }
-
-    public function getDeviceData(string $plausibleSiteId, string $timeFrame): array
-    {
-        $map = [];
-        $responseData = $this->getData($plausibleSiteId, $timeFrame, 'visit:device');
+        $responseData = $this->getData($plausibleSiteId, $timeFrame, 'visit:device', $filter);
 
         // clean up data
         foreach ($responseData['data'] as $item) {
@@ -109,13 +141,17 @@ class DeviceDataProvider
             [
                 'name' => 'device',
                 'label' => $this->getLanguageService()->getLL('barChart.labels.screenSize'),
+                'filter' => [
+                    'name' => 'visit:device',
+                    'label' => $this->getLanguageService()->getLL('filter.deviceData.screenSizeIs'),
+                ],
             ]
         );
 
         return $responseData;
     }
 
-    private function getData(string $plausibleSiteId, string $timeFrame, string $property): array
+    private function getData(string $plausibleSiteId, string $timeFrame, string $property, array $filter = []): array
     {
         $endpoint = 'api/v1/stats/breakdown?';
         $params = [
@@ -124,6 +160,10 @@ class DeviceDataProvider
             'property' => $property,
             'metrics' => 'visitors',
         ];
+        $filterStr = $this->plausibleService->filtersToPlausibleFilterString($filter);
+        if ($filterStr) {
+            $params['filters'] = $filterStr;
+        }
 
         $responseData = [];
         $responseData['data'] = $this->plausibleService->sendAuthorizedRequest($plausibleSiteId, $endpoint, $params);

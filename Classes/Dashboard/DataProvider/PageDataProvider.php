@@ -30,10 +30,10 @@ class PageDataProvider
         $this->plausibleService = $plausibleService;
     }
 
-    public function getTopPageData(string $plausibleSiteId, string $timeFrame): array
+    public function getTopPageData(string $plausibleSiteId, string $timeFrame, array $filter = []): array
     {
         $map = [];
-        $responseData = $this->getData($plausibleSiteId, $timeFrame, 'event:page');
+        $responseData = $this->getData($plausibleSiteId, $timeFrame, 'event:page', $filter);
 
         // clean up data
         foreach ($responseData['data'] as $item) {
@@ -50,7 +50,7 @@ class PageDataProvider
                 'name' => 'page',
                 'label' => $this->getLanguageService()->getLL('barChart.labels.pageUrl'),
                 'filter' => [
-                    'name' => 'page',
+                    'name' => 'event:page',
                     'label' => $this->getLanguageService()->getLL('filter.pageData.pageIs'),
                 ],
             ],
@@ -63,10 +63,10 @@ class PageDataProvider
         return $responseData;
     }
 
-    public function getEntryPageData(string $plausibleSiteId, string $timeFrame): array
+    public function getEntryPageData(string $plausibleSiteId, string $timeFrame, array $filter = []): array
     {
         $map = [];
-        $responseData = $this->getData($plausibleSiteId, $timeFrame, 'visit:entry_page');
+        $responseData = $this->getData($plausibleSiteId, $timeFrame, 'visit:entry_page', $filter);
 
         // clean up data
         foreach ($responseData['data'] as $item) {
@@ -82,6 +82,10 @@ class PageDataProvider
             [
                 'name' => 'entry_page',
                 'label' => $this->getLanguageService()->getLL('barChart.labels.pageUrl'),
+                'filter' => [
+                    'name' => 'visit:entry_page',
+                    'label' => $this->getLanguageService()->getLL('filter.pageData.entryPageIs'),
+                ],
             ],
             [
                 'name' => 'visitors',
@@ -92,10 +96,10 @@ class PageDataProvider
         return $responseData;
     }
 
-    public function getExitPageData(string $plausibleSiteId, string $timeFrame): array
+    public function getExitPageData(string $plausibleSiteId, string $timeFrame, array $filter = []): array
     {
         $map = [];
-        $responseData = $this->getData($plausibleSiteId, $timeFrame, 'visit:exit_page');
+        $responseData = $this->getData($plausibleSiteId, $timeFrame, 'visit:exit_page', $filter);
 
         // clean up data
         foreach ($responseData['data'] as $item) {
@@ -111,6 +115,10 @@ class PageDataProvider
             [
                 'name' => 'exit_page',
                 'label' => $this->getLanguageService()->getLL('barChart.labels.pageUrl'),
+                'filter' => [
+                    'name' => 'visit:exit_page',
+                    'label' => $this->getLanguageService()->getLL('filter.pageData.exitPageIs'),
+                ],
             ],
             [
                 'name' => 'visitors',
@@ -121,14 +129,20 @@ class PageDataProvider
         return $responseData;
     }
 
-    private function getData(string $plausibleSiteId, string $timeFrame, string $property): array
+    private function getData(string $plausibleSiteId, string $timeFrame, string $property, array $filter=[]): array
     {
         $endpoint = 'api/v1/stats/breakdown?';
         $params = [
             'site_id' => $plausibleSiteId,
             'period' => $timeFrame,
-            'property' => $property
+            'property' => $property,
+            'metrics' => 'visitors',
+            //'filters' => 'visit:browser==Firefox;event:page==/extensions/unsere-extensions',
         ];
+        $filterStr = $this->plausibleService->filtersToPlausibleFilterString($filter);
+        if ($filterStr) {
+            $params['filters'] = $filterStr;
+        }
 
         $responseData = [];
         $responseData['data'] = $this->plausibleService->sendAuthorizedRequest($plausibleSiteId, $endpoint, $params);

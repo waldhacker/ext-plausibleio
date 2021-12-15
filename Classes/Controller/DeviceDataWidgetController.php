@@ -23,21 +23,25 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider;
 use Waldhacker\Plausibleio\Services\ConfigurationService;
+use Waldhacker\Plausibleio\Services\PlausibleService;
 
 class DeviceDataWidgetController
 {
     private ResponseFactoryInterface $responseFactory;
     private DeviceDataProvider $deviceDataProvider;
     private ConfigurationService $configurationService;
+    private PlausibleService $plausibleService;
 
     public function __construct(
         DeviceDataProvider $deviceDataProvider,
         ConfigurationService $configurationService,
+        PlausibleService $plausibleService,
         ResponseFactoryInterface $responseFactory
     ) {
         $this->responseFactory = $responseFactory;
         $this->deviceDataProvider = $deviceDataProvider;
         $this->configurationService = $configurationService;
+        $this->plausibleService = $plausibleService;
     }
 
     public function __invoke(ServerRequestInterface $request): ResponseInterface
@@ -52,21 +56,28 @@ class DeviceDataWidgetController
             $timeFrame = $this->configurationService->getTimeFrameValueFromUserConfiguration();
         }
 
+        // request->getQueryParams() already returns a json decoded array
+        $filters = $request->getQueryParams()['filter'] ?? null;
+        if (!is_array($filters)) {
+            $filters = [];
+        }
+        $filters = $this->plausibleService->checkFilters($filters);
+
         $this->configurationService->persistPlausibleSiteIdInUserConfiguration($plausibleSiteId);
         $this->configurationService->persistTimeFrameValueInUserConfiguration($timeFrame);
 
         $data = [
             [
                 'tab' => 'browser',
-                'data'=> $this->deviceDataProvider->getBrowserData($plausibleSiteId, $timeFrame),
+                'data'=> $this->deviceDataProvider->getBrowserData($plausibleSiteId, $timeFrame, $filters),
             ],
             [
                 'tab' => 'device',
-                'data' => $this->deviceDataProvider->getDeviceData($plausibleSiteId, $timeFrame),
+                'data' => $this->deviceDataProvider->getDeviceData($plausibleSiteId, $timeFrame, $filters),
             ],
             [
                 'tab' => 'operatingsystem',
-                'data' => $this->deviceDataProvider->getOSData($plausibleSiteId, $timeFrame),
+                'data' => $this->deviceDataProvider->getOSData($plausibleSiteId, $timeFrame, $filters),
             ],
         ];
 

@@ -18,26 +18,31 @@ declare(strict_types=1);
 
 namespace Waldhacker\Plausibleio\Controller;
 
+use PHPUnit\Util\Log\JSON;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider;
 use Waldhacker\Plausibleio\Services\ConfigurationService;
+use Waldhacker\Plausibleio\Services\PlausibleService;
 
 class PageDataWidgetController
 {
     private ResponseFactoryInterface $responseFactory;
     private PageDataProvider $pageDataProvider;
     private ConfigurationService $configurationService;
+    private PlausibleService $plausibleService;
 
     public function __construct(
         PageDataProvider $pageDataProvider,
         ConfigurationService $configurationService,
+        PlausibleService $plausibleService,
         ResponseFactoryInterface $responseFactory
     ) {
         $this->responseFactory = $responseFactory;
         $this->pageDataProvider = $pageDataProvider;
         $this->configurationService = $configurationService;
+        $this->plausibleService = $plausibleService;
     }
 
     public function __invoke(ServerRequestInterface $request): ResponseInterface
@@ -52,21 +57,27 @@ class PageDataWidgetController
             $timeFrame = $this->configurationService->getTimeFrameValueFromUserConfiguration();
         }
 
+        // request->getQueryParams() already returns a json decoded array
+        $filters = $request->getQueryParams()['filter'] ?? null;
+        if (!is_array($filters))
+            $filters = [];
+        $filters = $this->plausibleService->checkFilters($filters);
+
         $this->configurationService->persistPlausibleSiteIdInUserConfiguration($plausibleSiteId);
         $this->configurationService->persistTimeFrameValueInUserConfiguration($timeFrame);
 
         $data = [
             [
                 'tab' => 'toppage',
-                'data'=> $this->pageDataProvider->getTopPageData($plausibleSiteId, $timeFrame),
+                'data'=> $this->pageDataProvider->getTopPageData($plausibleSiteId, $timeFrame, $filters),
             ],
             [
                 'tab' => 'entrypage',
-                'data' => $this->pageDataProvider->getEntryPageData($plausibleSiteId, $timeFrame),
+                'data' => $this->pageDataProvider->getEntryPageData($plausibleSiteId, $timeFrame, $filters),
             ],
             [
                 'tab' => 'exitpage',
-                'data' => $this->pageDataProvider->getExitPageData($plausibleSiteId, $timeFrame),
+                'data' => $this->pageDataProvider->getExitPageData($plausibleSiteId, $timeFrame, $filters),
             ],
         ];
 

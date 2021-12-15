@@ -44,6 +44,7 @@ class DeviceDataProviderTest extends UnitTestCase
         yield 'all items are transformed' => [
             'plausibleSiteId' => 'waldhacker.dev',
             'timeFrame' => '7d',
+            'filters' => [],
             'endpointData' => [
                 ['browser' => 'Firefox', 'visitors' => 12],
                 ['browser' => 'Chrome', 'visitors' => 8],
@@ -58,8 +59,40 @@ class DeviceDataProviderTest extends UnitTestCase
                         'name' => 'browser',
                         'label' => 'Browser',
                         'filter' => [
-                            'name' => 'browser',
+                            'name' => 'visit:browser',
                             'label' => 'Browser is',
+                        ],
+                    ],
+                    [
+                        'name' => 'visitors',
+                        'label' => 'Visitors',
+                    ],
+                ],
+            ],
+        ];
+
+        yield 'all items are transformed with filter' => [
+            'plausibleSiteId' => 'waldhacker.dev',
+            'timeFrame' => '7d',
+            'filters' => [
+                ['name' => 'visit:browser==firefox'],
+            ],
+            'endpointData' => [
+                ['browser_version' => '48.0', 'visitors' => 12],
+                ['browser_version' => '46.0', 'visitors' => 8],
+            ],
+            'expected' => [
+                'data' => [
+                    ['browser_version' => '48.0', 'visitors' => 12, 'percentage' => 60.0],
+                    ['browser_version' => '46.0', 'visitors' => 8, 'percentage' => 40.0],
+                ],
+                'columns' => [
+                    [
+                        'name' => 'browser_version',
+                        'label' => '${browser} version',
+                        'filter' => [
+                            'name' => 'visit:browser_version',
+                            'label' => '${browser} version is',
                         ],
                     ],
                     [
@@ -73,6 +106,7 @@ class DeviceDataProviderTest extends UnitTestCase
         yield 'items without browser are ignored' => [
             'plausibleSiteId' => 'waldhacker.dev',
             'timeFrame' => '7d',
+            'filters' => [],
             'endpointData' => [
                 ['browser' => 'Firefox', 'visitors' => 8],
                 ['browser' => '', 'visitors' => 12],
@@ -88,7 +122,7 @@ class DeviceDataProviderTest extends UnitTestCase
                         'name' => 'browser',
                         'label' => 'Browser',
                         'filter' => [
-                            'name' => 'browser',
+                            'name' => 'visit:browser',
                             'label' => 'Browser is',
                         ],
                     ],
@@ -103,6 +137,7 @@ class DeviceDataProviderTest extends UnitTestCase
         yield 'items without visitors are ignored' => [
             'plausibleSiteId' => 'waldhacker.dev',
             'timeFrame' => '7d',
+            'filters' => [],
             'endpointData' => [
                 ['browser' => 'Firefox', 'visitors' => 99],
                 ['browser' => 'Chrome', 'visitors' => null],
@@ -117,7 +152,7 @@ class DeviceDataProviderTest extends UnitTestCase
                         'name' => 'browser',
                         'label' => 'Browser',
                         'filter' => [
-                            'name' => 'browser',
+                            'name' => 'visit:browser',
                             'label' => 'Browser is',
                         ],
                     ],
@@ -142,6 +177,7 @@ class DeviceDataProviderTest extends UnitTestCase
     public function getBrowserDataReturnsProperValues(
         string $plausibleSiteId,
         string $timeFrame,
+        array $filters,
         ?array $endpointData,
         array $expected
     ): void {
@@ -149,23 +185,35 @@ class DeviceDataProviderTest extends UnitTestCase
 
         $this->languageServiceProphecy->getLL('barChart.labels.visitors')->willReturn('Visitors');
         $this->languageServiceProphecy->getLL('barChart.labels.browser')->willReturn('Browser');
+        $this->languageServiceProphecy->getLL('barChart.labels.browserVersion')->willReturn('${browser} version');
         $this->languageServiceProphecy->getLL('filter.deviceData.browserIs')->willReturn('Browser is');
+        $this->languageServiceProphecy->getLL('filter.deviceData.browserVersionIs')->willReturn('${browser} version is');
+
+        $plausibleServiceProphecy->filtersToPlausibleFilterString([['name' => 'visit:browser==firefox']])->willReturn('visit:browser==firefox');
+        $plausibleServiceProphecy->filtersToPlausibleFilterString([])->willReturn('');
+        $plausibleServiceProphecy->isFilterActivated('visit:browser', [['name' => 'visit:browser==firefox']])->willReturn(['name' => 'visit:browser==firefox']);
+        $plausibleServiceProphecy->isFilterActivated('visit:browser', [])->willReturn(null);
+
+        $authorizedRequestParams = [
+            'site_id' => $plausibleSiteId,
+            'period' => $timeFrame,
+            'property' => $filters ? 'visit:browser_version' : 'visit:browser',
+            'metrics' => 'visitors',
+        ];
+        if ($filters) {
+            $authorizedRequestParams['filters'] = 'visit:browser==firefox';
+        }
 
         $plausibleServiceProphecy->sendAuthorizedRequest(
             $plausibleSiteId,
             'api/v1/stats/breakdown?',
-            [
-                'site_id' => $plausibleSiteId,
-                'period' => $timeFrame,
-                'property' => 'visit:browser',
-                'metrics' => 'visitors',
-            ]
+            $authorizedRequestParams
         )
         ->willReturn($endpointData)
         ->shouldBeCalled();
 
         $subject = new DeviceDataProvider($plausibleServiceProphecy->reveal());
-        self::assertSame($expected, $subject->getBrowserData($plausibleSiteId, $timeFrame));
+        self::assertSame($expected, $subject->getBrowserData($plausibleSiteId, $timeFrame, $filters));
     }
 
     public function getOSDataReturnsProperValuesDataProvider(): \Generator
@@ -173,6 +221,7 @@ class DeviceDataProviderTest extends UnitTestCase
         yield 'all items are transformed' => [
             'plausibleSiteId' => 'waldhacker.dev',
             'timeFrame' => '7d',
+            'filters' => [],
             'endpointData' => [
                 ['os' => 'Windows', 'visitors' => 32],
                 ['os' => 'Linux', 'visitors' => 48],
@@ -185,11 +234,47 @@ class DeviceDataProviderTest extends UnitTestCase
                 'columns' => [
                     [
                         'name' => 'os',
-                        'label' => 'Operating system'
+                        'label' => 'Operating system',
+                        'filter' => [
+                            'name' => 'visit:os',
+                            'label' => 'Operating system is',
+                        ],
                     ],
                     [
                         'name' => 'visitors',
-                        'label' => 'Visitors'
+                        'label' => 'Visitors',
+                    ],
+                ],
+            ],
+        ];
+
+        yield 'all items are transformed with filter' => [
+            'plausibleSiteId' => 'waldhacker.dev',
+            'timeFrame' => '7d',
+            'filters' => [
+                ['name' => 'visit:os==Mac'],
+            ],
+            'endpointData' => [
+                ['os_version' => '10.15', 'visitors' => 32],
+                ['os_version' => '10.11', 'visitors' => 48],
+            ],
+            'expected' => [
+                'data' => [
+                    ['os_version' => '10.15', 'visitors' => 32, 'percentage' => 40.0],
+                    ['os_version' => '10.11', 'visitors' => 48, 'percentage' => 60.0],
+                ],
+                'columns' => [
+                    [
+                        'name' => 'os_version',
+                        'label' => '${os} version',
+                        'filter' => [
+                            'name' => 'visit:os_version',
+                            'label' => '${os} version is',
+                        ],
+                    ],
+                    [
+                        'name' => 'visitors',
+                        'label' => 'Visitors',
                     ],
                 ],
             ],
@@ -198,6 +283,7 @@ class DeviceDataProviderTest extends UnitTestCase
         yield 'items without os are ignored' => [
             'plausibleSiteId' => 'waldhacker.dev',
             'timeFrame' => '7d',
+            'filters' => [],
             'endpointData' => [
                 ['os' => 'Windows', 'visitors' => 5],
                 ['os' => '', 'visitors' => 15],
@@ -211,11 +297,15 @@ class DeviceDataProviderTest extends UnitTestCase
                 'columns' => [
                     [
                         'name' => 'os',
-                        'label' => 'Operating system'
+                        'label' => 'Operating system',
+                        'filter' => [
+                            'name' => 'visit:os',
+                            'label' => 'Operating system is',
+                        ],
                     ],
                     [
                         'name' => 'visitors',
-                        'label' => 'Visitors'
+                        'label' => 'Visitors',
                     ],
                 ],
             ],
@@ -224,6 +314,7 @@ class DeviceDataProviderTest extends UnitTestCase
         yield 'items without visitors are ignored' => [
             'plausibleSiteId' => 'waldhacker.dev',
             'timeFrame' => '7d',
+            'filters' => [],
             'endpointData' => [
                 ['os' => 'Windows', 'visitors' => 3],
                 ['os' => 'Linux', 'visitors' => null],
@@ -236,11 +327,15 @@ class DeviceDataProviderTest extends UnitTestCase
                 'columns' => [
                     [
                         'name' => 'os',
-                        'label' => 'Operating system'
+                        'label' => 'Operating system',
+                        'filter' => [
+                            'name' => 'visit:os',
+                            'label' => 'Operating system is',
+                        ],
                     ],
                     [
                         'name' => 'visitors',
-                        'label' => 'Visitors'
+                        'label' => 'Visitors',
                     ],
                 ],
             ],
@@ -259,6 +354,7 @@ class DeviceDataProviderTest extends UnitTestCase
     public function getOSDataReturnsProperValues(
         string $plausibleSiteId,
         string $timeFrame,
+        array $filters,
         ?array $endpointData,
         array $expected
     ): void {
@@ -266,22 +362,35 @@ class DeviceDataProviderTest extends UnitTestCase
 
         $this->languageServiceProphecy->getLL('barChart.labels.visitors')->willReturn('Visitors');
         $this->languageServiceProphecy->getLL('barChart.labels.os')->willReturn('Operating system');
+        $this->languageServiceProphecy->getLL('barChart.labels.osVersion')->willReturn('${os} version');
+        $this->languageServiceProphecy->getLL('filter.deviceData.osIs')->willReturn('Operating system is');
+        $this->languageServiceProphecy->getLL('filter.deviceData.osVersionIs')->willReturn('${os} version is');
+
+        $plausibleServiceProphecy->filtersToPlausibleFilterString([['name' => 'visit:os==Mac']])->willReturn('visit:os==Mac');
+        $plausibleServiceProphecy->filtersToPlausibleFilterString([])->willReturn('');
+        $plausibleServiceProphecy->isFilterActivated('visit:os', [['name' => 'visit:os==Mac']])->willReturn(['name' => 'visit:os==Mac']);
+        $plausibleServiceProphecy->isFilterActivated('visit:os', [])->willReturn(null);
+
+        $authorizedRequestParams = [
+            'site_id' => $plausibleSiteId,
+            'period' => $timeFrame,
+            'property' => $filters ? 'visit:os_version' : 'visit:os',
+            'metrics' => 'visitors',
+        ];
+        if ($filters) {
+            $authorizedRequestParams['filters'] = 'visit:os==Mac';
+        }
 
         $plausibleServiceProphecy->sendAuthorizedRequest(
             $plausibleSiteId,
             'api/v1/stats/breakdown?',
-            [
-                'site_id' => $plausibleSiteId,
-                'period' => $timeFrame,
-                'property' => 'visit:os',
-                'metrics' => 'visitors',
-            ]
+            $authorizedRequestParams
         )
         ->willReturn($endpointData)
         ->shouldBeCalled();
 
         $subject = new DeviceDataProvider($plausibleServiceProphecy->reveal());
-        self::assertSame($expected, $subject->getOSData($plausibleSiteId, $timeFrame));
+        self::assertSame($expected, $subject->getOSData($plausibleSiteId, $timeFrame, $filters));
     }
 
     public function getDeviceDataReturnsProperValuesDataProvider(): \Generator
@@ -289,6 +398,7 @@ class DeviceDataProviderTest extends UnitTestCase
         yield 'all items are transformed' => [
             'plausibleSiteId' => 'waldhacker.dev',
             'timeFrame' => '7d',
+            'filters' => [],
             'endpointData' => [
                 ['device' => 'Tablet', 'visitors' => 3],
                 ['device' => 'Desktop', 'visitors' => 9],
@@ -301,11 +411,47 @@ class DeviceDataProviderTest extends UnitTestCase
                 'columns' => [
                     [
                         'name' => 'device',
-                        'label' => 'Screen Size'
+                        'label' => 'Screen Size',
+                        'filter' => [
+                            'name' => 'visit:device',
+                            'label' => 'Screen size is',
+                        ],
                     ],
                     [
                         'name' => 'visitors',
-                        'label' => 'Visitors'
+                        'label' => 'Visitors',
+                    ],
+                ],
+            ],
+        ];
+
+        yield 'all items are transformed with filter' => [
+            'plausibleSiteId' => 'waldhacker.dev',
+            'timeFrame' => '7d',
+            'filters' => [
+                ['name' => 'visit:device==Desktop'],
+            ],
+            'endpointData' => [
+                ['device' => 'Desktop', 'visitors' => 3],
+                ['device' => 'Desktop', 'visitors' => 9],
+            ],
+            'expected' => [
+                'data' => [
+                    ['device' => 'Desktop', 'visitors' => 3, 'percentage' => 25.0],
+                    ['device' => 'Desktop', 'visitors' => 9, 'percentage' => 75.0],
+                ],
+                'columns' => [
+                    [
+                        'name' => 'device',
+                        'label' => 'Screen Size',
+                        'filter' => [
+                            'name' => 'visit:device',
+                            'label' => 'Screen size is',
+                        ],
+                    ],
+                    [
+                        'name' => 'visitors',
+                        'label' => 'Visitors',
                     ],
                 ],
             ],
@@ -314,6 +460,7 @@ class DeviceDataProviderTest extends UnitTestCase
         yield 'items without device are ignored' => [
             'plausibleSiteId' => 'waldhacker.dev',
             'timeFrame' => '7d',
+            'filters' => [],
             'endpointData' => [
                 ['device' => 'Tablet', 'visitors' => 9],
                 ['device' => '', 'visitors' => 3],
@@ -327,11 +474,15 @@ class DeviceDataProviderTest extends UnitTestCase
                 'columns' => [
                     [
                         'name' => 'device',
-                        'label' => 'Screen Size'
+                        'label' => 'Screen Size',
+                        'filter' => [
+                            'name' => 'visit:device',
+                            'label' => 'Screen size is',
+                        ],
                     ],
                     [
                         'name' => 'visitors',
-                        'label' => 'Visitors'
+                        'label' => 'Visitors',
                     ],
                 ],
             ],
@@ -340,6 +491,7 @@ class DeviceDataProviderTest extends UnitTestCase
         yield 'items without visitors are ignored' => [
             'plausibleSiteId' => 'waldhacker.dev',
             'timeFrame' => '7d',
+            'filters' => [],
             'endpointData' => [
                 ['device' => 'Tablet', 'visitors' => 3],
                 ['device' => 'Desktop', 'visitors' => null],
@@ -350,11 +502,15 @@ class DeviceDataProviderTest extends UnitTestCase
                 'columns' => [
                     [
                         'name' => 'device',
-                        'label' => 'Screen Size'
+                        'label' => 'Screen Size',
+                        'filter' => [
+                            'name' => 'visit:device',
+                            'label' => 'Screen size is',
+                        ],
                     ],
                     [
                         'name' => 'visitors',
-                        'label' => 'Visitors'
+                        'label' => 'Visitors',
                     ],
                 ],
             ],
@@ -373,6 +529,7 @@ class DeviceDataProviderTest extends UnitTestCase
     public function getDeviceDataReturnsProperValues(
         string $plausibleSiteId,
         string $timeFrame,
+        array $filters,
         ?array $endpointData,
         array $expected
     ): void {
@@ -380,22 +537,31 @@ class DeviceDataProviderTest extends UnitTestCase
 
         $this->languageServiceProphecy->getLL('barChart.labels.visitors')->willReturn('Visitors');
         $this->languageServiceProphecy->getLL('barChart.labels.screenSize')->willReturn('Screen Size');
+        $this->languageServiceProphecy->getLL('filter.deviceData.screenSizeIs')->willReturn('Screen size is');
+
+        $plausibleServiceProphecy->filtersToPlausibleFilterString([['name' => 'visit:device==Desktop']])->willReturn('visit:device==Desktop');
+        $plausibleServiceProphecy->filtersToPlausibleFilterString([])->willReturn('');
+
+        $authorizedRequestParams = [
+            'site_id' => $plausibleSiteId,
+            'period' => $timeFrame,
+            'property' => 'visit:device',
+            'metrics' => 'visitors',
+        ];
+        if ($filters) {
+            $authorizedRequestParams['filters'] = 'visit:device==Desktop';
+        }
 
         $plausibleServiceProphecy->sendAuthorizedRequest(
             $plausibleSiteId,
             'api/v1/stats/breakdown?',
-            [
-                'site_id' => $plausibleSiteId,
-                'period' => $timeFrame,
-                'property' => 'visit:device',
-                'metrics' => 'visitors',
-            ]
+            $authorizedRequestParams
         )
         ->willReturn($endpointData)
         ->shouldBeCalled();
 
         $subject = new DeviceDataProvider($plausibleServiceProphecy->reveal());
-        self::assertSame($expected, $subject->getDeviceData($plausibleSiteId, $timeFrame));
+        self::assertSame($expected, $subject->getDeviceData($plausibleSiteId, $timeFrame, $filters));
     }
 
     /**

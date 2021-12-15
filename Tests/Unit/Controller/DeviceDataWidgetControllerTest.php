@@ -27,6 +27,7 @@ use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 use Waldhacker\Plausibleio\Controller\DeviceDataWidgetController;
 use Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider;
 use Waldhacker\Plausibleio\Services\ConfigurationService;
+use Waldhacker\Plausibleio\Services\PlausibleService;
 
 class DeviceDataWidgetControllerTest extends UnitTestCase
 {
@@ -35,6 +36,50 @@ class DeviceDataWidgetControllerTest extends UnitTestCase
     public function controllerProcessesValidAndInvalidUserInputCorrectlyDataProvider(): \Generator
     {
         yield 'Valid userinput is processed' => [
+            'queryParameters' => ['siteId' => 'site1', 'timeFrame' => 'day', 'filters' => []],
+            'availablePlausibleSiteIds' => ['site1', 'site2', 'site3', 'site4'],
+            'timeFrameValues' => ['day', '7d', '30d', '12mo'],
+            'siteIdFromConfiguration' => 'site4',
+            'timeFrameFromConfiguration' => '12mo',
+            'expectedSiteId' => 'site1',
+            'expectedTimeFrame' => 'day',
+            'filters' => [],
+        ];
+
+        yield 'Invalid site is ignored and the value from the user configuration is used instead' => [
+            'queryParameters' => ['siteId' => 'site9', 'timeFrame' => 'day', 'filters' => []],
+            'availablePlausibleSiteIds' => ['site1', 'site2', 'site3', 'site4'],
+            'timeFrameValues' => ['day', '7d', '30d', '12mo'],
+            'siteIdFromConfiguration' => 'site4',
+            'timeFrameFromConfiguration' => '12mo',
+            'expectedSiteId' => 'site4',
+            'expectedTimeFrame' => 'day',
+            'filters' => [],
+        ];
+
+        yield 'Invalid time frame is ignored and the value from the user configuration is used instead' => [
+            'queryParameters' => ['siteId' => 'site1', 'timeFrame' => 'minute', 'filters' => []],
+            'availablePlausibleSiteIds' => ['site1', 'site2', 'site3', 'site4'],
+            'timeFrameValues' => ['day', '7d', '30d', '12mo'],
+            'siteIdFromConfiguration' => 'site4',
+            'timeFrameFromConfiguration' => '12mo',
+            'expectedSiteId' => 'site1',
+            'expectedTimeFrame' => '12mo',
+            'filters' => [],
+        ];
+
+        yield 'Invalid site and time frame is ignored and the value from the user configuration is used instead' => [
+            'queryParameters' => ['siteId' => 'site9', 'timeFrame' => 'minute', 'filters' => []],
+            'availablePlausibleSiteIds' => ['site1', 'site2', 'site3', 'site4'],
+            'timeFrameValues' => ['day', '7d', '30d', '12mo'],
+            'siteIdFromConfiguration' => 'site4',
+            'timeFrameFromConfiguration' => '12mo',
+            'expectedSiteId' => 'site4',
+            'expectedTimeFrame' => '12mo',
+            'expectedFilters' => [],
+        ];
+
+        yield 'No filters are passed in the ServerRequest' => [
             'queryParameters' => ['siteId' => 'site1', 'timeFrame' => 'day'],
             'availablePlausibleSiteIds' => ['site1', 'site2', 'site3', 'site4'],
             'timeFrameValues' => ['day', '7d', '30d', '12mo'],
@@ -42,36 +87,7 @@ class DeviceDataWidgetControllerTest extends UnitTestCase
             'timeFrameFromConfiguration' => '12mo',
             'expectedSiteId' => 'site1',
             'expectedTimeFrame' => 'day',
-        ];
-
-        yield 'Invalid site is ignored and the value from the user configuration is used instead' => [
-            'queryParameters' => ['siteId' => 'site9', 'timeFrame' => 'day'],
-            'availablePlausibleSiteIds' => ['site1', 'site2', 'site3', 'site4'],
-            'timeFrameValues' => ['day', '7d', '30d', '12mo'],
-            'siteIdFromConfiguration' => 'site4',
-            'timeFrameFromConfiguration' => '12mo',
-            'expectedSiteId' => 'site4',
-            'expectedTimeFrame' => 'day',
-        ];
-
-        yield 'Invalid time frame is ignored and the value from the user configuration is used instead' => [
-            'queryParameters' => ['siteId' => 'site1', 'timeFrame' => 'minute'],
-            'availablePlausibleSiteIds' => ['site1', 'site2', 'site3', 'site4'],
-            'timeFrameValues' => ['day', '7d', '30d', '12mo'],
-            'siteIdFromConfiguration' => 'site4',
-            'timeFrameFromConfiguration' => '12mo',
-            'expectedSiteId' => 'site1',
-            'expectedTimeFrame' => '12mo',
-        ];
-
-        yield 'Invalid site and time frame is ignored and the value from the user configuration is used instead' => [
-            'queryParameters' => ['siteId' => 'site9', 'timeFrame' => 'minute'],
-            'availablePlausibleSiteIds' => ['site1', 'site2', 'site3', 'site4'],
-            'timeFrameValues' => ['day', '7d', '30d', '12mo'],
-            'siteIdFromConfiguration' => 'site4',
-            'timeFrameFromConfiguration' => '12mo',
-            'expectedSiteId' => 'site4',
-            'expectedTimeFrame' => '12mo',
+            'filters' => [],
         ];
     }
 
@@ -88,11 +104,13 @@ class DeviceDataWidgetControllerTest extends UnitTestCase
         string $siteIdFromConfiguration,
         string $timeFrameFromConfiguration,
         string $expectedSiteId,
-        string $expectedTimeFrame
+        string $expectedTimeFrame,
+        array $expectedFilters
     ): void {
         $serverRequestProphecy = $this->prophesize(ServerRequestInterface::class);
         $configurationServiceProphecy = $this->prophesize(ConfigurationService::class);
         $deviceDataProviderProphecy = $this->prophesize(DeviceDataProvider::class);
+        $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
         $responseFactoryProphecy = $this->prophesize(ResponseFactoryInterface::class);
         $responseProphecy = $this->prophesize(ResponseInterface::class);
         $streamProphecy = $this->prophesize(StreamInterface::class);
@@ -107,21 +125,25 @@ class DeviceDataWidgetControllerTest extends UnitTestCase
         $configurationServiceProphecy->getPlausibleSiteIdFromUserConfiguration()->willReturn($siteIdFromConfiguration);
         $configurationServiceProphecy->getTimeFrameValueFromUserConfiguration()->willReturn($timeFrameFromConfiguration);
 
-        $deviceDataProviderProphecy->getBrowserData($expectedSiteId, $expectedTimeFrame)->willReturn(['browser' => 'data']);
-        $deviceDataProviderProphecy->getDeviceData($expectedSiteId, $expectedTimeFrame)->willReturn(['device' => 'data']);
-        $deviceDataProviderProphecy->getOSData($expectedSiteId, $expectedTimeFrame)->willReturn(['os' => 'data']);
+        $deviceDataProviderProphecy->getBrowserData($expectedSiteId, $expectedTimeFrame, $expectedFilters)->willReturn(['browser' => 'data']);
+        $deviceDataProviderProphecy->getDeviceData($expectedSiteId, $expectedTimeFrame, $expectedFilters)->willReturn(['device' => 'data']);
+        $deviceDataProviderProphecy->getOSData($expectedSiteId, $expectedTimeFrame, $expectedFilters)->willReturn(['os' => 'data']);
 
         $configurationServiceProphecy->persistPlausibleSiteIdInUserConfiguration($expectedSiteId)->shouldBeCalled();
         $configurationServiceProphecy->persistTimeFrameValueInUserConfiguration($expectedTimeFrame)->shouldBeCalled();
-        $deviceDataProviderProphecy->getBrowserData($expectedSiteId, $expectedTimeFrame)->shouldBeCalled();
-        $deviceDataProviderProphecy->getDeviceData($expectedSiteId, $expectedTimeFrame)->shouldBeCalled();
-        $deviceDataProviderProphecy->getOSData($expectedSiteId, $expectedTimeFrame)->shouldBeCalled();
+        $deviceDataProviderProphecy->getBrowserData($expectedSiteId, $expectedTimeFrame, $expectedFilters)->shouldBeCalled();
+        $deviceDataProviderProphecy->getDeviceData($expectedSiteId, $expectedTimeFrame, $expectedFilters)->shouldBeCalled();
+        $deviceDataProviderProphecy->getOSData($expectedSiteId, $expectedTimeFrame, $expectedFilters)->shouldBeCalled();
+
+        $plausibleServiceProphecy->checkFilters($expectedFilters)->willReturn([]);
+        $plausibleServiceProphecy->checkFilters($expectedFilters)->shouldBeCalled();
 
         $streamProphecy->write('[{"tab":"browser","data":{"browser":"data"}},{"tab":"device","data":{"device":"data"}},{"tab":"operatingsystem","data":{"os":"data"}}]')->shouldBeCalled();
 
         $subject = new DeviceDataWidgetController(
             $deviceDataProviderProphecy->reveal(),
             $configurationServiceProphecy->reveal(),
+            $plausibleServiceProphecy->reveal(),
             $responseFactoryProphecy->reveal()
         );
 

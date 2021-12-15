@@ -31,6 +31,17 @@ class PlausibleService implements LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
+    private array $permittedFilters = [
+        'event:page',
+        'visit:entry_page',
+        'visit:exit_page',
+        'visit:browser',
+        'visit:browser_version',
+        'visit:device',
+        'visit:os',
+        'visit:os_version',
+    ];
+
     private RequestFactoryInterface $factory;
     private ClientInterface $client;
     private ConfigurationService $configurationService;
@@ -239,5 +250,66 @@ class PlausibleService implements LoggerAwareInterface
         }
 
         return true;
+    }
+
+    /**
+     * Checks for all filters in $filters whether they are permissible
+     * see: $this->permittedFilters
+     *
+     * @param array $filters
+     * @return array All authorised filters
+     */
+    public function checkFilters(array $filters): array
+    {
+        $checked = [];
+
+        foreach ($filters as $filter) {
+            if (array_key_exists('name', $filter) &&  in_array($filter['name'], $this->permittedFilters)) {
+                $checked[] = $filter;
+            }
+        }
+
+        return $checked;
+    }
+
+    /**
+     * Note: Empty names in filters are not allowed and will be skipped
+     *
+     * @param array $filters
+     * @return string
+     */
+    public function filtersToPlausibleFilterString(array $filters): string
+    {
+        $filterStr = '';
+
+        foreach ($filters as $filter) {
+            if (array_key_exists('name', $filter) && $filter['name'] !== '') {
+                $filterStr = $filterStr . $filter['name'] . '==' . $filter['value'] . ';';
+            }
+        }
+        // remove last ';'
+        $filterStr = trim($filterStr, ';');
+
+        return $filterStr;
+    }
+
+    /**
+     * Note: Empty names in filters are not allowed and will be skipped
+     *
+     * @param string $name An empty name is not allowed
+     * @param array $filters
+     * @return array|null
+     */
+    public function isFilterActivated(string $name, array $filters): ?array
+    {
+        if ($name !== '') {
+            foreach ($filters as $filter) {
+                if (array_key_exists('name', $filter) && strtolower($filter['name']) == strtolower($name)) {
+                    return $filter;
+                }
+            }
+        }
+
+        return null;
     }
 }

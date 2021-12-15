@@ -124,11 +124,17 @@
 			<trans-unit id="barChart.labels.browser">
 				<source>Browser</source>
 			</trans-unit>
+			<trans-unit id="barChart.labels.browserVersion">
+				<source>${browser} version</source>
+			</trans-unit>
 			<trans-unit id="barChart.labels.screenSize">
 				<source>Screen Size</source>
 			</trans-unit>
 			<trans-unit id="barChart.labels.os">
 				<source>Operating system</source>
+			</trans-unit>
+			<trans-unit id="barChart.labels.osVersion">
+				<source>${os} version</source>
 			</trans-unit>
 			<trans-unit id="barChart.labels.goal">
 				<source>Goals</source>
@@ -137,8 +143,26 @@
 			<trans-unit id="filter.pageData.pageIs">
 				<source>Page is</source>
 			</trans-unit>
+			<trans-unit id="filter.pageData.entryPageIs">
+				<source>Entry page is</source>
+			</trans-unit>
+			<trans-unit id="filter.pageData.exitPageIs">
+				<source>Exit page is</source>
+			</trans-unit>
 			<trans-unit id="filter.deviceData.browserIs">
 				<source>Browser is</source>
+			</trans-unit>
+			<trans-unit id="filter.deviceData.browserVersionIs">
+				<source>${browser} version is</source>
+			</trans-unit>
+			<trans-unit id="filter.deviceData.screenSizeIs">
+				<source>Screen size is</source>
+			</trans-unit>
+			<trans-unit id="filter.deviceData.osIs">
+				<source>Operating system is</source>
+			</trans-unit>
+			<trans-unit id="filter.deviceData.osVersionIs">
+				<source>${os} version is</source>
 			</trans-unit>
 
 			<trans-unit id="timeframes.d">

@@ -44,6 +44,7 @@ class PageDataProviderTest extends UnitTestCase
         yield 'all items are transformed' => [
             'plausibleSiteId' => 'waldhacker.dev',
             'timeFrame' => '7d',
+            'filters' => [],
             'endpointData' => [
                 ['page' => '/de', 'visitors' => 12],
                 ['page' => '/en', 'visitors' => 4],
@@ -58,7 +59,7 @@ class PageDataProviderTest extends UnitTestCase
                         'name' => 'page',
                         'label' => 'Page url',
                         'filter' => [
-                            'name' => 'page',
+                            'name' => 'event:page',
                             'label' => 'Page is',
                         ],
                     ],
@@ -73,6 +74,7 @@ class PageDataProviderTest extends UnitTestCase
         yield 'items without page are ignored' => [
             'plausibleSiteId' => 'waldhacker.dev',
             'timeFrame' => '7d',
+            'filters' => [],
             'endpointData' => [
                 ['page' => '/de', 'visitors' => 12],
                 ['page' => '', 'visitors' => 4],
@@ -88,7 +90,7 @@ class PageDataProviderTest extends UnitTestCase
                         'name' => 'page',
                         'label' => 'Page url',
                         'filter' => [
-                            'name' => 'page',
+                            'name' => 'event:page',
                             'label' => 'Page is',
                         ],
                     ],
@@ -103,6 +105,7 @@ class PageDataProviderTest extends UnitTestCase
         yield 'items without visitors are ignored' => [
             'plausibleSiteId' => 'waldhacker.dev',
             'timeFrame' => '7d',
+            'filters' => [],
             'endpointData' => [
                 ['page' => '/de', 'visitors' => 3],
                 ['page' => '/en', 'visitors' => null],
@@ -117,7 +120,7 @@ class PageDataProviderTest extends UnitTestCase
                         'name' => 'page',
                         'label' => 'Page url',
                         'filter' => [
-                            'name' => 'page',
+                            'name' => 'event:page',
                             'label' => 'Page is',
                             ],
                     ],
@@ -142,6 +145,7 @@ class PageDataProviderTest extends UnitTestCase
     public function getTopPageDataReturnsProperValues(
         string $plausibleSiteId,
         string $timeFrame,
+        array $filters,
         ?array $endpointData,
         array $expected
     ): void {
@@ -151,6 +155,11 @@ class PageDataProviderTest extends UnitTestCase
         $this->languageServiceProphecy->getLL('barChart.labels.visitors')->willReturn('Visitors');
         $this->languageServiceProphecy->getLL('filter.pageData.pageIs')->willReturn('Page is');
 
+        //$plausibleServiceProphecy->filtersToPlausibleFilterString([['name' => 'visit:browser==firefox']])->willReturn('visit:browser==firefox');
+        $plausibleServiceProphecy->filtersToPlausibleFilterString([])->willReturn('');
+        //$plausibleServiceProphecy->isFilterActivated('visit:device', [['name' => 'visit:browser==firefox']])->willReturn(['name' => 'visit:browser==firefox']);
+        $plausibleServiceProphecy->isFilterActivated('event:page', [])->willReturn(null);
+
         $plausibleServiceProphecy->sendAuthorizedRequest(
             $plausibleSiteId,
             'api/v1/stats/breakdown?',
@@ -158,13 +167,14 @@ class PageDataProviderTest extends UnitTestCase
                 'site_id' => $plausibleSiteId,
                 'period' => $timeFrame,
                 'property' => 'event:page',
+                'metrics' => 'visitors',
             ]
         )
         ->willReturn($endpointData)
         ->shouldBeCalled();
 
         $subject = new PageDataProvider($plausibleServiceProphecy->reveal());
-        self::assertSame($expected, $subject->getTopPageData($plausibleSiteId, $timeFrame));
+        self::assertSame($expected, $subject->getTopPageData($plausibleSiteId, $timeFrame, $filters));
     }
 
     public function getEntryPageDataReturnsProperValuesDataProvider(): \Generator
@@ -172,6 +182,7 @@ class PageDataProviderTest extends UnitTestCase
         yield 'all items are transformed' => [
             'plausibleSiteId' => 'waldhacker.dev',
             'timeFrame' => '7d',
+            'filters' => [],
             'endpointData' => [
                 ['entry_page' => '/de', 'visitors' => 12],
                 ['entry_page' => '/en', 'visitors' => 4],
@@ -184,11 +195,15 @@ class PageDataProviderTest extends UnitTestCase
                 'columns' => [
                     [
                         'name' => 'entry_page',
-                        'label' => 'Page url'
+                        'label' => 'Page url',
+                        'filter' => [
+                            'name' => 'visit:entry_page',
+                            'label' => 'Entry page is',
+                        ],
                     ],
                     [
                         'name' => 'visitors',
-                        'label' => 'Unique Entrances'
+                        'label' => 'Unique Entrances',
                     ],
                 ],
             ],
@@ -197,6 +212,7 @@ class PageDataProviderTest extends UnitTestCase
         yield 'items without entry_page are ignored' => [
             'plausibleSiteId' => 'waldhacker.dev',
             'timeFrame' => '7d',
+            'filters' => [],
             'endpointData' => [
                 ['entry_page' => '/de', 'visitors' => 12],
                 ['entry_page' => '', 'visitors' => 4],
@@ -210,11 +226,15 @@ class PageDataProviderTest extends UnitTestCase
                 'columns' => [
                     [
                         'name' => 'entry_page',
-                        'label' => 'Page url'
+                        'label' => 'Page url',
+                        'filter' => [
+                            'name' => 'visit:entry_page',
+                            'label' => 'Entry page is',
+                        ],
                     ],
                     [
                         'name' => 'visitors',
-                        'label' => 'Unique Entrances'
+                        'label' => 'Unique Entrances',
                     ],
                 ],
             ],
@@ -223,6 +243,7 @@ class PageDataProviderTest extends UnitTestCase
         yield 'items without visitors are ignored' => [
             'plausibleSiteId' => 'waldhacker.dev',
             'timeFrame' => '7d',
+            'filters' => [],
             'endpointData' => [
                 ['entry_page' => '/de', 'visitors' => 3],
                 ['entry_page' => '/en', 'visitors' => null],
@@ -235,11 +256,15 @@ class PageDataProviderTest extends UnitTestCase
                 'columns' => [
                     [
                         'name' => 'entry_page',
-                        'label' => 'Page url'
+                        'label' => 'Page url',
+                        'filter' => [
+                            'name' => 'visit:entry_page',
+                            'label' => 'Entry page is',
+                        ],
                     ],
                     [
                         'name' => 'visitors',
-                        'label' => 'Unique Entrances'
+                        'label' => 'Unique Entrances',
                     ],
                 ],
             ],
@@ -258,6 +283,7 @@ class PageDataProviderTest extends UnitTestCase
     public function getEntryPageDataReturnsProperValues(
         string $plausibleSiteId,
         string $timeFrame,
+        array $filters,
         ?array $endpointData,
         array $expected
     ): void {
@@ -265,6 +291,12 @@ class PageDataProviderTest extends UnitTestCase
 
         $this->languageServiceProphecy->getLL('barChart.labels.pageUrl')->willReturn('Page url');
         $this->languageServiceProphecy->getLL('barChart.labels.uniqueEntrances')->willReturn('Unique Entrances');
+        $this->languageServiceProphecy->getLL('filter.pageData.entryPageIs')->willReturn('Entry page is');
+
+        //$plausibleServiceProphecy->filtersToPlausibleFilterString([['name' => 'visit:browser==firefox']])->willReturn('visit:browser==firefox');
+        $plausibleServiceProphecy->filtersToPlausibleFilterString([])->willReturn('');
+        //$plausibleServiceProphecy->isFilterActivated('visit:device', [['name' => 'visit:browser==firefox']])->willReturn(['name' => 'visit:browser==firefox']);
+        $plausibleServiceProphecy->isFilterActivated('visit:entry_page', [])->willReturn(null);
 
         $plausibleServiceProphecy->sendAuthorizedRequest(
             $plausibleSiteId,
@@ -273,13 +305,14 @@ class PageDataProviderTest extends UnitTestCase
                 'site_id' => $plausibleSiteId,
                 'period' => $timeFrame,
                 'property' => 'visit:entry_page',
+                'metrics' => 'visitors',
             ]
         )
         ->willReturn($endpointData)
         ->shouldBeCalled();
 
         $subject = new PageDataProvider($plausibleServiceProphecy->reveal());
-        self::assertSame($expected, $subject->getEntryPageData($plausibleSiteId, $timeFrame));
+        self::assertSame($expected, $subject->getEntryPageData($plausibleSiteId, $timeFrame, $filters));
     }
 
     public function getExitPageDataReturnsProperValuesDataProvider(): \Generator
@@ -287,6 +320,7 @@ class PageDataProviderTest extends UnitTestCase
         yield 'all items are transformed' => [
             'plausibleSiteId' => 'waldhacker.dev',
             'timeFrame' => '7d',
+            'filters' => [],
             'endpointData' => [
                 ['exit_page' => '/de', 'visitors' => 12],
                 ['exit_page' => '/en', 'visitors' => 4],
@@ -299,11 +333,15 @@ class PageDataProviderTest extends UnitTestCase
                 'columns' => [
                     [
                         'name' => 'exit_page',
-                        'label' => 'Page url'
+                        'label' => 'Page url',
+                        'filter' => [
+                            'name' => 'visit:exit_page',
+                            'label' => 'Exit page is',
+                        ],
                     ],
                     [
                         'name' => 'visitors',
-                        'label' => 'Unique Exits'
+                        'label' => 'Unique Exits',
                     ],
                 ],
             ],
@@ -312,6 +350,7 @@ class PageDataProviderTest extends UnitTestCase
         yield 'items without exit_page are ignored' => [
             'plausibleSiteId' => 'waldhacker.dev',
             'timeFrame' => '7d',
+            'filters' => [],
             'endpointData' => [
                 ['exit_page' => '/de', 'visitors' => 12],
                 ['exit_page' => '', 'visitors' => 4],
@@ -325,11 +364,15 @@ class PageDataProviderTest extends UnitTestCase
                 'columns' => [
                     [
                         'name' => 'exit_page',
-                        'label' => 'Page url'
+                        'label' => 'Page url',
+                        'filter' => [
+                            'name' => 'visit:exit_page',
+                            'label' => 'Exit page is',
+                        ],
                     ],
                     [
                         'name' => 'visitors',
-                        'label' => 'Unique Exits'
+                        'label' => 'Unique Exits',
                     ],
                 ],
             ],
@@ -338,6 +381,7 @@ class PageDataProviderTest extends UnitTestCase
         yield 'items without visitors are ignored' => [
             'plausibleSiteId' => 'waldhacker.dev',
             'timeFrame' => '7d',
+            'filters' => [],
             'endpointData' => [
                 ['exit_page' => '/de', 'visitors' => 3],
                 ['exit_page' => '/en', 'visitors' => null],
@@ -350,11 +394,15 @@ class PageDataProviderTest extends UnitTestCase
                 'columns' => [
                     [
                         'name' => 'exit_page',
-                        'label' => 'Page url'
+                        'label' => 'Page url',
+                        'filter' => [
+                            'name' => 'visit:exit_page',
+                            'label' => 'Exit page is',
+                        ],
                     ],
                     [
                         'name' => 'visitors',
-                        'label' => 'Unique Exits'
+                        'label' => 'Unique Exits',
                     ],
                 ],
             ],
@@ -374,6 +422,7 @@ class PageDataProviderTest extends UnitTestCase
     public function getExitPageDataReturnsProperValues(
         string $plausibleSiteId,
         string $timeFrame,
+        array $filters,
         ?array $endpointData,
         array $expected
     ): void {
@@ -381,6 +430,12 @@ class PageDataProviderTest extends UnitTestCase
 
         $this->languageServiceProphecy->getLL('barChart.labels.pageUrl')->willReturn('Page url');
         $this->languageServiceProphecy->getLL('barChart.labels.uniqueExits')->willReturn('Unique Exits');
+        $this->languageServiceProphecy->getLL('filter.pageData.exitPageIs')->willReturn('Exit page is');
+
+        //$plausibleServiceProphecy->filtersToPlausibleFilterString([['name' => 'visit:browser==firefox']])->willReturn('visit:browser==firefox');
+        $plausibleServiceProphecy->filtersToPlausibleFilterString([])->willReturn('');
+        //$plausibleServiceProphecy->isFilterActivated('visit:device', [['name' => 'visit:browser==firefox']])->willReturn(['name' => 'visit:browser==firefox']);
+        //$plausibleServiceProphecy->isFilterActivated('visit:exit_page', [])->willReturn(null);
 
         $plausibleServiceProphecy->sendAuthorizedRequest(
             $plausibleSiteId,
@@ -389,13 +444,14 @@ class PageDataProviderTest extends UnitTestCase
                 'site_id' => $plausibleSiteId,
                 'period' => $timeFrame,
                 'property' => 'visit:exit_page',
+                'metrics' => 'visitors',
             ]
         )
         ->willReturn($endpointData)
         ->shouldBeCalled();
 
         $subject = new PageDataProvider($plausibleServiceProphecy->reveal());
-        self::assertSame($expected, $subject->getExitPageData($plausibleSiteId, $timeFrame));
+        self::assertSame($expected, $subject->getExitPageData($plausibleSiteId, $timeFrame, $filters));
     }
 
     /**

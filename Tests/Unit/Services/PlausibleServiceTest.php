@@ -273,16 +273,20 @@ class PlausibleServiceTest extends UnitTestCase
         self::assertSame(
             $subject->checkFilters(
                 [
-                    ['name' => 'event:page'],
+                    ['name' => 'event:page', 'value' => 'page'],
+                    ['name' => 'visit:browser_version', 'value' => '48.0'],
+                    ['name' => 'illegeal', 'value' => 'none'],
+                    ['name' => '', 'value' => 'none'],
+                    ['value' => 'none'],
+                    ['name' => 'visit:browser_version', 'value' => ''],
                     ['name' => 'visit:browser_version'],
-                    ['name' => 'illegeal'],
-                    ['name' => 'visit:exit_page'],
+                    ['name' => 'visit:exit_page', 'value' => 'end/page'],
                 ]
             ),
             [
-                ['name' => 'event:page'],
-                ['name' => 'visit:browser_version'],
-                ['name' => 'visit:exit_page'],
+                ['name' => 'event:page', 'value' => 'page'],
+                ['name' => 'visit:browser_version', 'value' => '48.0'],
+                ['name' => 'visit:exit_page', 'value' => 'end/page'],
             ]
         );
     }
@@ -321,6 +325,17 @@ class PlausibleServiceTest extends UnitTestCase
                 [
                     ['name' => 'event:page', 'value' => 'page/site'],
                     ['name' => '', 'value' => '46.0'],
+                ]
+            ),
+            'event:page==page/site'
+        );
+        // no filter value given
+        self::assertSame(
+            $subject->filtersToPlausibleFilterString(
+                [
+                    ['name' => 'event:page', 'value' => 'page/site'],
+                    ['name' => 'visit:browser_version', 'value' => ''],
+                    ['name' => 'visit:device'],
                 ]
             ),
             'event:page==page/site'
@@ -402,6 +417,18 @@ class PlausibleServiceTest extends UnitTestCase
                 'event:page',
                 [
                     ['value' => '46.0'],
+                    ['name' => 'event:page', 'value' => 'page/site'],
+                ]
+            ),
+            ['name' => 'event:page', 'value' => 'page/site']
+        );
+        // a filter without value was specified
+        self::assertSame(
+            $subject->isFilterActivated(
+                'event:page',
+                [
+                    ['name' => 'visit:browser_version', 'value' => ''],
+                    ['name' => 'visit:browser_version'],
                     ['name' => 'event:page', 'value' => 'page/site'],
                 ]
             ),

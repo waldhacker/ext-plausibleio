@@ -139,6 +139,9 @@
 			<trans-unit id="barChart.labels.goal">
 				<source>Goals</source>
 			</trans-unit>
+			<trans-unit id="barChart.labels.unknown">
+				<source>Unknown</source>
+			</trans-unit>
 
 			<trans-unit id="filter.pageData.pageIs">
 				<source>Page is</source>

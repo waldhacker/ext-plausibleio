@@ -255,6 +255,8 @@ class PlausibleService implements LoggerAwareInterface
     /**
      * Checks for all filters in $filters whether they are permissible
      * see: $this->permittedFilters
+     * Note: Empty names in filters are not allowed and will be skipped
+     * Note: Empty values of filters are not allowed and will be skipped
      *
      * @param array $filters
      * @return array All authorised filters
@@ -264,7 +266,10 @@ class PlausibleService implements LoggerAwareInterface
         $checked = [];
 
         foreach ($filters as $filter) {
-            if (array_key_exists('name', $filter) &&  in_array($filter['name'], $this->permittedFilters)) {
+            if (array_key_exists('name', $filter) &&
+                array_key_exists('value', $filter) &&
+                $filter['value'] !== '' &&
+                in_array($filter['name'], $this->permittedFilters)) {
                 $checked[] = $filter;
             }
         }
@@ -274,6 +279,7 @@ class PlausibleService implements LoggerAwareInterface
 
     /**
      * Note: Empty names in filters are not allowed and will be skipped
+     * Note: Empty values of filters are not allowed and will be skipped
      *
      * @param array $filters
      * @return string
@@ -283,7 +289,10 @@ class PlausibleService implements LoggerAwareInterface
         $filterStr = '';
 
         foreach ($filters as $filter) {
-            if (array_key_exists('name', $filter) && $filter['name'] !== '') {
+            if (array_key_exists('name', $filter) &&
+                array_key_exists('value', $filter) &&
+                $filter['name'] !== '' &&
+                $filter['value'] !== '') {
                 $filterStr = $filterStr . $filter['name'] . '==' . $filter['value'] . ';';
             }
         }
@@ -295,6 +304,7 @@ class PlausibleService implements LoggerAwareInterface
 
     /**
      * Note: Empty names in filters are not allowed and will be skipped
+     * Note: Empty values of filters are not allowed and will be skipped
      *
      * @param string $name An empty name is not allowed
      * @param array $filters
@@ -304,7 +314,10 @@ class PlausibleService implements LoggerAwareInterface
     {
         if ($name !== '') {
             foreach ($filters as $filter) {
-                if (array_key_exists('name', $filter) && strtolower($filter['name']) == strtolower($name)) {
+                if (array_key_exists('name', $filter) &&
+                    array_key_exists('value', $filter) &&
+                    $filter['name'] !== '' &&
+                    strtolower($filter['name']) == strtolower($name)) {
                     return $filter;
                 }
             }

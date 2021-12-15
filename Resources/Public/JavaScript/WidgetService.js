@@ -370,11 +370,12 @@ define([
 
     renderBarChartRowCell(rowData, colData) {
       let dataValue = rowData[colData.name];
+      let valueUnknown = this.getLL('barChart.labels.unknown', 'Unknown');
       let cell = '';
       if (dataValue != '')
         cell = lit.html`<span>${dataValue}</span>`;
       else
-        cell = lit.html`<span>&nbsp;</span>`;
+        cell = lit.html`<span>${valueUnknown}</span>`;
 
       if (colData.filter && colData.filter.name !== '' && dataValue !== '')
         cell = lit.html`<span><a href="#" @click=${(event) => this.chartBarOnClick(event)} data-widget-plausible-filter="${colData.filter.name}" data-widget-plausible-filter-value="${dataValue}"  data-widget-plausible-filter-label="${colData.filter.label}">${dataValue}</a></span>`;

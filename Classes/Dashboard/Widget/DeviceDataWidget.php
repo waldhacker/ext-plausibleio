@@ -117,6 +117,7 @@ class DeviceDataWidget implements WidgetInterface, AdditionalCssInterface, Requi
                     'lang' => [
                         'barChart.labels.os' => $this->getLanguageService()->getLL('barChart.labels.os'),
                         'barChart.labels.browser' => $this->getLanguageService()->getLL('barChart.labels.browser'),
+                        'barChart.labels.unknown' => $this->getLanguageService()->getLL('barChart.labels.unknown'),
                     ],
                 ],
             ],

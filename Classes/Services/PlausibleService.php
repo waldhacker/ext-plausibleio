@@ -40,6 +40,7 @@ class PlausibleService implements LoggerAwareInterface
         'visit:device',
         'visit:os',
         'visit:os_version',
+        'visit:country',
     ];
 
     private RequestFactoryInterface $factory;

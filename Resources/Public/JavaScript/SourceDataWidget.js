@@ -44,7 +44,11 @@ define([
         .then(async (response) => {
           const data = await response.resolve();
           this.renderChart(chartDiv, data);
-        });
+        }).catch(error => {
+            let msg = error.response ? error.response.status + ' ' + error.response.statusText : 'unknown';
+            console.error('Source data controller request failed because of error: ' + msg);
+          }
+        );
     }
 
     renderChart(chartDiv, data) {

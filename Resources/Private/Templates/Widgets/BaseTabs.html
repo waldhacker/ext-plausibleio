@@ -35,6 +35,9 @@
                                     </f:if>
                                 </div>
                                 <div class="panel-content" data-widget-tab-id="{tab.id}">
+                                    <f:if condition="{tab.contentPartial}">
+                                        <f:render partial="{tab.contentPartial}" arguments="{_all}" />
+                                    </f:if>
                                 </div>
                             </div>
                         </div>

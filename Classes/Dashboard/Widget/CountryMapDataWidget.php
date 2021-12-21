@@ -17,6 +17,7 @@ declare(strict_types=1);
 
 namespace Waldhacker\Plausibleio\Dashboard\Widget;
 
+use TYPO3\CMS\Core\Localization\LanguageService;
 use TYPO3\CMS\Core\Page\PageRenderer;
 use TYPO3\CMS\Core\Utility\PathUtility;
 use TYPO3\CMS\Dashboard\Widgets\AdditionalCssInterface;
@@ -57,7 +58,7 @@ class CountryMapDataWidget implements WidgetInterface, RequireJsModuleInterface,
     {
         $plausibleSiteId = $this->configurationService->getPlausibleSiteIdFromUserConfiguration();
 
-        $this->view->setTemplate('CountryMapDataWidget');
+        $this->view->setTemplate('BaseTabs');
         $this->view->assignMultiple([
             'id' => $this->plausibleService->getRandomId('countryMapDataWidget'),
             'label' => 'widget.countryMapData.label',
@@ -73,6 +74,17 @@ class CountryMapDataWidget implements WidgetInterface, RequireJsModuleInterface,
             ],
             'predefinedSiteId' => $this->options['siteId'] ?? null,
             'predefinedTimeFrame' => $this->options['timeFrame'] ?? null,
+            'tabs' => [
+                [
+                    'label' => 'widget.countryMapData.tabs.map',
+                    'id' => 'map',
+                    'contentPartial' => 'CountryMapDataWidget',
+                ],
+                [
+                    'label' => 'widget.countryMapData.tabs.countries',
+                    'id' => 'countries',
+                ],
+            ],
         ]);
 
         return $this->view->render();
@@ -109,6 +121,13 @@ class CountryMapDataWidget implements WidgetInterface, RequireJsModuleInterface,
                     'topojson' => 'TYPO3/CMS/Plausibleio/Contrib/topojson-client.min',
                 ],
             ],
+            'config' => [
+                'TYPO3/CMS/Plausibleio/WidgetService' => [
+                    'lang' => [
+                        'filter.deviceData.countryIs' => $this->getLanguageService()->getLL('filter.deviceData.countryIs'),
+                    ],
+                ],
+            ],
             'shim' => [
                 'TYPO3/CMS/Dashboard/WidgetContentCollector' => [
                     'deps' => [
@@ -125,5 +144,10 @@ class CountryMapDataWidget implements WidgetInterface, RequireJsModuleInterface,
     public function getOptions(): array
     {
         return $this->options;
+    }
+
+    private function getLanguageService(): LanguageService
+    {
+        return $GLOBALS['LANG'];
     }
 }

@@ -92,6 +92,12 @@
 			<trans-unit id="widget.countryMapData.description">
 				<source>Shows the countries of origin of the page views.</source>
 			</trans-unit>
+			<trans-unit id="widget.countryMapData.tabs.map">
+				<source>Map</source>
+			</trans-unit>
+			<trans-unit id="widget.countryMapData.tabs.countries">
+				<source>Countries</source>
+			</trans-unit>
 
 			<trans-unit id="widget.general.invalidConfiguration">
 				<source>Invalid configuration. Please check the settings.</source>
@@ -139,6 +145,9 @@
 			<trans-unit id="barChart.labels.goal">
 				<source>Goals</source>
 			</trans-unit>
+			<trans-unit id="barChart.labels.country">
+				<source>Country</source>
+			</trans-unit>
 			<trans-unit id="barChart.labels.unknown">
 				<source>Unknown</source>
 			</trans-unit>
@@ -166,6 +175,9 @@
 			</trans-unit>
 			<trans-unit id="filter.deviceData.osVersionIs">
 				<source>${os} version is</source>
+			</trans-unit>
+			<trans-unit id="filter.deviceData.countryIs">
+				<source>Country is</source>
 			</trans-unit>
 
 			<trans-unit id="timeframes.d">

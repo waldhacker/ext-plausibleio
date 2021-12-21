@@ -19,7 +19,8 @@ define([
   'TYPO3/CMS/Core/Event/RegularEvent',
   'TYPO3/CMS/Plausibleio/Contrib/d3-format',
   'TYPO3/CMS/Plausibleio/WidgetService',
-], function (D3, Datamap, AjaxRequest, RegularEvent, D3Format, WidgetService) {
+  'TYPO3/CMS/Plausibleio/Tabs',
+], function (D3, Datamap, AjaxRequest, RegularEvent, D3Format, WidgetService, Tabs) {
   'use strict';
 
   class CountryMapDataWidget {
@@ -29,23 +30,35 @@ define([
         widgetContainerSelector: '[data-widget-type="countryMapData"]',
         timeframeSelectSelector: '[data-widget-plausible-timeframe-select]',
         siteSelector: '[data-widget-plausible-sites-select]',
+        tabSelector: '[data-widget-tab-id="${tabId}"]',
+        tabBarSelector: '.t3js-tabs',
         visitorsCountryEndpoint: TYPO3.settings.ajaxUrls.plausible_countrymapdata
       };
 
       this.initialize();
     }
 
-    requestUpdatedData(evt, map) {
+    requestUpdatedData(evt, widget, map) {
       new AjaxRequest(this.options.visitorsCountryEndpoint)
         .withQueryArguments({
           timeFrame: evt.detail.timeFrame,
-          siteId: evt.detail.siteId
+          siteId: evt.detail.siteId,
+          filter: evt.detail.filter,
         })
         .get()
         .then(async (response) => {
           const data = await response.resolve();
-          this.setMapData(map, data);
-        });
+          this.setMapData(map, data.data);
+
+          let tab = widget.querySelector(this.options.tabSelector.replace('${tabId}', 'countries'));
+          if (typeof (tab) !== 'undefined' && tab !== null) {
+            WidgetService.renderBarChart(tab, data, true);
+          }
+        }).catch(error => {
+            let msg = error.response ? error.response.status + ' ' + error.response.statusText : 'unknown';
+            console.error('Map controller request failed because of error: ' + msg);
+          }
+        );
     }
 
     setMapData(map, data) {
@@ -57,16 +70,19 @@ define([
         // colors should be uniq for every value.
         // For this purpose we create palette(using min/max series-value)
         let onlyValues = data.map(function (obj) {
-          return obj[1];
+          return obj.visitors;
         });
         let minValue = Math.min.apply(null, onlyValues);
         let maxValue = Math.max.apply(null, onlyValues);
 
         // create color palette function
         // color can be whatever you wish
+        let maxColor = '#4575b4';
+        // if only one country has a dataset, then maxColor is used for it
+        let minColor = minValue == maxValue ? maxColor : '#e0f3f8';
         let paletteScale = D3.scale.linear()
           .domain([minValue, maxValue])
-          .range(['#e0f3f8', '#4575b4']); // blue color
+          .range([minColor, maxColor]);
 
         // Datamaps expect data in format:
         // { 'USA': { 'fillColor': '#42a844', numberOfWhatever: 75},
@@ -76,11 +92,20 @@ define([
         // fill dataset in appropriate format
         data.forEach(function (item) {
           // item example value ['USA', 70]
-          let iso = item[0];
-          let value = item[1];
+          let iso = item.alpha3;
+          let value = item.visitors;
           // 2400 -> 2.4k
           value = D3Format.format('.2~s')(value);
-          dataset[iso] = {numberOfThings: value, fillColor: paletteScale(value)};
+          dataset[iso] = {
+            numberOfThings: value,
+            fillColor: paletteScale(value),
+            filter: {
+              name: 'visit:country',
+              value: item.alpha2,
+              label: WidgetService.getLL('filter.deviceData.countryIs', 'Country is'),
+              labelValue: item.country,
+            }
+          };
         });
 
         // reset all countries to default color
@@ -92,18 +117,44 @@ define([
       }
     }
 
+    resizeMap(widget, map) {
+      let mapTab = widget.querySelector('.widget-content-main');
+      let mapContainer = null;
+      let aspect = 4 / 2.8;
+
+      if (mapTab) {
+        mapContainer = widget.querySelector('[data-widget-tab-id="map"]');
+        if (mapContainer) {
+          let h = mapTab.clientHeight - 80;
+          let w = mapTab.clientWidth;
+
+          if (w > h * aspect) {
+            w = Math.min(mapTab.clientHeight * aspect, mapTab.clientWidth);
+          }
+          w = w - 80;
+
+          mapContainer.setAttribute('style', 'height:auto'); // -> reset mapTap to height from parent not from mapContainer
+          mapContainer.setAttribute('style', 'height:' + (mapTab.clientHeight - 130) + 'px;' + 'width:' + w + 'px;');
+        }
+
+        map.resize();
+      }
+    }
+
     initialize() {
       let that = this;
 
       new RegularEvent('widgetContentRendered', function (evt) {
         evt.preventDefault();
         let widget = evt.target;
+        let filterBar = widget.querySelector(WidgetService.options.filterBarSelector);
 
         let mapElement = widget.querySelector(that.options.widgetContainerSelector);
         if (typeof(mapElement) !== 'undefined' && mapElement !== null) {
           // render map
           let map = new Datamap({
             element: mapElement,
+            responsive: true,
             // big world map
             projection: 'mercator',
             // countries don't listed in dataset will be painted with this color
@@ -130,15 +181,42 @@ define([
                   '<br><strong>', data.numberOfThings, '</strong> Visitors',
                   '</div>'].join('');
               }
-            }
+            },
+            done: function (datamap) {
+              datamap.svg.selectAll('.datamaps-subunit').on('click', function (geography) {
+                let data = JSON.parse(this.dataset.info);
+                if (data.hasOwnProperty('numberOfThings')) {
+                  let dashboardGrid = this.closest(WidgetService.options.dashBoardGridSelector);
+                  if (dashboardGrid) {
+                    WidgetService.addFilterToFilterBar(
+                      dashboardGrid,
+                      // this is set in setMapData
+                      data.filter.name,
+                      data.filter.value,
+                      data.filter.label,
+                      data.filter.labelValue
+                    );
+                    that.resizeMap(widget, datamap);
+                  }
+                }
+              });
+            },
           });
 
           widget.addEventListener('plausible:timeframechange', function (evt) {
-            that.requestUpdatedData(evt, map);
+            that.requestUpdatedData(evt, widget, map);
           });
 
           widget.addEventListener('plausible:sitechange', function (evt) {
-            that.requestUpdatedData(evt, map);
+            that.requestUpdatedData(evt, widget, map);
+          });
+
+          widget.addEventListener('plausible:filterchange', function (evt) {
+            if (filterBar) {
+              WidgetService.renderFilterBar(filterBar);
+            }
+            that.resizeMap(widget, map);
+            that.requestUpdatedData(evt, widget, map);
           });
 
           let timeFrameSelect = widget.querySelector(that.options.timeframeSelectSelector);
@@ -153,7 +231,30 @@ define([
 
           // request and render data
           let configuration = WidgetService.getSiteAndTimeFrameFromDashboardItem(widget);
-          WidgetService.dispatchTimeFrameChange(widget, configuration.site, configuration.timeFrame);
+          WidgetService.dispatchTimeFrameChange(widget, configuration.site, configuration.timeFrame, WidgetService.getFilters());
+
+          WidgetService.renderFilterBar(filterBar);
+
+          // for responsive size
+          that.resizeMap(widget, map);
+          window.addEventListener('resize', function () {
+            that.resizeMap(widget, map);
+          });
+
+          // Without this code, the map is not displayed when switching from the list tab to the map tab.
+          let tabBar = widget.querySelector(that.options.tabBarSelector);
+          if (tabBar) {
+            tabBar.addEventListener('show.bs.tab', function (e) {
+              // tab must be visible before redraw -> wait a bit
+              setTimeout(function () {
+                  that.resizeMap(widget, map)
+                },
+                300
+              );
+            });
+          }
+
+          Tabs.registerTabsForSessionHandling(widget);
         }
 
       }).delegateTo(document, this.options.dashboardItemSelector);

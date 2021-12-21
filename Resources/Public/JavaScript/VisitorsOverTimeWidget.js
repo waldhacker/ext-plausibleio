@@ -56,7 +56,11 @@ define([
         }
 
         this.renderOverviewData(widget, data.overViewData);
-      });
+      }).catch(error => {
+            let msg = error.response ? error.response.status + ' ' + error.response.statusText : 'unknown';
+            console.error('Visitors over time controller request failed because of error: ' + msg);
+          }
+        );
     }
 
     initialize() {

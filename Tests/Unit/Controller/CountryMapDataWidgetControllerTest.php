@@ -27,6 +27,7 @@ use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 use Waldhacker\Plausibleio\Controller\CountryMapDataWidgetController;
 use Waldhacker\Plausibleio\Dashboard\DataProvider\CountryMapDataProvider;
 use Waldhacker\Plausibleio\Services\ConfigurationService;
+use Waldhacker\Plausibleio\Services\PlausibleService;
 
 class CountryMapDataWidgetControllerTest extends UnitTestCase
 {
@@ -35,36 +36,50 @@ class CountryMapDataWidgetControllerTest extends UnitTestCase
     public function controllerProcessesValidAndInvalidUserInputCorrectlyDataProvider(): \Generator
     {
         yield 'Valid userinput is processed' => [
-            'queryParameters' => ['siteId' => 'site1', 'timeFrame' => 'day'],
+            'queryParameters' => ['siteId' => 'site1', 'timeFrame' => 'day', 'filters' => []],
             'availablePlausibleSiteIds' => ['site1', 'site2', 'site3', 'site4'],
             'timeFrameValues' => ['day', '7d', '30d', '12mo'],
             'siteIdFromConfiguration' => 'site4',
             'timeFrameFromConfiguration' => '12mo',
             'expectedSiteId' => 'site1',
             'expectedTimeFrame' => 'day',
+            'expectedFilters' => [],
         ];
 
         yield 'Invalid site is ignored and the value from the user configuration is used instead' => [
-            'queryParameters' => ['siteId' => 'site9', 'timeFrame' => 'day'],
+            'queryParameters' => ['siteId' => 'site9', 'timeFrame' => 'day', 'filters' => []],
             'availablePlausibleSiteIds' => ['site1', 'site2', 'site3', 'site4'],
             'timeFrameValues' => ['day', '7d', '30d', '12mo'],
             'siteIdFromConfiguration' => 'site4',
             'timeFrameFromConfiguration' => '12mo',
             'expectedSiteId' => 'site4',
             'expectedTimeFrame' => 'day',
+            'expectedFilters' => [],
         ];
 
         yield 'Invalid time frame is ignored and the value from the user configuration is used instead' => [
-            'queryParameters' => ['siteId' => 'site1', 'timeFrame' => 'minute'],
+            'queryParameters' => ['siteId' => 'site1', 'timeFrame' => 'minute', 'filters' => []],
             'availablePlausibleSiteIds' => ['site1', 'site2', 'site3', 'site4'],
             'timeFrameValues' => ['day', '7d', '30d', '12mo'],
             'siteIdFromConfiguration' => 'site4',
             'timeFrameFromConfiguration' => '12mo',
             'expectedSiteId' => 'site1',
             'expectedTimeFrame' => '12mo',
+            'expectedFilters' => [],
         ];
 
         yield 'Invalid site and time frame is ignored and the value from the user configuration is used instead' => [
+            'queryParameters' => ['siteId' => 'site9', 'timeFrame' => 'minute', 'filters' => []],
+            'availablePlausibleSiteIds' => ['site1', 'site2', 'site3', 'site4'],
+            'timeFrameValues' => ['day', '7d', '30d', '12mo'],
+            'siteIdFromConfiguration' => 'site4',
+            'timeFrameFromConfiguration' => '12mo',
+            'expectedSiteId' => 'site4',
+            'expectedTimeFrame' => '12mo',
+            'expectedFilters' => [],
+        ];
+
+        yield 'No filters are passed in the ServerRequest' => [
             'queryParameters' => ['siteId' => 'site9', 'timeFrame' => 'minute'],
             'availablePlausibleSiteIds' => ['site1', 'site2', 'site3', 'site4'],
             'timeFrameValues' => ['day', '7d', '30d', '12mo'],
@@ -72,6 +87,7 @@ class CountryMapDataWidgetControllerTest extends UnitTestCase
             'timeFrameFromConfiguration' => '12mo',
             'expectedSiteId' => 'site4',
             'expectedTimeFrame' => '12mo',
+            'expectedFilters' => [],
         ];
     }
 
@@ -88,11 +104,13 @@ class CountryMapDataWidgetControllerTest extends UnitTestCase
         string $siteIdFromConfiguration,
         string $timeFrameFromConfiguration,
         string $expectedSiteId,
-        string $expectedTimeFrame
+        string $expectedTimeFrame,
+        array $expectedFilters
     ): void {
         $serverRequestProphecy = $this->prophesize(ServerRequestInterface::class);
         $configurationServiceProphecy = $this->prophesize(ConfigurationService::class);
         $countryMapDataProviderProphecy = $this->prophesize(CountryMapDataProvider::class);
+        $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
         $responseFactoryProphecy = $this->prophesize(ResponseFactoryInterface::class);
         $responseProphecy = $this->prophesize(ResponseInterface::class);
         $streamProphecy = $this->prophesize(StreamInterface::class);
@@ -106,16 +124,21 @@ class CountryMapDataWidgetControllerTest extends UnitTestCase
         $configurationServiceProphecy->getTimeFrameValues()->willReturn($timeFrameValues);
         $configurationServiceProphecy->getPlausibleSiteIdFromUserConfiguration()->willReturn($siteIdFromConfiguration);
         $configurationServiceProphecy->getTimeFrameValueFromUserConfiguration()->willReturn($timeFrameFromConfiguration);
-        $countryMapDataProviderProphecy->getCountryDataForDataMap($expectedSiteId, $expectedTimeFrame)->willReturn(['country' => 'data']);
+        $countryMapDataProviderProphecy->getCountryDataForDataMap($expectedSiteId, $expectedTimeFrame, $expectedFilters)->willReturn(['country' => 'data']);
 
         $configurationServiceProphecy->persistPlausibleSiteIdInUserConfiguration($expectedSiteId)->shouldBeCalled();
         $configurationServiceProphecy->persistTimeFrameValueInUserConfiguration($expectedTimeFrame)->shouldBeCalled();
-        $countryMapDataProviderProphecy->getCountryDataForDataMap($expectedSiteId, $expectedTimeFrame)->shouldBeCalled();
+        $countryMapDataProviderProphecy->getCountryDataForDataMap($expectedSiteId, $expectedTimeFrame, $expectedFilters)->shouldBeCalled();
+
+        $plausibleServiceProphecy->checkFilters($expectedFilters)->willReturn([]);
+        $plausibleServiceProphecy->checkFilters($expectedFilters)->shouldBeCalled();
+
         $streamProphecy->write('{"country":"data"}')->shouldBeCalled();
 
         $subject = new CountryMapDataWidgetController(
             $countryMapDataProviderProphecy->reveal(),
             $configurationServiceProphecy->reveal(),
+            $plausibleServiceProphecy->reveal(),
             $responseFactoryProphecy->reveal()
         );
 

@@ -80,7 +80,7 @@ services:
         title: 'LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widget.countryMapData.label'
         description: 'LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:widget.countryMapData.description'
         iconIdentifier: 'content-widget-chart-bar'
-        height: 'medium'
+        height: 'large'
         width: 'medium'
 
   waldhacker.plausibleio.widget.page:

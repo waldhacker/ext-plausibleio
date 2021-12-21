@@ -76,7 +76,7 @@ class DeviceDataWidgetControllerTest extends UnitTestCase
             'timeFrameFromConfiguration' => '12mo',
             'expectedSiteId' => 'site4',
             'expectedTimeFrame' => '12mo',
-            'expectedFilters' => [],
+            'filters' => [],
         ];
 
         yield 'No filters are passed in the ServerRequest' => [

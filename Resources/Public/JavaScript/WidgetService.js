@@ -265,15 +265,15 @@ define([
           ${filterData.map((filter) => {
             let filterLabel = this.labelReplacePlaceholder(filter.label);
             return lit.html`
-                  <span class="filterBadge" data-widget-plausible-filter="${filter.name}">
-                    <span class="filterBadgeText">${filterLabel} <b>${filter.value}</b></span>
-                    <span class="icon icon-size-small icon-state-default" @click=${(event) => this.filterBadgeRemoveButtonOnClick(event)}>
-                      <span class="icon-markup">
-                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><g class="icon-color"><path d="M11.9 5.5L9.4 8l2.5 2.5c.2.2.2.5 0 .7l-.7.7c-.2.2-.5.2-.7 0L8 9.4l-2.5 2.5c-.2.2-.5.2-.7 0l-.7-.7c-.2-.2-.2-.5 0-.7L6.6 8 4.1 5.5c-.2-.2-.2-.5 0-.7l.7-.7c.2-.2.5-.2.7 0L8 6.6l2.5-2.5c.2-.2.5-.2.7 0l.7.7c.2.2.2.5 0 .7z"/></g></svg>
+                    <span class="filterBadge" data-widget-plausible-filter="${filter.name}">
+                      <span class="filterBadgeText">${filterLabel} <b>${filter.labelValue}</b></span>
+                      <span class="icon icon-size-small icon-state-default" @click=${(event) => this.filterBadgeRemoveButtonOnClick(event)}>
+                        <span class="icon-markup">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><g class="icon-color"><path d="M11.9 5.5L9.4 8l2.5 2.5c.2.2.2.5 0 .7l-.7.7c-.2.2-.5.2-.7 0L8 9.4l-2.5 2.5c-.2.2-.5.2-.7 0l-.7-.7c-.2-.2-.2-.5 0-.7L6.6 8 4.1 5.5c-.2-.2-.2-.5 0-.7l.7-.7c.2-.2.5-.2.7 0L8 6.6l2.5-2.5c.2-.2.5-.2.7 0l.7.7c.2.2.2.5 0 .7z"/></g></svg>
+                        </span>
                       </span>
                     </span>
-                  </span>
-                `
+                  `
         })
         }`;
 
@@ -339,46 +339,70 @@ define([
       }
     }
 
+    /**
+     * Adds a filter to the dashboard and a filter badge to the filter bar.
+     *                             ______________________________________
+     *                           /                                  \ /  \
+     * Structure of the badge:  |   filterLabel filterLabelvalue    /\   |
+     *                          \_________________________________/___\_/
+     * @param dashboardGrid
+     * @param filterName The name of the filter (e.g. visit:country)
+     * @param filterValue Value according to which filtering takes place. By default, this is the second half of
+     *                    the label of the badge
+     * @param filterLabel
+     * @param filterLabelValue If filterLabelValue is not specified, its value is that of filterValue. In case the
+     *                         second half of the label of Badge should not be filterValue, you can specify a different
+     *                         value with this parameter.
+     */
+    addFilterToFilterBar(dashboardGrid, filterName, filterValue, filterLabel, filterLabelValue='') {
+      if (filterValue !== '') {
+        filterLabelValue = filterLabelValue !== '' ? filterLabelValue : filterValue;
+        // There may only ever be one filter of each type
+        this.removeFilterByType(filterName);
+        let savedFilters = this.getFilters();
+        if (!Array.isArray(savedFilters)) {
+          savedFilters = [];
+        }
+        savedFilters.push({name: filterName, value: filterValue, label: filterLabel, labelValue: filterLabelValue});
+        this.setFilters(savedFilters);
+
+        if (dashboardGrid) {
+          let widgets = dashboardGrid.querySelectorAll(this.options.dashboardItemSelector);
+          widgets.forEach(function (widget) {
+            let configuration = this.getSiteAndTimeFrameFromDashboardItem(widget);
+            this.dispatchFilterChanged(widget, configuration.site, configuration.timeFrame, this.getFilters());
+          }, this);
+        }
+      }
+    }
+
     chartBarOnClick(e) {
       let link = e.target;
 
       // add Filter to filter bar and rerender filter bar
       if (link.dataset.widgetPlausibleFilter && link.dataset.widgetPlausibleFilter !== '') {
         let value = link.dataset.widgetPlausibleFilterValue;
+        let labelValue = link.dataset.widgetPlausibleFilterLabelValue ? link.dataset.widgetPlausibleFilterLabelValue : value;
         let label = link.dataset.widgetPlausibleFilterLabel ? link.dataset.widgetPlausibleFilterLabel : '';
+        let dashboardGrid = link.closest(this.options.dashBoardGridSelector);
 
-        if (value) {
-          // There may only ever be one filter of each type
-          this.removeFilterByType(link.dataset.widgetPlausibleFilter);
-          let savedFilters = this.getFilters();
-          if (!Array.isArray(savedFilters))
-            savedFilters = [];
-          savedFilters.push({name: link.dataset.widgetPlausibleFilter, value: value, label: label});
-          this.setFilters(savedFilters);
-
-          let dashboardGrid = link.closest(this.options.dashBoardGridSelector);
-          if (dashboardGrid) {
-            let widgets = dashboardGrid.querySelectorAll(this.options.dashboardItemSelector);
-            widgets.forEach(function (widget) {
-              let configuration = this.getSiteAndTimeFrameFromDashboardItem(widget);
-              this.dispatchFilterChanged(widget, configuration.site, configuration.timeFrame, this.getFilters());
-            }, this);
-          }
-        }
+        this.addFilterToFilterBar(dashboardGrid, link.dataset.widgetPlausibleFilter, value, label, labelValue);
       }
     }
 
     renderBarChartRowCell(rowData, colData) {
       let dataValue = rowData[colData.name];
+      let filterValue = colData.filter && colData.filter.value ? rowData[colData.filter.value] : dataValue;
       let valueUnknown = this.getLL('barChart.labels.unknown', 'Unknown');
       let cell = '';
-      if (dataValue != '')
+
+      if (dataValue != undefined && dataValue !== '')
         cell = lit.html`<span>${dataValue}</span>`;
       else
         cell = lit.html`<span>${valueUnknown}</span>`;
 
       if (colData.filter && colData.filter.name !== '' && dataValue !== '')
-        cell = lit.html`<span><a href="#" @click=${(event) => this.chartBarOnClick(event)} data-widget-plausible-filter="${colData.filter.name}" data-widget-plausible-filter-value="${dataValue}"  data-widget-plausible-filter-label="${colData.filter.label}">${dataValue}</a></span>`;
+        cell = lit.html`<span><a href="#" @click=${(event) => this.chartBarOnClick(event)} data-widget-plausible-filter="${colData.filter.name}" data-widget-plausible-filter-value="${filterValue}"  data-widget-plausible-filter-label="${colData.filter.label}" data-widget-plausible-filter-label-value="${dataValue}">${dataValue}</a></span>`;
 
       return cell;
     }
@@ -390,10 +414,12 @@ define([
       }
 
       let columns = null;
-      if (data.columns !== undefined)
+      if (data.columns !== undefined) {
         columns = data.columns;
-      if (columns == null || columns.length == 0)
+      }
+      if (columns == null || columns.length == 0) {
         return;
+      }
       let hitColumns = [];
       // skip first item (label of the bar), so we get only the columns on the right side of the bar
       columns.slice(1).forEach(function (value) {
@@ -447,10 +473,12 @@ define([
             let extraClass = '';
             let labelText = this.labelReplacePlaceholder(col.label);
 
-            if (i == 0)
+            if (i == 0) {
               extraClass = ' firstHeader';
-            if (i == columns.length-1)
+            }
+            if (i == columns.length-1) {
               extraClass = ' lastHeader';
+            }
 
             return lit.html`<span class="headerText${extraClass}">${labelText}</span>`
           })
@@ -462,7 +490,6 @@ define([
       }
 
       let newChild = document.createElement('div');
-      //newChild.classList.add('barchart');
       let targetElement = container.appendChild(newChild);
 
       lit.render(headingsTemplate, targetElement);

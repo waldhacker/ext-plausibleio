@@ -21,6 +21,7 @@ use TYPO3\CMS\Core\Localization\LanguageService;
 use TYPO3\CMS\Core\Page\PageRenderer;
 use TYPO3\CMS\Core\Utility\PathUtility;
 use TYPO3\CMS\Dashboard\Widgets\AdditionalCssInterface;
+use TYPO3\CMS\Dashboard\Widgets\EventDataInterface;
 use TYPO3\CMS\Dashboard\Widgets\RequireJsModuleInterface;
 use TYPO3\CMS\Dashboard\Widgets\WidgetConfigurationInterface;
 use TYPO3\CMS\Dashboard\Widgets\WidgetInterface;
@@ -28,7 +29,7 @@ use TYPO3\CMS\Fluid\View\StandaloneView;
 use Waldhacker\Plausibleio\Services\ConfigurationService;
 use Waldhacker\Plausibleio\Services\PlausibleService;
 
-class CountryMapDataWidget implements WidgetInterface, RequireJsModuleInterface, AdditionalCssInterface
+class CountryMapDataWidget implements WidgetInterface, EventDataInterface, RequireJsModuleInterface, AdditionalCssInterface
 {
     private PageRenderer $pageRenderer;
     private StandaloneView $view;
@@ -88,6 +89,13 @@ class CountryMapDataWidget implements WidgetInterface, RequireJsModuleInterface,
         ]);
 
         return $this->view->render();
+    }
+
+    public function getEventData(): array
+    {
+        return [
+            'filters' => $this->configurationService->getAllFiltersFromUserConfiguration(),
+        ];
     }
 
     public function getCssFiles(): array

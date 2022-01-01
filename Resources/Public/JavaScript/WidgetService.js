@@ -15,9 +15,10 @@
 define([
   'module',
   'lit',
+  'TYPO3/CMS/Core/Ajax/AjaxRequest',
   'TYPO3/CMS/Backend/Storage/BrowserSession',
   'TYPO3/CMS/Plausibleio/Contrib/d3-format'
-], function (module, lit, BrowserSession, D3Format) {
+], function (module, lit, AjaxRequest, BrowserSession, D3Format) {
   'use strict';
 
   class WidgetService {
@@ -190,23 +191,25 @@ define([
      *
      * @returns array[of Filter]
      */
-    getFilters() {
-      let filter = JSON.parse(BrowserSession.get(this.options.sessionFilterKey));
+    getFilters(dashBoardId = 'default') {
+      let filters = JSON.parse(BrowserSession.get(this.options.sessionFilterKey + dashBoardId));
 
-      if (!Array.isArray(filter)) {
-        filter = [];
+      if (!Array.isArray(filters)) {
+        filters = [];
       }
 
-      return filter;
+      return filters;
     }
 
     /**
+     * Note: The filters are also still saved in the BE user configuration (server side). This happens
+     * during the Ajax request for data retrieval
      *
      * @param array[of Filter] filterArray
      */
-    setFilters(filterArray) {
+    setFilters(filterArray, dashBoardId = 'default') {
       if (Array.isArray(filterArray)) {
-        BrowserSession.set(this.options.sessionFilterKey, JSON.stringify(filterArray));
+        BrowserSession.set(this.options.sessionFilterKey + dashBoardId, JSON.stringify(filterArray));
       }
     }
 
@@ -257,7 +260,7 @@ define([
     renderFilterBar(container) {
       let template = lit.html``;
       let filterData = this.getFilters();
-      let extraClass = 'p-0';
+      let noFiltersExtraClass = 'p-0';
 
       // render filter badges
       if (Array.isArray(filterData)) {
@@ -278,9 +281,9 @@ define([
         }`;
 
         if (filterData.length == 0)
-          container.classList.add(extraClass);
+          container.classList.add(noFiltersExtraClass);
         else
-          container.classList.remove(extraClass);
+          container.classList.remove(noFiltersExtraClass);
       }
 
       container.innerHTML = '';

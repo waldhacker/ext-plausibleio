@@ -65,6 +65,7 @@ class CountryMapDataWidgetController
 
         $this->configurationService->persistPlausibleSiteIdInUserConfiguration($plausibleSiteId);
         $this->configurationService->persistTimeFrameValueInUserConfiguration($timeFrame);
+        $this->configurationService->persistFiltersInUserConfiguration($filters);
 
         $data = $this->countryMapDataProvider->getCountryDataForDataMap($plausibleSiteId, $timeFrame, $filters);
 

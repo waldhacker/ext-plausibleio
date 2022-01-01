@@ -28,6 +28,8 @@ use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Type\Bitmask\Permission;
 use Waldhacker\Plausibleio\Services\Exception\InvalidConfigurationException;
 
+use function PHPUnit\Framework\isEmpty;
+
 class ConfigurationService
 {
     private const EXT_KEY = 'plausibleio';
@@ -96,6 +98,49 @@ class ConfigurationService
         $userConfiguration['timeFrame'] = $timeFrameValue;
         $this->getBackendUser()->uc['plausible'] = $userConfiguration;
         $this->getBackendUser()->writeUC();
+    }
+
+    public function persistFiltersInUserConfiguration(array $filters, string $dashBoardId = 'default'): void
+    {
+        if ($this->getBackendUser() === null || !is_array($this->getBackendUser()->uc)) {
+            return;
+        }
+        if (empty($dashBoardId)) {
+            $dashBoardId = 'default';
+        }
+
+        $userConfiguration = $this->getBackendUser()->uc['plausible'] ?? [];
+        $userConfiguration['filters'][$dashBoardId] = $filters;
+        $this->getBackendUser()->uc['plausible'] = $userConfiguration;
+        $this->getBackendUser()->writeUC();
+    }
+
+    public function getFiltersFromUserConfiguration(string $dashBoardId = 'default'): array
+    {
+        if (empty($dashBoardId)) {
+            $dashBoardId = 'default';
+        }
+
+        $userConfiguration = $this->getBackendUser() !== null && is_array($this->getBackendUser()->uc)
+            ? $this->getBackendUser()->uc
+            : [];
+        $filters = $userConfiguration['plausible']['filters'][$dashBoardId] ?? [];
+
+        return $filters;
+    }
+
+    public function getAllFiltersFromUserConfiguration(): array
+    {
+        if (empty($dashBoardId)) {
+            $dashBoardId = 'default';
+        }
+
+        $userConfiguration = $this->getBackendUser() !== null && is_array($this->getBackendUser()->uc)
+            ? $this->getBackendUser()->uc
+            : [];
+        $filters = $userConfiguration['plausible']['filters'] ?? [];
+
+        return $filters;
     }
 
     public function getDefaultTimeFrameValue(): string

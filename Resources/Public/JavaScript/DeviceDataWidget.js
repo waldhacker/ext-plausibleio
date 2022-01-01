@@ -83,6 +83,10 @@ define([
             that.requestUpdatedData(evt, deviceChartElement);
           });
 
+          // Set filters from BE user configuration
+          let dashBoardId = 'default';
+          let filters = evt.detail.filters.hasOwnProperty(dashBoardId) ? evt.detail.filters[dashBoardId] : [];
+          WidgetService.setFilters(filters);
           widget.addEventListener('plausible:filterchange', function (evt) {
             if (filterBar) {
               WidgetService.renderFilterBar(filterBar);

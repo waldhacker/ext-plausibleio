@@ -65,6 +65,7 @@ class DeviceDataWidgetController
 
         $this->configurationService->persistPlausibleSiteIdInUserConfiguration($plausibleSiteId);
         $this->configurationService->persistTimeFrameValueInUserConfiguration($timeFrame);
+        $this->configurationService->persistFiltersInUserConfiguration($filters);
 
         $data = [
             [

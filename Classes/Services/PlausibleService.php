@@ -258,24 +258,34 @@ class PlausibleService implements LoggerAwareInterface
      * see: $this->permittedFilters
      * Note: Empty names in filters are not allowed and will be skipped
      * Note: Empty values of filters are not allowed and will be skipped
+     * Note: Each filter type may only occur once. Duplicate filters are removed.
      *
      * @param array $filters
      * @return array All authorised filters
      */
     public function checkFilters(array $filters): array
     {
-        $checked = [];
+        $acceptedFilters = [];
 
         foreach ($filters as $filter) {
             if (array_key_exists('name', $filter) &&
                 array_key_exists('value', $filter) &&
                 $filter['value'] !== '' &&
                 in_array($filter['name'], $this->permittedFilters)) {
-                $checked[] = $filter;
+                // Each filter type may only occur once
+                $alreadyExists = false;
+                foreach ($acceptedFilters as $acceptedFilter) {
+                    if (strtolower($filter['name']) === strtolower($acceptedFilter['name'])) {
+                        $alreadyExists = true;
+                    }
+                }
+                if (!$alreadyExists) {
+                    $acceptedFilters[] = $filter;
+                }
             }
         }
 
-        return $checked;
+        return $acceptedFilters;
     }
 
     /**

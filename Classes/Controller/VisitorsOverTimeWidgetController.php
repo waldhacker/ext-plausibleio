@@ -23,21 +23,25 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Waldhacker\Plausibleio\Dashboard\DataProvider\VisitorsOverTimeDataProvider;
 use Waldhacker\Plausibleio\Services\ConfigurationService;
+use Waldhacker\Plausibleio\Services\PlausibleService;
 
 class VisitorsOverTimeWidgetController
 {
     private ResponseFactoryInterface $responseFactory;
     private VisitorsOverTimeDataProvider $visitorsOverTimeDataProvider;
     private ConfigurationService $configurationService;
+    private PlausibleService $plausibleService;
 
     public function __construct(
         VisitorsOverTimeDataProvider $visitorsOverTimeDataProvider,
         ConfigurationService $configurationService,
+        PlausibleService $plausibleService,
         ResponseFactoryInterface $responseFactory
     ) {
         $this->responseFactory = $responseFactory;
         $this->visitorsOverTimeDataProvider = $visitorsOverTimeDataProvider;
         $this->configurationService = $configurationService;
+        $this->plausibleService = $plausibleService;
     }
 
     public function __invoke(ServerRequestInterface $request): ResponseInterface
@@ -52,12 +56,20 @@ class VisitorsOverTimeWidgetController
             $timeFrame = $this->configurationService->getTimeFrameValueFromUserConfiguration();
         }
 
+        // request->getQueryParams() already returns a json decoded array
+        $filters = $request->getQueryParams()['filter'] ?? null;
+        if (!is_array($filters)) {
+            $filters = [];
+        }
+        $filters = $this->plausibleService->checkFilters($filters);
+
         $this->configurationService->persistPlausibleSiteIdInUserConfiguration($plausibleSiteId);
         $this->configurationService->persistTimeFrameValueInUserConfiguration($timeFrame);
+        $this->configurationService->persistFiltersInUserConfiguration($filters);
 
-        $chartData = $this->visitorsOverTimeDataProvider->getChartData($plausibleSiteId, $timeFrame);
-        $overviewData = $this->visitorsOverTimeDataProvider->getOverview($plausibleSiteId, $timeFrame);
-        $overviewData['current_visitors'] = $this->visitorsOverTimeDataProvider->getCurrentVisitors($plausibleSiteId);
+        $chartData = $this->visitorsOverTimeDataProvider->getChartData($plausibleSiteId, $timeFrame, $filters);
+        $overviewData = $this->visitorsOverTimeDataProvider->getOverview($plausibleSiteId, $timeFrame, $filters);
+        $overviewData['current_visitors'] = $this->visitorsOverTimeDataProvider->getCurrentVisitors($plausibleSiteId, $filters);
 
         $data = [
             'chartData' => $chartData,
@@ -67,6 +79,7 @@ class VisitorsOverTimeWidgetController
         $response = $this->responseFactory->createResponse(200)
             ->withHeader('Content-Type', 'application/json');
         $response->getBody()->write((string)json_encode($data, JSON_THROW_ON_ERROR));
+
         return $response;
     }
 }

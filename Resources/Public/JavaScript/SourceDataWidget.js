@@ -38,7 +38,8 @@ define([
       new AjaxRequest(this.options.pageEndpoint)
         .withQueryArguments({
           timeFrame: evt.detail.timeFrame,
-          siteId: evt.detail.siteId
+          siteId: evt.detail.siteId,
+          filter: evt.detail.filter,
         })
         .get()
         .then(async (response) => {
@@ -70,6 +71,7 @@ define([
       new RegularEvent('widgetContentRendered', function (evt) {
         evt.preventDefault();
         let widget = evt.target;
+        let filterBar = widget.querySelector(WidgetService.options.filterBarSelector);
 
         let pageChartElement = widget.querySelector(that.options.widgetContainerSelector);
         if (typeof(pageChartElement) !== 'undefined' && pageChartElement !== null) {
@@ -78,6 +80,17 @@ define([
           });
 
           widget.addEventListener('plausible:sitechange', function (evt) {
+            that.requestUpdatedData(evt, pageChartElement);
+          });
+
+          // Set filters from BE user configuration
+          let dashBoardId = WidgetService.options.defaultDashBoardId;
+          let filters = evt.detail.filters.hasOwnProperty(dashBoardId) ? evt.detail.filters[dashBoardId] : [];
+          WidgetService.setFilters(filters);
+          widget.addEventListener('plausible:filterchange', function (evt) {
+            if (filterBar) {
+              WidgetService.renderFilterBar(filterBar);
+            }
             that.requestUpdatedData(evt, pageChartElement);
           });
 
@@ -93,7 +106,9 @@ define([
 
           // request and render data
           let configuration = WidgetService.getSiteAndTimeFrameFromDashboardItem(widget);
-          WidgetService.dispatchTimeFrameChange(widget, configuration.site, configuration.timeFrame);
+          WidgetService.dispatchTimeFrameChange(widget, configuration.site, configuration.timeFrame, WidgetService.getFilters());
+
+          WidgetService.renderFilterBar(filterBar);
 
           Tabs.registerTabsForSessionHandling(widget);
         }

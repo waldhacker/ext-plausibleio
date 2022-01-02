@@ -43,6 +43,12 @@
 			<trans-unit id="widget.sourceData.tabs.campaignsource">
 				<source>Campaign</source>
 			</trans-unit>
+			<trans-unit id="widget.sourceData.tabs.termsource">
+				<source>Term</source>
+			</trans-unit>
+			<trans-unit id="widget.sourceData.tabs.contentsource">
+				<source>Content</source>
+			</trans-unit>
 
 			<trans-unit id="widget.deviceData.label">
 				<source>Device usage and visitors (Plausible Analytics)</source>
@@ -118,6 +124,12 @@
 			<trans-unit id="barChart.labels.UTMCampaign">
 				<source>UTM Campaign</source>
 			</trans-unit>
+			<trans-unit id="barChart.labels.UTMTerm">
+				<source>UTM Term</source>
+			</trans-unit>
+			<trans-unit id="barChart.labels.UTMContent">
+				<source>UTM Content</source>
+			</trans-unit>
 			<trans-unit id="barChart.labels.pageUrl">
 				<source>Page url</source>
 			</trans-unit>
@@ -178,6 +190,24 @@
 			</trans-unit>
 			<trans-unit id="filter.deviceData.countryIs">
 				<source>Country is</source>
+			</trans-unit>
+			<trans-unit id="filter.sourceData.sourceIs">
+				<source>Source is</source>
+			</trans-unit>
+			<trans-unit id="filter.sourceData.UTMMediumIs">
+				<source>UTM Medium is</source>
+			</trans-unit>
+			<trans-unit id="filter.sourceData.UTMSourceIs">
+				<source>UTM Source is</source>
+			</trans-unit>
+			<trans-unit id="filter.sourceData.UTMCampaignIs">
+				<source>UTM Campaign is</source>
+			</trans-unit>
+			<trans-unit id="filter.sourceData.UTMTermIs">
+				<source>UTM Term is</source>
+			</trans-unit>
+			<trans-unit id="filter.sourceData.UTMContentIs">
+				<source>UTM Content is</source>
 			</trans-unit>
 
 			<trans-unit id="timeframes.d">

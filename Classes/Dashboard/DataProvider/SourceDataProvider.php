@@ -30,10 +30,10 @@ class SourceDataProvider
         $this->plausibleService = $plausibleService;
     }
 
-    public function getAllSourcesData(string $plausibleSiteId, string $timeFrame): array
+    public function getAllSourcesData(string $plausibleSiteId, string $timeFrame, array $filters = []): array
     {
         $map = [];
-        $responseData = $this->getData($plausibleSiteId, $timeFrame, 'visit:source');
+        $responseData = $this->getData($plausibleSiteId, $timeFrame, 'visit:source', $filters);
 
         // clean up data
         foreach ($responseData['data'] as $item) {
@@ -51,16 +51,20 @@ class SourceDataProvider
             [
                 'name' => 'source',
                 'label' => $this->getLanguageService()->getLL('barChart.labels.source'),
+                'filter' => [
+                    'name' => 'visit:source',
+                    'label' => $this->getLanguageService()->getLL('filter.sourceData.sourceIs'),
+                ],
             ]
         );
 
         return $responseData;
     }
 
-    public function getMediumData(string $plausibleSiteId, string $timeFrame): array
+    public function getMediumData(string $plausibleSiteId, string $timeFrame, array $filters = []): array
     {
         $map = [];
-        $responseData = $this->getData($plausibleSiteId, $timeFrame, 'visit:utm_medium');
+        $responseData = $this->getData($plausibleSiteId, $timeFrame, 'visit:utm_medium', $filters);
 
         // clean up data
         foreach ($responseData['data'] as $item) {
@@ -78,16 +82,20 @@ class SourceDataProvider
             [
                 'name' => 'utm_medium',
                 'label' => $this->getLanguageService()->getLL('barChart.labels.UTMMedium'),
+                'filter' => [
+                    'name' => 'visit:utm_medium',
+                    'label' => $this->getLanguageService()->getLL('filter.sourceData.UTMMediumIs'),
+                ],
             ]
         );
 
         return $responseData;
     }
 
-    public function getSourceData(string $plausibleSiteId, string $timeFrame): array
+    public function getSourceData(string $plausibleSiteId, string $timeFrame, array $filters = []): array
     {
         $map = [];
-        $responseData = $this->getData($plausibleSiteId, $timeFrame, 'visit:utm_source');
+        $responseData = $this->getData($plausibleSiteId, $timeFrame, 'visit:utm_source', $filters);
 
         // clean up data
         foreach ($responseData['data'] as $item) {
@@ -105,16 +113,20 @@ class SourceDataProvider
             [
                 'name' => 'utm_source',
                 'label' => $this->getLanguageService()->getLL('barChart.labels.UTMSource'),
+                'filter' => [
+                    'name' => 'visit:utm_source',
+                    'label' => $this->getLanguageService()->getLL('filter.sourceData.UTMSourceIs'),
+                ],
             ]
         );
 
         return $responseData;
     }
 
-    public function getCampaignData(string $plausibleSiteId, string $timeFrame): array
+    public function getCampaignData(string $plausibleSiteId, string $timeFrame, array $filters = []): array
     {
         $map = [];
-        $responseData = $this->getData($plausibleSiteId, $timeFrame, 'visit:utm_campaign');
+        $responseData = $this->getData($plausibleSiteId, $timeFrame, 'visit:utm_campaign', $filters);
 
         // clean up data
         foreach ($responseData['data'] as $item) {
@@ -132,13 +144,79 @@ class SourceDataProvider
             [
                 'name' => 'utm_campaign',
                 'label' => $this->getLanguageService()->getLL('barChart.labels.UTMCampaign'),
+                'filter' => [
+                    'name' => 'visit:utm_campaign',
+                    'label' => $this->getLanguageService()->getLL('filter.sourceData.UTMCampaignIs'),
+                ],
             ]
         );
 
         return $responseData;
     }
 
-    private function getData(string $plausibleSiteId, string $timeFrame, string $property): array
+    public function getTermData(string $plausibleSiteId, string $timeFrame, array $filters = []): array
+    {
+        $map = [];
+        $responseData = $this->getData($plausibleSiteId, $timeFrame, 'visit:utm_term', $filters);
+
+        // clean up data
+        foreach ($responseData['data'] as $item) {
+            if (!isset($item['utm_term']) || !isset($item['visitors'])) {
+                continue;
+            }
+            $map[] = $item;
+        }
+
+        $map = $this->calcPercentage($map);
+        $responseData['data'] = $map;
+
+        array_unshift(
+            $responseData['columns'],
+            [
+                'name' => 'utm_term',
+                'label' => $this->getLanguageService()->getLL('barChart.labels.UTMTerm'),
+                'filter' => [
+                    'name' => 'visit:utm_term',
+                    'label' => $this->getLanguageService()->getLL('filter.sourceData.UTMTermIs'),
+                ],
+            ]
+        );
+
+        return $responseData;
+    }
+
+    public function getContentData(string $plausibleSiteId, string $timeFrame, array $filters = []): array
+    {
+        $map = [];
+        $responseData = $this->getData($plausibleSiteId, $timeFrame, 'visit:utm_content', $filters);
+
+        // clean up data
+        foreach ($responseData['data'] as $item) {
+            if (!isset($item['utm_content']) || !isset($item['visitors'])) {
+                continue;
+            }
+            $map[] = $item;
+        }
+
+        $map = $this->calcPercentage($map);
+        $responseData['data'] = $map;
+
+        array_unshift(
+            $responseData['columns'],
+            [
+                'name' => 'utm_term',
+                'label' => $this->getLanguageService()->getLL('barChart.labels.UTMContent'),
+                'filter' => [
+                    'name' => 'visit:utm_content',
+                    'label' => $this->getLanguageService()->getLL('filter.sourceData.UTMContentIs'),
+                ],
+            ]
+        );
+
+        return $responseData;
+    }
+
+    private function getData(string $plausibleSiteId, string $timeFrame, string $property, array $filters = []): array
     {
         $endpoint = 'api/v1/stats/breakdown?';
         $params = [
@@ -147,6 +225,10 @@ class SourceDataProvider
             'property' => $property,
             'metrics' => 'visitors',
         ];
+        $filterStr = $this->plausibleService->filtersToPlausibleFilterString($filters);
+        if ($filterStr) {
+            $params['filters'] = $filterStr;
+        }
 
         $responseData = [];
         $responseData['data'] = $this->plausibleService->sendAuthorizedRequest($plausibleSiteId, $endpoint, $params);

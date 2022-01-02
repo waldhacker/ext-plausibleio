@@ -41,6 +41,10 @@ class PlausibleService implements LoggerAwareInterface
         'visit:os',
         'visit:os_version',
         'visit:country',
+        'visit:source',
+        'visit:utm_medium',
+        'visit:utm_source',
+        'visit:utm_campaign',
     ];
 
     private RequestFactoryInterface $factory;

@@ -56,7 +56,11 @@ class SourceDataProviderTest extends UnitTestCase
                 'columns' => [
                     [
                         'name' => 'source',
-                        'label' => 'Source'
+                        'label' => 'Source',
+                        'filter' => [
+                            'name' => 'visit:source',
+                            'label' => 'Source is',
+                        ],
                     ],
                     [
                         'name' => 'visitors',
@@ -82,7 +86,11 @@ class SourceDataProviderTest extends UnitTestCase
                 'columns' => [
                     [
                         'name' => 'source',
-                        'label' => 'Source'
+                        'label' => 'Source',
+                        'filter' => [
+                            'name' => 'visit:source',
+                            'label' => 'Source is',
+                        ],
                     ],
                     [
                         'name' => 'visitors',
@@ -107,7 +115,11 @@ class SourceDataProviderTest extends UnitTestCase
                 'columns' => [
                     [
                         'name' => 'source',
-                        'label' => 'Source'
+                        'label' => 'Source',
+                        'filter' => [
+                            'name' => 'visit:source',
+                            'label' => 'Source is',
+                        ],
                     ],
                     [
                         'name' => 'visitors',
@@ -137,6 +149,10 @@ class SourceDataProviderTest extends UnitTestCase
 
         $this->languageServiceProphecy->getLL('barChart.labels.visitors')->willReturn('Visitors');
         $this->languageServiceProphecy->getLL('barChart.labels.source')->willReturn('Source');
+        $this->languageServiceProphecy->getLL('filter.sourceData.sourceIs')->willReturn('Source is');
+
+        $plausibleServiceProphecy->filtersToPlausibleFilterString([['name' => 'visit:device==Desktop']])->willReturn('visit:device==Desktop');
+        $plausibleServiceProphecy->filtersToPlausibleFilterString([])->willReturn('');
 
         $plausibleServiceProphecy->sendAuthorizedRequest(
             $plausibleSiteId,
@@ -172,11 +188,15 @@ class SourceDataProviderTest extends UnitTestCase
                 'columns' => [
                     [
                         'name' => 'utm_medium',
-                        'label' => 'UTM Medium'
+                        'label' => 'UTM Medium',
+                        'filter' => [
+                            'name' => 'visit:utm_medium',
+                            'label' => 'UTM Medium is',
+                        ],
                     ],
                     [
                         'name' => 'visitors',
-                        'label' => 'Visitors'
+                        'label' => 'Visitors',
                     ],
                 ],
             ],
@@ -198,11 +218,15 @@ class SourceDataProviderTest extends UnitTestCase
                 'columns' => [
                     [
                         'name' => 'utm_medium',
-                        'label' => 'UTM Medium'
+                        'label' => 'UTM Medium',
+                        'filter' => [
+                            'name' => 'visit:utm_medium',
+                            'label' => 'UTM Medium is',
+                        ],
                     ],
                     [
                         'name' => 'visitors',
-                        'label' => 'Visitors'
+                        'label' => 'Visitors',
                     ],
                 ],
             ],
@@ -223,11 +247,15 @@ class SourceDataProviderTest extends UnitTestCase
                 'columns' => [
                     [
                         'name' => 'utm_medium',
-                        'label' => 'UTM Medium'
+                        'label' => 'UTM Medium',
+                        'filter' => [
+                            'name' => 'visit:utm_medium',
+                            'label' => 'UTM Medium is',
+                        ],
                     ],
                     [
                         'name' => 'visitors',
-                        'label' => 'Visitors'
+                        'label' => 'Visitors',
                     ],
                 ],
             ],
@@ -253,6 +281,10 @@ class SourceDataProviderTest extends UnitTestCase
 
         $this->languageServiceProphecy->getLL('barChart.labels.visitors')->willReturn('Visitors');
         $this->languageServiceProphecy->getLL('barChart.labels.UTMMedium')->willReturn('UTM Medium');
+        $this->languageServiceProphecy->getLL('filter.sourceData.UTMMediumIs')->willReturn('UTM Medium is');
+
+        $plausibleServiceProphecy->filtersToPlausibleFilterString([['name' => 'visit:device==Desktop']])->willReturn('visit:device==Desktop');
+        $plausibleServiceProphecy->filtersToPlausibleFilterString([])->willReturn('');
 
         $plausibleServiceProphecy->sendAuthorizedRequest(
             $plausibleSiteId,
@@ -288,11 +320,15 @@ class SourceDataProviderTest extends UnitTestCase
                 'columns' => [
                     [
                         'name' => 'utm_source',
-                        'label' => 'UTM Source'
+                        'label' => 'UTM Source',
+                        'filter' => [
+                            'name' => 'visit:utm_source',
+                            'label' => 'UTM Source is',
+                        ],
                     ],
                     [
                         'name' => 'visitors',
-                        'label' => 'Visitors'
+                        'label' => 'Visitors',
                     ],
                 ],
             ],
@@ -314,11 +350,15 @@ class SourceDataProviderTest extends UnitTestCase
                 'columns' => [
                     [
                         'name' => 'utm_source',
-                        'label' => 'UTM Source'
+                        'label' => 'UTM Source',
+                        'filter' => [
+                            'name' => 'visit:utm_source',
+                            'label' => 'UTM Source is',
+                        ],
                     ],
                     [
                         'name' => 'visitors',
-                        'label' => 'Visitors'
+                        'label' => 'Visitors',
                     ],
                 ],
             ],
@@ -339,11 +379,15 @@ class SourceDataProviderTest extends UnitTestCase
                 'columns' => [
                     [
                         'name' => 'utm_source',
-                        'label' => 'UTM Source'
+                        'label' => 'UTM Source',
+                        'filter' => [
+                            'name' => 'visit:utm_source',
+                            'label' => 'UTM Source is',
+                        ],
                     ],
                     [
                         'name' => 'visitors',
-                        'label' => 'Visitors'
+                        'label' => 'Visitors',
                     ],
                 ],
             ],
@@ -369,6 +413,10 @@ class SourceDataProviderTest extends UnitTestCase
 
         $this->languageServiceProphecy->getLL('barChart.labels.visitors')->willReturn('Visitors');
         $this->languageServiceProphecy->getLL('barChart.labels.UTMSource')->willReturn('UTM Source');
+        $this->languageServiceProphecy->getLL('filter.sourceData.UTMSourceIs')->willReturn('UTM Source is');
+
+        $plausibleServiceProphecy->filtersToPlausibleFilterString([['name' => 'visit:device==Desktop']])->willReturn('visit:device==Desktop');
+        $plausibleServiceProphecy->filtersToPlausibleFilterString([])->willReturn('');
 
         $plausibleServiceProphecy->sendAuthorizedRequest(
             $plausibleSiteId,
@@ -404,11 +452,15 @@ class SourceDataProviderTest extends UnitTestCase
                 'columns' => [
                     [
                         'name' => 'utm_campaign',
-                        'label' => 'UTM Campaign'
+                        'label' => 'UTM Campaign',
+                        'filter' => [
+                            'name' => 'visit:utm_campaign',
+                            'label' => 'UTM Campaign is',
+                        ],
                     ],
                     [
                         'name' => 'visitors',
-                        'label' => 'Visitors'
+                        'label' => 'Visitors',
                     ],
                 ],
             ],
@@ -430,11 +482,15 @@ class SourceDataProviderTest extends UnitTestCase
                 'columns' => [
                     [
                         'name' => 'utm_campaign',
-                        'label' => 'UTM Campaign'
+                        'label' => 'UTM Campaign',
+                        'filter' => [
+                            'name' => 'visit:utm_campaign',
+                            'label' => 'UTM Campaign is',
+                        ],
                     ],
                     [
                         'name' => 'visitors',
-                        'label' => 'Visitors'
+                        'label' => 'Visitors',
                     ],
                 ],
             ],
@@ -455,11 +511,15 @@ class SourceDataProviderTest extends UnitTestCase
                 'columns' => [
                     [
                         'name' => 'utm_campaign',
-                        'label' => 'UTM Campaign'
+                        'label' => 'UTM Campaign',
+                        'filter' => [
+                            'name' => 'visit:utm_campaign',
+                            'label' => 'UTM Campaign is',
+                        ],
                     ],
                     [
                         'name' => 'visitors',
-                        'label' => 'Visitors'
+                        'label' => 'Visitors',
                     ],
                 ],
             ],
@@ -485,6 +545,10 @@ class SourceDataProviderTest extends UnitTestCase
 
         $this->languageServiceProphecy->getLL('barChart.labels.visitors')->willReturn('Visitors');
         $this->languageServiceProphecy->getLL('barChart.labels.UTMCampaign')->willReturn('UTM Campaign');
+        $this->languageServiceProphecy->getLL('filter.sourceData.UTMCampaignIs')->willReturn('UTM Campaign is');
+
+        $plausibleServiceProphecy->filtersToPlausibleFilterString([['name' => 'visit:device==Desktop']])->willReturn('visit:device==Desktop');
+        $plausibleServiceProphecy->filtersToPlausibleFilterString([])->willReturn('');
 
         $plausibleServiceProphecy->sendAuthorizedRequest(
             $plausibleSiteId,

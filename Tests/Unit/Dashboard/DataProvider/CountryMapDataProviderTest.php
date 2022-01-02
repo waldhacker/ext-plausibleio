@@ -199,6 +199,8 @@ class CountryMapDataProviderTest extends UnitTestCase
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\CountryMapDataProvider::getCountryDataForDataMap
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\CountryMapDataProvider::getCountryData
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\CountryMapDataProvider::plausibleToDataMap
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\CountryMapDataProvider::calcPercentage
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\CountryMapDataProvider::getLanguageService
      * @covers \Waldhacker\Plausibleio\Services\PlausibleService::isFilterActivated
      * @covers \Waldhacker\Plausibleio\Services\ISO3166Service::alpha2
      * @covers \Waldhacker\Plausibleio\Services\ISO3166Service::search
@@ -240,5 +242,28 @@ class CountryMapDataProviderTest extends UnitTestCase
 
         $subject = new CountryMapDataProvider($plausibleServiceProphecy->reveal(), new ISO3166Service());
         self::assertSame($expected, $subject->getCountryDataForDataMap($plausibleSiteId, $timeFrame, $filters));
+    }
+
+    /**
+     * @test
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\CountryMapDataProvider::__construct
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\CountryMapDataProvider::calcPercentage
+     */
+    public function calcPercentageReturnsProperValue()
+    {
+        $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
+        $ISO3166ServiceProphecy = $this->prophesize(ISO3166Service::class);
+        $subject = new CountryMapDataProvider($plausibleServiceProphecy->reveal(), $ISO3166ServiceProphecy->reveal());
+
+        self::assertSame(
+            [
+                ['device' => 'Tablet', 'visitors' => 3, 'percentage' => 25.0],
+                ['device' => 'Desktop', 'visitors' => 9, 'percentage' => 75.0],
+            ],
+            $subject->calcPercentage([
+                ['device' => 'Tablet', 'visitors' => 3,],
+                ['device' => 'Desktop', 'visitors' => 9,],
+            ])
+        );
     }
 }

@@ -44,7 +44,8 @@ define([
     requestUpdatedData(evt, widget, chart) {
       new AjaxRequest(this.options.visitorTimeSeriesEndpoint).withQueryArguments({
         timeFrame: evt.detail.timeFrame,
-        siteId: evt.detail.siteId
+        siteId: evt.detail.siteId,
+        filter: evt.detail.filter,
       })
       .get()
       .then(async (response) => {
@@ -65,6 +66,7 @@ define([
 
     initialize() {
       let that = this;
+
       new RegularEvent('widgetContentRendered', function (evt) {
         evt.preventDefault();
 
@@ -85,12 +87,24 @@ define([
         }
 
         let widget = visitorsWidgetChart.canvas.closest(that.options.dashboardItemSelector);
+        let filterBar = widget.querySelector(WidgetService.options.filterBarSelector);
 
         widget.addEventListener('plausible:timeframechange', function (evt) {
           that.requestUpdatedData(evt, widget, visitorsWidgetChart);
         });
 
         widget.addEventListener('plausible:sitechange', function (evt) {
+          that.requestUpdatedData(evt, widget, visitorsWidgetChart);
+        });
+
+        // Set filters from BE user configuration
+        let dashBoardId = WidgetService.options.defaultDashBoardId;
+        let filters = evt.detail.filters.hasOwnProperty(dashBoardId) ? evt.detail.filters[dashBoardId] : [];
+        WidgetService.setFilters(filters);
+        widget.addEventListener('plausible:filterchange', function (evt) {
+          if (filterBar) {
+            WidgetService.renderFilterBar(filterBar);
+          }
           that.requestUpdatedData(evt, widget, visitorsWidgetChart);
         });
 
@@ -106,7 +120,9 @@ define([
 
         // request and render data
         let configuration = WidgetService.getSiteAndTimeFrameFromDashboardItem(widget);
-        WidgetService.dispatchTimeFrameChange(widget, configuration.site, configuration.timeFrame);
+        WidgetService.dispatchTimeFrameChange(widget, configuration.site, configuration.timeFrame, WidgetService.getFilters());
+
+        WidgetService.renderFilterBar(filterBar);
       }).delegateTo(document, this.options.dashboardItemSelector);
     }
 
@@ -118,9 +134,9 @@ define([
 
     renderOverviewData(widget, data) {
       if (typeof(widget) !== 'undefined' && widget !== null && data) {
-        let visitors = data.visitors ? this.formatSIPrefix(data.visitors) : '-';
-        let pageViews = data.pageviews ? this.formatSIPrefix(data.pageviews) : '-';
-        let currentVisitors = data.current_visitors ? this.formatSIPrefix(data.current_visitors) : '-';
+        let visitors = data.visitors ? this.formatSIPrefix(data.visitors) : '0';
+        let pageViews = data.pageviews ? this.formatSIPrefix(data.pageviews) : '0';
+        let currentVisitors = data.current_visitors ? this.formatSIPrefix(data.current_visitors) : '0';
         widget.querySelector(this.options.uniqueVisitorsOverviewItemSelector).innerHTML = visitors;
         widget.querySelector(this.options.totalPageviewsOverviewItemSelector).innerHTML = pageViews;
         widget.querySelector(this.options.currentVisitorsOverviewItemSelector).innerHTML = currentVisitors;
@@ -133,7 +149,12 @@ define([
           // remaining seconds
           seconds = data.visit_duration - minutes * 60;
         }
-        widget.querySelector(this.options.visitDurationOverviewItemSelector).innerHTML = (minutes > 0 ? minutes + 'm ' : '') + (seconds > 0 ? seconds + 's' : '');
+        if (minutes + seconds > 0) {
+          widget.querySelector(this.options.visitDurationOverviewItemSelector).innerHTML = (minutes > 0 ? minutes + 'm ' : '') + (seconds > 0 ? seconds + 's' : '');
+        }
+        else {
+          widget.querySelector(this.options.visitDurationOverviewItemSelector).innerHTML = '-';
+        }
       }
     }
   }

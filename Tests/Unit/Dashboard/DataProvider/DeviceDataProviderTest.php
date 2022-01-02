@@ -539,7 +539,9 @@ class DeviceDataProviderTest extends UnitTestCase
         $this->languageServiceProphecy->getLL('barChart.labels.screenSize')->willReturn('Screen Size');
         $this->languageServiceProphecy->getLL('filter.deviceData.screenSizeIs')->willReturn('Screen size is');
 
-        $plausibleServiceProphecy->filtersToPlausibleFilterString([['name' => 'visit:device==Desktop']])->willReturn('visit:device==Desktop');
+        if ($filters) {
+            $plausibleServiceProphecy->filtersToPlausibleFilterString($filters)->willReturn($filters[0]['name']);
+        }
         $plausibleServiceProphecy->filtersToPlausibleFilterString([])->willReturn('');
 
         $authorizedRequestParams = [
@@ -549,7 +551,7 @@ class DeviceDataProviderTest extends UnitTestCase
             'metrics' => 'visitors',
         ];
         if ($filters) {
-            $authorizedRequestParams['filters'] = 'visit:device==Desktop';
+            $authorizedRequestParams['filters'] = $filters[0]['name'];
         }
 
         $plausibleServiceProphecy->sendAuthorizedRequest(

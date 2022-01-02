@@ -20,6 +20,7 @@ namespace Waldhacker\Plausibleio\Dashboard\Widget;
 
 use TYPO3\CMS\Core\Page\PageRenderer;
 use TYPO3\CMS\Dashboard\Widgets\AdditionalCssInterface;
+use TYPO3\CMS\Dashboard\Widgets\EventDataInterface;
 use TYPO3\CMS\Dashboard\Widgets\RequireJsModuleInterface;
 use TYPO3\CMS\Dashboard\Widgets\WidgetConfigurationInterface;
 use TYPO3\CMS\Dashboard\Widgets\WidgetInterface;
@@ -27,7 +28,7 @@ use TYPO3\CMS\Fluid\View\StandaloneView;
 use Waldhacker\Plausibleio\Services\ConfigurationService;
 use Waldhacker\Plausibleio\Services\PlausibleService;
 
-class SourceDataWidget implements WidgetInterface, AdditionalCssInterface, RequireJsModuleInterface
+class SourceDataWidget implements WidgetInterface, EventDataInterface, AdditionalCssInterface, RequireJsModuleInterface
 {
     private PageRenderer $pageRenderer;
     private StandaloneView $view;
@@ -91,10 +92,25 @@ class SourceDataWidget implements WidgetInterface, AdditionalCssInterface, Requi
                     'label' => 'widget.sourceData.tabs.campaignsource',
                     'id' => 'campaignsource',
                 ],
+                [
+                    'label' => 'widget.sourceData.tabs.termsource',
+                    'id' => 'termsource',
+                ],
+                [
+                    'label' => 'widget.sourceData.tabs.contentsource',
+                    'id' => 'contentsource',
+                ],
             ],
         ]);
 
         return $this->view->render();
+    }
+
+    public function getEventData(): array
+    {
+        return [
+            'filters' => $this->configurationService->getAllFiltersFromUserConfiguration(),
+        ];
     }
 
     public function getCssFiles(): array

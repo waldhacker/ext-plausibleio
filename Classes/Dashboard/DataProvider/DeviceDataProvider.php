@@ -30,15 +30,15 @@ class DeviceDataProvider
         $this->plausibleService = $plausibleService;
     }
 
-    public function getBrowserData(string $plausibleSiteId, string $timeFrame, array $filter = []): array
+    public function getBrowserData(string $plausibleSiteId, string $timeFrame, array $filters = []): array
     {
         $map = [];
-        $browserFilterActivated = $this->plausibleService->isFilterActivated('visit:browser', $filter);
+        $browserFilterActivated = $this->plausibleService->isFilterActivated('visit:browser', $filters);
         $property = $browserFilterActivated ? 'visit:browser_version' : 'visit:browser';
         $dataColumnName = $browserFilterActivated ? 'browser_version' : 'browser';
 
         // show only browser data or, if browser is filtered, show all versions of the selected (filtered) browser
-        $responseData = $this->getData($plausibleSiteId, $timeFrame, $property, $filter);
+        $responseData = $this->getData($plausibleSiteId, $timeFrame, $property, $filters);
 
         // show only browser data or, if browser is filtered, show all versions of the selected (filtered) browser
         if ($browserFilterActivated) {
@@ -82,16 +82,16 @@ class DeviceDataProvider
         return $responseData;
     }
 
-    public function getOSData(string $plausibleSiteId, string $timeFrame, array $filter = []): array
+    public function getOSData(string $plausibleSiteId, string $timeFrame, array $filters = []): array
     {
         $map = [];
-        $osFilterActivated = $this->plausibleService->isFilterActivated('visit:os', $filter);
+        $osFilterActivated = $this->plausibleService->isFilterActivated('visit:os', $filters);
         $property = $osFilterActivated ? 'visit:os_version' : 'visit:os';
         $dataColumnName = $osFilterActivated ? 'os_version' : 'os';
         $filterLabel = $osFilterActivated ? 'filter.deviceData.osVersionIs' : 'filter.deviceData.osIs';
         $columnLabel = $osFilterActivated ? 'barChart.labels.osVersion' : 'barChart.labels.os';
 
-        $responseData = $this->getData($plausibleSiteId, $timeFrame, $property, $filter);
+        $responseData = $this->getData($plausibleSiteId, $timeFrame, $property, $filters);
 
         // show only browser data or, if browser is filtered, show all versions of the selected (filtered) browser
         array_unshift(
@@ -120,10 +120,10 @@ class DeviceDataProvider
         return $responseData;
     }
 
-    public function getDeviceData(string $plausibleSiteId, string $timeFrame, array $filter = []): array
+    public function getDeviceData(string $plausibleSiteId, string $timeFrame, array $filters = []): array
     {
         $map = [];
-        $responseData = $this->getData($plausibleSiteId, $timeFrame, 'visit:device', $filter);
+        $responseData = $this->getData($plausibleSiteId, $timeFrame, 'visit:device', $filters);
 
         // clean up data
         foreach ($responseData['data'] as $item) {
@@ -151,7 +151,7 @@ class DeviceDataProvider
         return $responseData;
     }
 
-    private function getData(string $plausibleSiteId, string $timeFrame, string $property, array $filter = []): array
+    private function getData(string $plausibleSiteId, string $timeFrame, string $property, array $filters = []): array
     {
         $endpoint = 'api/v1/stats/breakdown?';
         $params = [
@@ -160,7 +160,7 @@ class DeviceDataProvider
             'property' => $property,
             'metrics' => 'visitors',
         ];
-        $filterStr = $this->plausibleService->filtersToPlausibleFilterString($filter);
+        $filterStr = $this->plausibleService->filtersToPlausibleFilterString($filters);
         if ($filterStr) {
             $params['filters'] = $filterStr;
         }

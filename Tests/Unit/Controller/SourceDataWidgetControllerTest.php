@@ -27,6 +27,7 @@ use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 use Waldhacker\Plausibleio\Controller\SourceDataWidgetController;
 use Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider;
 use Waldhacker\Plausibleio\Services\ConfigurationService;
+use Waldhacker\Plausibleio\Services\PlausibleService;
 
 class SourceDataWidgetControllerTest extends UnitTestCase
 {
@@ -42,6 +43,7 @@ class SourceDataWidgetControllerTest extends UnitTestCase
             'timeFrameFromConfiguration' => '12mo',
             'expectedSiteId' => 'site1',
             'expectedTimeFrame' => 'day',
+            'expectedFilters' => [],
         ];
 
         yield 'Invalid site is ignored and the value from the user configuration is used instead' => [
@@ -52,6 +54,7 @@ class SourceDataWidgetControllerTest extends UnitTestCase
             'timeFrameFromConfiguration' => '12mo',
             'expectedSiteId' => 'site4',
             'expectedTimeFrame' => 'day',
+            'expectedFilters' => [],
         ];
 
         yield 'Invalid time frame is ignored and the value from the user configuration is used instead' => [
@@ -62,6 +65,7 @@ class SourceDataWidgetControllerTest extends UnitTestCase
             'timeFrameFromConfiguration' => '12mo',
             'expectedSiteId' => 'site1',
             'expectedTimeFrame' => '12mo',
+            'expectedFilters' => [],
         ];
 
         yield 'Invalid site and time frame is ignored and the value from the user configuration is used instead' => [
@@ -72,6 +76,7 @@ class SourceDataWidgetControllerTest extends UnitTestCase
             'timeFrameFromConfiguration' => '12mo',
             'expectedSiteId' => 'site4',
             'expectedTimeFrame' => '12mo',
+            'expectedFilters' => [],
         ];
     }
 
@@ -88,11 +93,13 @@ class SourceDataWidgetControllerTest extends UnitTestCase
         string $siteIdFromConfiguration,
         string $timeFrameFromConfiguration,
         string $expectedSiteId,
-        string $expectedTimeFrame
+        string $expectedTimeFrame,
+        array $expectedFilters
     ): void {
         $serverRequestProphecy = $this->prophesize(ServerRequestInterface::class);
         $configurationServiceProphecy = $this->prophesize(ConfigurationService::class);
         $sourceDataProviderProphecy = $this->prophesize(SourceDataProvider::class);
+        $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
         $responseFactoryProphecy = $this->prophesize(ResponseFactoryInterface::class);
         $responseProphecy = $this->prophesize(ResponseInterface::class);
         $streamProphecy = $this->prophesize(StreamInterface::class);
@@ -107,23 +114,32 @@ class SourceDataWidgetControllerTest extends UnitTestCase
         $configurationServiceProphecy->getPlausibleSiteIdFromUserConfiguration()->willReturn($siteIdFromConfiguration);
         $configurationServiceProphecy->getTimeFrameValueFromUserConfiguration()->willReturn($timeFrameFromConfiguration);
 
-        $sourceDataProviderProphecy->getAllSourcesData($expectedSiteId, $expectedTimeFrame)->willReturn(['allsources' => 'data']);
-        $sourceDataProviderProphecy->getMediumData($expectedSiteId, $expectedTimeFrame)->willReturn(['mediumsource' => 'data']);
-        $sourceDataProviderProphecy->getSourceData($expectedSiteId, $expectedTimeFrame)->willReturn(['sourcesource' => 'data']);
-        $sourceDataProviderProphecy->getCampaignData($expectedSiteId, $expectedTimeFrame)->willReturn(['campaignsource' => 'data']);
+        $sourceDataProviderProphecy->getAllSourcesData($expectedSiteId, $expectedTimeFrame, $expectedFilters)->willReturn(['allsources' => 'data']);
+        $sourceDataProviderProphecy->getMediumData($expectedSiteId, $expectedTimeFrame, $expectedFilters)->willReturn(['mediumsource' => 'data']);
+        $sourceDataProviderProphecy->getSourceData($expectedSiteId, $expectedTimeFrame, $expectedFilters)->willReturn(['sourcesource' => 'data']);
+        $sourceDataProviderProphecy->getCampaignData($expectedSiteId, $expectedTimeFrame, $expectedFilters)->willReturn(['campaignsource' => 'data']);
+        $sourceDataProviderProphecy->getTermData($expectedSiteId, $expectedTimeFrame, $expectedFilters)->willReturn(['termsource' => 'data']);
+        $sourceDataProviderProphecy->getContentData($expectedSiteId, $expectedTimeFrame, $expectedFilters)->willReturn(['contentsource' => 'data']);
 
         $configurationServiceProphecy->persistPlausibleSiteIdInUserConfiguration($expectedSiteId)->shouldBeCalled();
         $configurationServiceProphecy->persistTimeFrameValueInUserConfiguration($expectedTimeFrame)->shouldBeCalled();
-        $sourceDataProviderProphecy->getAllSourcesData($expectedSiteId, $expectedTimeFrame)->shouldBeCalled();
-        $sourceDataProviderProphecy->getMediumData($expectedSiteId, $expectedTimeFrame)->shouldBeCalled();
-        $sourceDataProviderProphecy->getSourceData($expectedSiteId, $expectedTimeFrame)->shouldBeCalled();
-        $sourceDataProviderProphecy->getCampaignData($expectedSiteId, $expectedTimeFrame)->shouldBeCalled();
+        $configurationServiceProphecy->persistFiltersInUserConfiguration($expectedFilters)->shouldBeCalled();
+        $sourceDataProviderProphecy->getAllSourcesData($expectedSiteId, $expectedTimeFrame, $expectedFilters)->shouldBeCalled();
+        $sourceDataProviderProphecy->getMediumData($expectedSiteId, $expectedTimeFrame, $expectedFilters)->shouldBeCalled();
+        $sourceDataProviderProphecy->getSourceData($expectedSiteId, $expectedTimeFrame, $expectedFilters)->shouldBeCalled();
+        $sourceDataProviderProphecy->getCampaignData($expectedSiteId, $expectedTimeFrame, $expectedFilters)->shouldBeCalled();
+        $sourceDataProviderProphecy->getTermData($expectedSiteId, $expectedTimeFrame, $expectedFilters)->shouldBeCalled();
+        $sourceDataProviderProphecy->getContentData($expectedSiteId, $expectedTimeFrame, $expectedFilters)->shouldBeCalled();
 
-        $streamProphecy->write('[{"tab":"allsources","data":{"allsources":"data"}},{"tab":"mediumsource","data":{"mediumsource":"data"}},{"tab":"sourcesource","data":{"sourcesource":"data"}},{"tab":"campaignsource","data":{"campaignsource":"data"}}]')->shouldBeCalled();
+        $plausibleServiceProphecy->checkFilters($expectedFilters)->willReturn([]);
+        $plausibleServiceProphecy->checkFilters($expectedFilters)->shouldBeCalled();
+
+        $streamProphecy->write('[{"tab":"allsources","data":{"allsources":"data"}},{"tab":"mediumsource","data":{"mediumsource":"data"}},{"tab":"sourcesource","data":{"sourcesource":"data"}},{"tab":"campaignsource","data":{"campaignsource":"data"}},{"tab":"termsource","data":{"termsource":"data"}},{"tab":"contentsource","data":{"contentsource":"data"}}]')->shouldBeCalled();
 
         $subject = new SourceDataWidgetController(
             $sourceDataProviderProphecy->reveal(),
             $configurationServiceProphecy->reveal(),
+            $plausibleServiceProphecy->reveal(),
             $responseFactoryProphecy->reveal()
         );
 

@@ -32,7 +32,7 @@ class VisitorsOverTimeDataProvider
         $this->getLanguageService()->includeLLFile('EXT:' . self::EXT_KEY . '/Resources/Private/Language/locallang.xlf');
     }
 
-    public function getOverview(string $plausibleSiteId, string $timeFrame): array
+    public function getOverview(string $plausibleSiteId, string $timeFrame, array $filter = []): array
     {
         $endpoint = '/api/v1/stats/aggregate?';
         $params = [
@@ -40,6 +40,10 @@ class VisitorsOverTimeDataProvider
             'period' => $timeFrame,
             'metrics' => 'visitors,visit_duration,pageviews,bounce_rate',
         ];
+        $filterStr = $this->plausibleService->filtersToPlausibleFilterString($filter);
+        if ($filterStr) {
+            $params['filters'] = $filterStr;
+        }
 
         $result = [];
         $responseData = $this->plausibleService->sendAuthorizedRequest($plausibleSiteId, $endpoint, $params);
@@ -61,20 +65,25 @@ class VisitorsOverTimeDataProvider
         return $result;
     }
 
-    public function getCurrentVisitors(string $plausibleSiteId): int
+    public function getCurrentVisitors(string $plausibleSiteId, array $filter = []): int
     {
         $endpoint = '/api/v1/stats/realtime/visitors?';
         $params = [
             'site_id' => $plausibleSiteId,
         ];
+        $filterStr = $this->plausibleService->filtersToPlausibleFilterString($filter);
+        if ($filterStr) {
+            $params['filters'] = $filterStr;
+        }
 
         $responseData =  $this->plausibleService->sendAuthorizedRequest($plausibleSiteId, $endpoint, $params);
+
         return is_int($responseData) ? $responseData : 0;
     }
 
-    public function getChartData(string $plausibleSiteId, string $timeFrame): array
+    public function getChartData(string $plausibleSiteId, string $timeFrame, array $filter = []): array
     {
-        $results = $this->getVisitors($plausibleSiteId, $timeFrame);
+        $results = $this->getVisitors($plausibleSiteId, $timeFrame, $filter);
 
         $labels = [];
         $data = [];
@@ -101,13 +110,17 @@ class VisitorsOverTimeDataProvider
         ];
     }
 
-    private function getVisitors(string $plausibleSiteId, string $timeFrame): array
+    private function getVisitors(string $plausibleSiteId, string $timeFrame, array $filter = []): array
     {
         $endpoint = 'api/v1/stats/timeseries?';
         $params = [
             'site_id' => $plausibleSiteId,
             'period' => $timeFrame,
         ];
+        $filterStr = $this->plausibleService->filtersToPlausibleFilterString($filter);
+        if ($filterStr) {
+            $params['filters'] = $filterStr;
+        }
 
         $responseData = $this->plausibleService->sendAuthorizedRequest($plausibleSiteId, $endpoint, $params);
         return is_array($responseData) ? $responseData : [];

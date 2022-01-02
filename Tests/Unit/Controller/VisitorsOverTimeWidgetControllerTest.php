@@ -27,6 +27,7 @@ use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 use Waldhacker\Plausibleio\Controller\VisitorsOverTimeWidgetController;
 use Waldhacker\Plausibleio\Dashboard\DataProvider\VisitorsOverTimeDataProvider;
 use Waldhacker\Plausibleio\Services\ConfigurationService;
+use Waldhacker\Plausibleio\Services\PlausibleService;
 
 class VisitorsOverTimeWidgetControllerTest extends UnitTestCase
 {
@@ -42,6 +43,7 @@ class VisitorsOverTimeWidgetControllerTest extends UnitTestCase
             'timeFrameFromConfiguration' => '12mo',
             'expectedSiteId' => 'site1',
             'expectedTimeFrame' => 'day',
+            'expectedFilters' => [],
         ];
 
         yield 'Invalid site is ignored and the value from the user configuration is used instead' => [
@@ -52,6 +54,7 @@ class VisitorsOverTimeWidgetControllerTest extends UnitTestCase
             'timeFrameFromConfiguration' => '12mo',
             'expectedSiteId' => 'site4',
             'expectedTimeFrame' => 'day',
+            'expectedFilters' => [],
         ];
 
         yield 'Invalid time frame is ignored and the value from the user configuration is used instead' => [
@@ -62,6 +65,7 @@ class VisitorsOverTimeWidgetControllerTest extends UnitTestCase
             'timeFrameFromConfiguration' => '12mo',
             'expectedSiteId' => 'site1',
             'expectedTimeFrame' => '12mo',
+            'expectedFilters' => [],
         ];
 
         yield 'Invalid site and time frame is ignored and the value from the user configuration is used instead' => [
@@ -72,6 +76,7 @@ class VisitorsOverTimeWidgetControllerTest extends UnitTestCase
             'timeFrameFromConfiguration' => '12mo',
             'expectedSiteId' => 'site4',
             'expectedTimeFrame' => '12mo',
+            'expectedFilters' => [],
         ];
     }
 
@@ -88,11 +93,13 @@ class VisitorsOverTimeWidgetControllerTest extends UnitTestCase
         string $siteIdFromConfiguration,
         string $timeFrameFromConfiguration,
         string $expectedSiteId,
-        string $expectedTimeFrame
+        string $expectedTimeFrame,
+        array $expectedFilters
     ): void {
         $serverRequestProphecy = $this->prophesize(ServerRequestInterface::class);
         $configurationServiceProphecy = $this->prophesize(ConfigurationService::class);
         $visitorsOverTimeDataProviderProphecy = $this->prophesize(VisitorsOverTimeDataProvider::class);
+        $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
         $responseFactoryProphecy = $this->prophesize(ResponseFactoryInterface::class);
         $responseProphecy = $this->prophesize(ResponseInterface::class);
         $streamProphecy = $this->prophesize(StreamInterface::class);
@@ -107,21 +114,26 @@ class VisitorsOverTimeWidgetControllerTest extends UnitTestCase
         $configurationServiceProphecy->getPlausibleSiteIdFromUserConfiguration()->willReturn($siteIdFromConfiguration);
         $configurationServiceProphecy->getTimeFrameValueFromUserConfiguration()->willReturn($timeFrameFromConfiguration);
 
-        $visitorsOverTimeDataProviderProphecy->getChartData($expectedSiteId, $expectedTimeFrame)->willReturn(['chart' => 'data']);
-        $visitorsOverTimeDataProviderProphecy->getOverview($expectedSiteId, $expectedTimeFrame)->willReturn(['overview' => 'data']);
-        $visitorsOverTimeDataProviderProphecy->getCurrentVisitors($expectedSiteId, $expectedTimeFrame)->willReturn(['visitors' => 'data']);
+        $visitorsOverTimeDataProviderProphecy->getChartData($expectedSiteId, $expectedTimeFrame, $expectedFilters)->willReturn(['chart' => 'data']);
+        $visitorsOverTimeDataProviderProphecy->getOverview($expectedSiteId, $expectedTimeFrame, $expectedFilters)->willReturn(['overview' => 'data']);
+        $visitorsOverTimeDataProviderProphecy->getCurrentVisitors($expectedSiteId, $expectedTimeFrame, $expectedFilters)->willReturn(['visitors' => 'data']);
 
         $configurationServiceProphecy->persistPlausibleSiteIdInUserConfiguration($expectedSiteId)->shouldBeCalled();
         $configurationServiceProphecy->persistTimeFrameValueInUserConfiguration($expectedTimeFrame)->shouldBeCalled();
-        $visitorsOverTimeDataProviderProphecy->getChartData($expectedSiteId, $expectedTimeFrame)->shouldBeCalled();
-        $visitorsOverTimeDataProviderProphecy->getOverview($expectedSiteId, $expectedTimeFrame)->shouldBeCalled();
-        $visitorsOverTimeDataProviderProphecy->getCurrentVisitors($expectedSiteId)->shouldBeCalled();
+        $configurationServiceProphecy->persistFiltersInUserConfiguration($expectedFilters)->shouldBeCalled();
+        $visitorsOverTimeDataProviderProphecy->getChartData($expectedSiteId, $expectedTimeFrame, $expectedFilters)->shouldBeCalled();
+        $visitorsOverTimeDataProviderProphecy->getOverview($expectedSiteId, $expectedTimeFrame, $expectedFilters)->shouldBeCalled();
+        $visitorsOverTimeDataProviderProphecy->getCurrentVisitors($expectedSiteId, $expectedFilters)->shouldBeCalled();
+
+        $plausibleServiceProphecy->checkFilters($expectedFilters)->willReturn([]);
+        $plausibleServiceProphecy->checkFilters($expectedFilters)->shouldBeCalled();
 
         $streamProphecy->write('{"chartData":{"chart":"data"},"overViewData":{"overview":"data","current_visitors":0}}')->shouldBeCalled();
 
         $subject = new VisitorsOverTimeWidgetController(
             $visitorsOverTimeDataProviderProphecy->reveal(),
             $configurationServiceProphecy->reveal(),
+            $plausibleServiceProphecy->reveal(),
             $responseFactoryProphecy->reveal()
         );
 

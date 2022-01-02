@@ -417,8 +417,8 @@ class ConfigurationServiceTest extends UnitTestCase
      * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::getBackendUser
      */
     public function getFiltersFromUserConfigurationReturnsEmptyArrayOnInvalidBackendUserConfiguration(
-        $beUser,
-        $uc
+        ?BackendUserAuthentication $beUser,
+        ?array $uc
     ): void {
         $GLOBALS['BE_USER'] = $beUser;
         if ($beUser) {
@@ -457,8 +457,8 @@ class ConfigurationServiceTest extends UnitTestCase
      * @covers       \Waldhacker\Plausibleio\Services\ConfigurationService::getBackendUser
      */
     public function getAllFiltersFromUserConfigurationReturnsEmptyArrayOnInvalidBackendUserConfiguration(
-        $beUser,
-        $uc
+        ?BackendUserAuthentication $beUser,
+        ?array $uc
     ): void {
         $GLOBALS['BE_USER'] = $beUser;
         if ($beUser) {

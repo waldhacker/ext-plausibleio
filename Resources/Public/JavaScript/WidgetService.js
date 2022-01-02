@@ -35,6 +35,7 @@ define([
         filterBarSelector: '.widget-content-filter',
         filterLinkSelector: '[data-widget-plausible-filter]',
         sessionFilterKey: 'plausible-filter',
+        defaultDashBoardId: 'default',
       };
     }
 
@@ -191,7 +192,7 @@ define([
      *
      * @returns array[of Filter]
      */
-    getFilters(dashBoardId = 'default') {
+    getFilters(dashBoardId = this.options.defaultDashBoardId) {
       let filters = JSON.parse(BrowserSession.get(this.options.sessionFilterKey + dashBoardId));
 
       if (!Array.isArray(filters)) {
@@ -207,7 +208,7 @@ define([
      *
      * @param array[of Filter] filterArray
      */
-    setFilters(filterArray, dashBoardId = 'default') {
+    setFilters(filterArray, dashBoardId = this.options.defaultDashBoardId) {
       if (Array.isArray(filterArray)) {
         BrowserSession.set(this.options.sessionFilterKey + dashBoardId, JSON.stringify(filterArray));
       }

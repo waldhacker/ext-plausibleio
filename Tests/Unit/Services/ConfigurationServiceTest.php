@@ -314,6 +314,196 @@ class ConfigurationServiceTest extends UnitTestCase
     /**
      * @test
      * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::__construct
+     * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::persistFiltersInUserConfiguration
+     * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::getLanguageService
+     * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::getBackendUser
+     */
+    public function persistPlausibleFiltersInUserConfigurationDoesNothingOnInvalidBackendUserConfiguration(): void
+    {
+        $backendUserProphecy = $this->prophesize(BackendUserAuthentication::class);
+        $GLOBALS['BE_USER'] = $backendUserProphecy->reveal();
+
+        $backendUserProphecy->writeUC()->shouldNotBeCalled();
+        self::assertNull($this->subject->persistFiltersInUserConfiguration([]));
+    }
+
+    /**
+     * @test
+     * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::__construct
+     * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::persistFiltersInUserConfiguration
+     * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::getLanguageService
+     * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::getBackendUser
+     */
+    public function persistFiltersInUserConfigurationPersistValue(): void
+    {
+        $backendUserProphecy = $this->prophesize(BackendUserAuthentication::class);
+        $GLOBALS['BE_USER'] = $backendUserProphecy->reveal();
+        $GLOBALS['BE_USER']->uc = [];
+
+        $backendUserProphecy->writeUC()->shouldBeCalled();
+        self::assertNull($this->subject->persistFiltersInUserConfiguration(['name' => 'visit:os==Mac']));
+        self::assertSame(['plausible' => ['filters' => [ConfigurationService::DASHBOARD_DEFAULT_ID => ['name' => 'visit:os==Mac']]]], $backendUserProphecy->uc);
+    }
+
+    /**
+     * @test
+     * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::__construct
+     * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::getFiltersFromUserConfiguration
+     * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::getLanguageService
+     * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::getBackendUser
+     */
+    public function getFiltersFromUserConfigurationWithDefaultDashboardReturnsValueFromUserConfiguration(): void
+    {
+        $GLOBALS['TYPO3_CONF_VARS']['BE']['cookieName'] = '';
+        $GLOBALS['BE_USER'] = new BackendUserAuthentication();
+        $GLOBALS['BE_USER']->uc = ['plausible' => ['filters' => [ConfigurationService::DASHBOARD_DEFAULT_ID => ['name' => 'visit:os==Mac']]]];
+
+        self::assertSame(['name' => 'visit:os==Mac'], $this->subject->getFiltersFromUserConfiguration());
+    }
+
+    /**
+     * @test
+     * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::__construct
+     * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::getFiltersFromUserConfiguration
+     * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::getLanguageService
+     * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::getBackendUser
+     */
+    public function getFiltersFromUserConfigurationWithConcreteDashboardReturnsValueFromUserConfiguration(): void
+    {
+        $GLOBALS['TYPO3_CONF_VARS']['BE']['cookieName'] = '';
+        $GLOBALS['BE_USER'] = new BackendUserAuthentication();
+        $GLOBALS['BE_USER']->uc = [
+            'plausible' => [
+                'filters' => [
+                    'dashboard_AAA' => [
+                        'name' => 'visit:os==Mac',
+                    ],
+                    ConfigurationService::DASHBOARD_DEFAULT_ID => [
+                        'name' => 'visit:os==Windows',
+                    ],
+                ],
+            ],
+        ];
+
+        self::assertSame(['name' => 'visit:os==Mac'], $this->subject->getFiltersFromUserConfiguration('dashboard_AAA'));
+    }
+
+    public function getFiltersFromUserConfigurationReturnsEmptyArrayOnInvalidBackendUserConfigurationDataProvider(): \Generator
+    {
+        $GLOBALS['TYPO3_CONF_VARS']['BE']['cookieName'] = '';
+
+        yield 'BE_USER null' => [
+            'beUser' => null,
+            'uc' => [],
+            ];
+
+        yield 'uc not an array' => [
+            'beUser' => new BackendUserAuthentication(),
+            'uc' => null,
+        ];
+
+        yield 'BE_USER null and uc null' => [
+            'beUser' => null,
+            'uc' => null,
+        ];
+    }
+
+    /**
+     * @test
+     * @dataProvider getFiltersFromUserConfigurationReturnsEmptyArrayOnInvalidBackendUserConfigurationDataProvider
+     * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::__construct
+     * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::getFiltersFromUserConfiguration
+     * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::getLanguageService
+     * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::getBackendUser
+     */
+    public function getFiltersFromUserConfigurationReturnsEmptyArrayOnInvalidBackendUserConfiguration(
+        $beUser,
+        $uc
+    ): void {
+        $GLOBALS['BE_USER'] = $beUser;
+        if ($beUser) {
+            $GLOBALS['BE_USER']->uc = $uc;
+        }
+
+        self::assertSame([], $this->subject->getFiltersFromUserConfiguration());
+    }
+
+    public function getAllFiltersFromUserConfigurationReturnsEmptyArrayOnInvalidBackendUserConfigurationDataProvider(): \Generator
+    {
+        $GLOBALS['TYPO3_CONF_VARS']['BE']['cookieName'] = '';
+
+        yield 'BE_USER null' => [
+            'beUser' => null,
+            'uc' => [],
+        ];
+
+        yield 'uc not an array' => [
+            'beUser' => new BackendUserAuthentication(),
+            'uc' => null,
+        ];
+
+        yield 'BE_USER null and uc null' => [
+            'beUser' => null,
+            'uc' => null,
+        ];
+    }
+
+    /**
+     * @test
+     * @dataProvider getAllFiltersFromUserConfigurationReturnsEmptyArrayOnInvalidBackendUserConfigurationDataProvider
+     * @covers       \Waldhacker\Plausibleio\Services\ConfigurationService::__construct
+     * @covers       \Waldhacker\Plausibleio\Services\ConfigurationService::getAllFiltersFromUserConfiguration
+     * @covers       \Waldhacker\Plausibleio\Services\ConfigurationService::getLanguageService
+     * @covers       \Waldhacker\Plausibleio\Services\ConfigurationService::getBackendUser
+     */
+    public function getAllFiltersFromUserConfigurationReturnsEmptyArrayOnInvalidBackendUserConfiguration(
+        $beUser,
+        $uc
+    ): void {
+        $GLOBALS['BE_USER'] = $beUser;
+        if ($beUser) {
+            $GLOBALS['BE_USER']->uc = $uc;
+        }
+
+        self::assertSame([], $this->subject->getAllFiltersFromUserConfiguration());
+    }
+
+    /**
+     * @test
+     * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::__construct
+     * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::getAllFiltersFromUserConfiguration
+     * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::getLanguageService
+     * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::getBackendUser
+     */
+    public function getAllFiltersFromUserConfigurationReturnsValueFromUserConfiguration(): void
+    {
+        $GLOBALS['TYPO3_CONF_VARS']['BE']['cookieName'] = '';
+        $GLOBALS['BE_USER'] = new BackendUserAuthentication();
+        $GLOBALS['BE_USER']->uc = [
+            'plausible' => [
+                'filters' => [
+                    'dashboard_AAA' => [
+                        'name' => 'visit:os==Mac',
+                    ],
+                    ConfigurationService::DASHBOARD_DEFAULT_ID => [
+                        'name' => 'visit:os==Windows',
+                    ],
+                ],
+            ],
+        ];
+
+        self::assertSame(
+            [
+                'dashboard_AAA' => ['name' => 'visit:os==Mac'],
+                ConfigurationService::DASHBOARD_DEFAULT_ID => ['name' => 'visit:os==Windows'],
+            ],
+            $this->subject->getAllFiltersFromUserConfiguration()
+        );
+    }
+
+    /**
+     * @test
+     * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::__construct
      * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::persistPlausibleSiteIdInUserConfiguration
      * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::getLanguageService
      * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::getBackendUser

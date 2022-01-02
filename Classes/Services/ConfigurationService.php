@@ -35,6 +35,7 @@ class ConfigurationService
     private const EXT_KEY = 'plausibleio';
     private const DEFAULT_TIME_FRAME = '30d';
     private const DEFAULT_TIME_FRAMES = 'day,7d,30d,month,6mo,12mo';
+    const DASHBOARD_DEFAULT_ID = 'default';
     private ExtensionConfiguration $extensionConfiguration;
     private SiteFinder $siteFinder;
 
@@ -100,13 +101,13 @@ class ConfigurationService
         $this->getBackendUser()->writeUC();
     }
 
-    public function persistFiltersInUserConfiguration(array $filters, string $dashBoardId = 'default'): void
+    public function persistFiltersInUserConfiguration(array $filters, string $dashBoardId = self::DASHBOARD_DEFAULT_ID): void
     {
         if ($this->getBackendUser() === null || !is_array($this->getBackendUser()->uc)) {
             return;
         }
         if (empty($dashBoardId)) {
-            $dashBoardId = 'default';
+            $dashBoardId = self::DASHBOARD_DEFAULT_ID;
         }
 
         $userConfiguration = $this->getBackendUser()->uc['plausible'] ?? [];
@@ -115,10 +116,10 @@ class ConfigurationService
         $this->getBackendUser()->writeUC();
     }
 
-    public function getFiltersFromUserConfiguration(string $dashBoardId = 'default'): array
+    public function getFiltersFromUserConfiguration(string $dashBoardId = self::DASHBOARD_DEFAULT_ID): array
     {
         if (empty($dashBoardId)) {
-            $dashBoardId = 'default';
+            $dashBoardId = self::DASHBOARD_DEFAULT_ID;
         }
 
         $userConfiguration = $this->getBackendUser() !== null && is_array($this->getBackendUser()->uc)
@@ -131,10 +132,6 @@ class ConfigurationService
 
     public function getAllFiltersFromUserConfiguration(): array
     {
-        if (empty($dashBoardId)) {
-            $dashBoardId = 'default';
-        }
-
         $userConfiguration = $this->getBackendUser() !== null && is_array($this->getBackendUser()->uc)
             ? $this->getBackendUser()->uc
             : [];

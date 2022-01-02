@@ -131,6 +131,7 @@ class DeviceDataWidgetControllerTest extends UnitTestCase
 
         $configurationServiceProphecy->persistPlausibleSiteIdInUserConfiguration($expectedSiteId)->shouldBeCalled();
         $configurationServiceProphecy->persistTimeFrameValueInUserConfiguration($expectedTimeFrame)->shouldBeCalled();
+        $configurationServiceProphecy->persistFiltersInUserConfiguration($expectedFilters)->shouldBeCalled();
         $deviceDataProviderProphecy->getBrowserData($expectedSiteId, $expectedTimeFrame, $expectedFilters)->shouldBeCalled();
         $deviceDataProviderProphecy->getDeviceData($expectedSiteId, $expectedTimeFrame, $expectedFilters)->shouldBeCalled();
         $deviceDataProviderProphecy->getOSData($expectedSiteId, $expectedTimeFrame, $expectedFilters)->shouldBeCalled();

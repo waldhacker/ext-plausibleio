@@ -131,6 +131,7 @@ class PageDataWidgetControllerTest extends UnitTestCase
 
         $configurationServiceProphecy->persistPlausibleSiteIdInUserConfiguration($expectedSiteId)->shouldBeCalled();
         $configurationServiceProphecy->persistTimeFrameValueInUserConfiguration($expectedTimeFrame)->shouldBeCalled();
+        $configurationServiceProphecy->persistFiltersInUserConfiguration($expectedFilters)->shouldBeCalled();
         $pageDataProviderProphecy->getTopPageData($expectedSiteId, $expectedTimeFrame, $expectedFilters)->shouldBeCalled();
         $pageDataProviderProphecy->getEntryPageData($expectedSiteId, $expectedTimeFrame, $expectedFilters)->shouldBeCalled();
         $pageDataProviderProphecy->getExitPageData($expectedSiteId, $expectedTimeFrame, $expectedFilters)->shouldBeCalled();

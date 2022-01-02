@@ -128,6 +128,7 @@ class CountryMapDataWidgetControllerTest extends UnitTestCase
 
         $configurationServiceProphecy->persistPlausibleSiteIdInUserConfiguration($expectedSiteId)->shouldBeCalled();
         $configurationServiceProphecy->persistTimeFrameValueInUserConfiguration($expectedTimeFrame)->shouldBeCalled();
+        $configurationServiceProphecy->persistFiltersInUserConfiguration($expectedFilters)->shouldBeCalled();
         $countryMapDataProviderProphecy->getCountryDataForDataMap($expectedSiteId, $expectedTimeFrame, $expectedFilters)->shouldBeCalled();
 
         $plausibleServiceProphecy->checkFilters($expectedFilters)->willReturn([]);

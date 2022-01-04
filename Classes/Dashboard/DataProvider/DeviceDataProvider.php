@@ -68,15 +68,8 @@ class DeviceDataProvider
             );
         }
 
-        // clean up data
-        foreach ($responseData['data'] as $item) {
-            if (!isset($item[$dataColumnName]) || !isset($item['visitors'])) {
-                continue;
-            }
-            $map[] = $item;
-        }
-
-        $map = $this->calcPercentage($map);
+        $map = $this->plausibleService->dataCleanUp([$dataColumnName, 'visitors'], $responseData['data']);
+        $map = $this->plausibleService->calcPercentage($map);
         $responseData['data'] = $map;
 
         return $responseData;
@@ -106,15 +99,8 @@ class DeviceDataProvider
             ]
         );
 
-        // clean up data
-        foreach ($responseData['data'] as $item) {
-            if (!isset($item[$dataColumnName]) || !isset($item['visitors'])) {
-                continue;
-            }
-            $map[] = $item;
-        }
-
-        $map = $this->calcPercentage($map);
+        $map = $this->plausibleService->dataCleanUp([$dataColumnName, 'visitors'], $responseData['data']);
+        $map = $this->plausibleService->calcPercentage($map);
         $responseData['data'] = $map;
 
         return $responseData;
@@ -122,18 +108,10 @@ class DeviceDataProvider
 
     public function getDeviceData(string $plausibleSiteId, string $timeFrame, array $filters = []): array
     {
-        $map = [];
         $responseData = $this->getData($plausibleSiteId, $timeFrame, 'visit:device', $filters);
 
-        // clean up data
-        foreach ($responseData['data'] as $item) {
-            if (!isset($item['device']) || !isset($item['visitors'])) {
-                continue;
-            }
-            $map[] = $item;
-        }
-
-        $map = $this->calcPercentage($map);
+        $map = $this->plausibleService->dataCleanUp(['device', 'visitors'], $responseData['data']);
+        $map = $this->plausibleService->calcPercentage($map);
         $responseData['data'] = $map;
 
         array_unshift(
@@ -177,20 +155,6 @@ class DeviceDataProvider
         ];
 
         return $responseData;
-    }
-
-    public function calcPercentage(array $dataArray): array
-    {
-        $visitorsSum = 0;
-
-        foreach ($dataArray as $item) {
-            $visitorsSum = $visitorsSum + $item['visitors'];
-        }
-        foreach ($dataArray as $key => $value) {
-            $dataArray[$key]['percentage'] = $value['visitors'] / $visitorsSum * 100;
-        }
-
-        return $dataArray;
     }
 
     private function getLanguageService(): LanguageService

@@ -29,53 +29,53 @@ class GoalDataProvider
     public function __construct(PlausibleService $plausibleService)
     {
         $this->plausibleService = $plausibleService;
-        //$this->getLanguageService()->includeLLFile('EXT:' . self::EXT_KEY . '/Resources/Private/Language/locallang.xlf');
     }
 
-    public function getGoals(string $plausibleSiteId, string $timeFrame): array
+    public function getGoalsData(string $plausibleSiteId, string $timeFrame): array
     {
         $endpoint = 'api/v1/stats/breakdown?';
-        //$endpoint = 'api/stats/plausible-master.ddev.site/conversions?';
-        //$endpoint = '/api/stats/'.$plausibleSiteId.'/conversions';
-        //$endpoint = '/api/stats/' . $plausibleSiteId . '/browsers?';
         $params = [
             'site_id' => $plausibleSiteId,
             'period' => $timeFrame,
             'property' => 'event:goal',
-            //'property' => 'event:name',
-            //'metrics' => 'visitors,pageviews',
-            //'metrics' => 'events',
+            'metrics' => 'visitors,events',
         ];
 
-        $responseData = $this->plausibleService->sendAuthorizedRequest($plausibleSiteId, $endpoint, $params);
-
-        if (!is_array($responseData)) {
-            $responseData = [];
+        $responseData = [];
+        $responseData['data'] = $this->plausibleService->sendAuthorizedRequest($plausibleSiteId, $endpoint, $params);
+        if (!is_array($responseData['data'])) {
+            $responseData['data'] = [];
         }
 
-        $visitorsSum = 0;
-        foreach ($responseData as $item) {
-            $visitorsSum = $visitorsSum + $item['visitors'];
-        }
-        foreach ($responseData as $key => $value) {
-            $responseData[$key]['percentage'] = $value['visitors'] / $visitorsSum * 100;
-        }
+        $map = $this->plausibleService->dataCleanUp(['goal', 'visitors', 'events'], $responseData['data']);
+        $map = $this->plausibleService->calcPercentage($map);
+        $map = $this->plausibleService->calcConversionRate($plausibleSiteId, $timeFrame, $map);
+        $responseData['data'] = $map;
 
-        $result = [
-            'columns' => [
+        $responseData['columns'] = [
                 [
                     'name' => 'goal',
                     'label' => $this->getLanguageService()->getLL('barChart.labels.goal'),
+                    'filter' => [
+                        'name' => 'event:goal',
+                        'label' => $this->getLanguageService()->getLL('filter.goalData.goalIs'),
+                    ],
                 ],
                 [
                     'name' => 'visitors',
-                    'label' => $this->getLanguageService()->getLL('barChart.labels.visitors'),
+                    'label' => $this->getLanguageService()->getLL('barChart.labels.uniques'),
                 ],
-            ],
-            'data' => $responseData,
-        ];
+                [
+                    'name' => 'events',
+                    'label' => $this->getLanguageService()->getLL('barChart.labels.total'),
+                ],
+                [
+                    'name' => 'cr',
+                    'label' => $this->getLanguageService()->getLL('barChart.labels.cr'),
+                ],
+            ];
 
-        return $result;
+        return $responseData;
     }
 
     private function getLanguageService(): LanguageService

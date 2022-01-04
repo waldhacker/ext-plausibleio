@@ -18,11 +18,14 @@ declare(strict_types=1);
 
 namespace Waldhacker\Plausibleio\Tests\Unit\Dashboard\DataProvider;
 
+use GuzzleHttp\Client;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
+use TYPO3\CMS\Core\Http\RequestFactory;
 use TYPO3\CMS\Core\Localization\LanguageService;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 use Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider;
+use Waldhacker\Plausibleio\Services\ConfigurationService;
 use Waldhacker\Plausibleio\Services\PlausibleService;
 
 class DeviceDataProviderTest extends UnitTestCase
@@ -75,7 +78,7 @@ class DeviceDataProviderTest extends UnitTestCase
             'plausibleSiteId' => 'waldhacker.dev',
             'timeFrame' => '7d',
             'filters' => [
-                ['name' => 'visit:browser==firefox'],
+                ['name' => 'visit:browser', 'value' => 'firefox'],
             ],
             'endpointData' => [
                 ['browser_version' => '48.0', 'visitors' => 12],
@@ -171,8 +174,12 @@ class DeviceDataProviderTest extends UnitTestCase
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::__construct
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::getBrowserData
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::getData
-     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::calcPercentage
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::getLanguageService
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::__construct
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::isFilterActivated
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::filtersToPlausibleFilterString
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::calcPercentage
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::dataCleanUp
      */
     public function getBrowserDataReturnsProperValues(
         string $plausibleSiteId,
@@ -181,7 +188,15 @@ class DeviceDataProviderTest extends UnitTestCase
         ?array $endpointData,
         array $expected
     ): void {
-        $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
+        $configurationServiceProphecy = $this->prophesize(ConfigurationService::class);
+        $plausibleServiceMock = $this->getMockBuilder(PlausibleService::class)
+            ->onlyMethods(['sendAuthorizedRequest'])
+            ->setConstructorArgs([
+                new RequestFactory(),
+                new Client(),
+                $configurationServiceProphecy->reveal(),
+            ])
+            ->getMock();
 
         $this->languageServiceProphecy->getLL('barChart.labels.visitors')->willReturn('Visitors');
         $this->languageServiceProphecy->getLL('barChart.labels.browser')->willReturn('Browser');
@@ -189,30 +204,26 @@ class DeviceDataProviderTest extends UnitTestCase
         $this->languageServiceProphecy->getLL('filter.deviceData.browserIs')->willReturn('Browser is');
         $this->languageServiceProphecy->getLL('filter.deviceData.browserVersionIs')->willReturn('${browser} version is');
 
-        $plausibleServiceProphecy->filtersToPlausibleFilterString([['name' => 'visit:browser==firefox']])->willReturn('visit:browser==firefox');
-        $plausibleServiceProphecy->filtersToPlausibleFilterString([])->willReturn('');
-        $plausibleServiceProphecy->isFilterActivated('visit:browser', [['name' => 'visit:browser==firefox']])->willReturn(['name' => 'visit:browser==firefox']);
-        $plausibleServiceProphecy->isFilterActivated('visit:browser', [])->willReturn(null);
-
         $authorizedRequestParams = [
             'site_id' => $plausibleSiteId,
             'period' => $timeFrame,
             'property' => $filters ? 'visit:browser_version' : 'visit:browser',
             'metrics' => 'visitors',
         ];
-        if ($filters) {
-            $authorizedRequestParams['filters'] = 'visit:browser==firefox';
+        if (!empty($filters)) {
+            $authorizedRequestParams['filters'] = $filters[0]['name'] . '==' . $filters[0]['value'];
         }
 
-        $plausibleServiceProphecy->sendAuthorizedRequest(
-            $plausibleSiteId,
-            'api/v1/stats/breakdown?',
-            $authorizedRequestParams
-        )
-        ->willReturn($endpointData)
-        ->shouldBeCalled();
+        $plausibleServiceMock->expects($this->exactly(1))
+            ->method('sendAuthorizedRequest')
+            ->with(
+                $plausibleSiteId,
+                'api/v1/stats/breakdown?',
+                $authorizedRequestParams,
+            )
+            ->willReturn($endpointData);
 
-        $subject = new DeviceDataProvider($plausibleServiceProphecy->reveal());
+        $subject = new DeviceDataProvider($plausibleServiceMock);
         self::assertSame($expected, $subject->getBrowserData($plausibleSiteId, $timeFrame, $filters));
     }
 
@@ -252,7 +263,7 @@ class DeviceDataProviderTest extends UnitTestCase
             'plausibleSiteId' => 'waldhacker.dev',
             'timeFrame' => '7d',
             'filters' => [
-                ['name' => 'visit:os==Mac'],
+                ['name' => 'visit:os', 'value' => 'Mac'],
             ],
             'endpointData' => [
                 ['os_version' => '10.15', 'visitors' => 32],
@@ -348,8 +359,12 @@ class DeviceDataProviderTest extends UnitTestCase
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::__construct
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::getOSData
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::getData
-     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::calcPercentage
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::getLanguageService
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::__construct
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::isFilterActivated
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::filtersToPlausibleFilterString
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::calcPercentage
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::dataCleanUp
      */
     public function getOSDataReturnsProperValues(
         string $plausibleSiteId,
@@ -358,7 +373,15 @@ class DeviceDataProviderTest extends UnitTestCase
         ?array $endpointData,
         array $expected
     ): void {
-        $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
+        $configurationServiceProphecy = $this->prophesize(ConfigurationService::class);
+        $plausibleServiceMock = $this->getMockBuilder(PlausibleService::class)
+            ->onlyMethods(['sendAuthorizedRequest'])
+            ->setConstructorArgs([
+                new RequestFactory(),
+                new Client(),
+                $configurationServiceProphecy->reveal(),
+            ])
+            ->getMock();
 
         $this->languageServiceProphecy->getLL('barChart.labels.visitors')->willReturn('Visitors');
         $this->languageServiceProphecy->getLL('barChart.labels.os')->willReturn('Operating system');
@@ -366,30 +389,26 @@ class DeviceDataProviderTest extends UnitTestCase
         $this->languageServiceProphecy->getLL('filter.deviceData.osIs')->willReturn('Operating system is');
         $this->languageServiceProphecy->getLL('filter.deviceData.osVersionIs')->willReturn('${os} version is');
 
-        $plausibleServiceProphecy->filtersToPlausibleFilterString([['name' => 'visit:os==Mac']])->willReturn('visit:os==Mac');
-        $plausibleServiceProphecy->filtersToPlausibleFilterString([])->willReturn('');
-        $plausibleServiceProphecy->isFilterActivated('visit:os', [['name' => 'visit:os==Mac']])->willReturn(['name' => 'visit:os==Mac']);
-        $plausibleServiceProphecy->isFilterActivated('visit:os', [])->willReturn(null);
-
         $authorizedRequestParams = [
             'site_id' => $plausibleSiteId,
             'period' => $timeFrame,
             'property' => $filters ? 'visit:os_version' : 'visit:os',
             'metrics' => 'visitors',
         ];
-        if ($filters) {
-            $authorizedRequestParams['filters'] = 'visit:os==Mac';
+        if (!empty($filters)) {
+            $authorizedRequestParams['filters'] = $filters[0]['name'] . '==' . $filters[0]['value'];
         }
 
-        $plausibleServiceProphecy->sendAuthorizedRequest(
-            $plausibleSiteId,
-            'api/v1/stats/breakdown?',
-            $authorizedRequestParams
-        )
-        ->willReturn($endpointData)
-        ->shouldBeCalled();
+        $plausibleServiceMock->expects($this->exactly(1))
+            ->method('sendAuthorizedRequest')
+            ->with(
+                $plausibleSiteId,
+                'api/v1/stats/breakdown?',
+                $authorizedRequestParams,
+            )
+            ->willReturn($endpointData);
 
-        $subject = new DeviceDataProvider($plausibleServiceProphecy->reveal());
+        $subject = new DeviceDataProvider($plausibleServiceMock);
         self::assertSame($expected, $subject->getOSData($plausibleSiteId, $timeFrame, $filters));
     }
 
@@ -429,7 +448,7 @@ class DeviceDataProviderTest extends UnitTestCase
             'plausibleSiteId' => 'waldhacker.dev',
             'timeFrame' => '7d',
             'filters' => [
-                ['name' => 'visit:device==Desktop'],
+                ['name' => 'visit:device', 'value' => 'Desktop'],
             ],
             'endpointData' => [
                 ['device' => 'Desktop', 'visitors' => 3],
@@ -524,7 +543,11 @@ class DeviceDataProviderTest extends UnitTestCase
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::getDeviceData
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::getData
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::getLanguageService
-     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::calcPercentage
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::__construct
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::isFilterActivated
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::filtersToPlausibleFilterString
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::calcPercentage
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::dataCleanUp
      */
     public function getDeviceDataReturnsProperValues(
         string $plausibleSiteId,
@@ -533,16 +556,19 @@ class DeviceDataProviderTest extends UnitTestCase
         ?array $endpointData,
         array $expected
     ): void {
-        $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
+        $configurationServiceProphecy = $this->prophesize(ConfigurationService::class);
+        $plausibleServiceMock = $this->getMockBuilder(PlausibleService::class)
+            ->onlyMethods(['sendAuthorizedRequest'])
+            ->setConstructorArgs([
+                new RequestFactory(),
+                new Client(),
+                $configurationServiceProphecy->reveal(),
+            ])
+            ->getMock();
 
         $this->languageServiceProphecy->getLL('barChart.labels.visitors')->willReturn('Visitors');
         $this->languageServiceProphecy->getLL('barChart.labels.screenSize')->willReturn('Screen Size');
         $this->languageServiceProphecy->getLL('filter.deviceData.screenSizeIs')->willReturn('Screen size is');
-
-        if ($filters) {
-            $plausibleServiceProphecy->filtersToPlausibleFilterString($filters)->willReturn($filters[0]['name']);
-        }
-        $plausibleServiceProphecy->filtersToPlausibleFilterString([])->willReturn('');
 
         $authorizedRequestParams = [
             'site_id' => $plausibleSiteId,
@@ -550,41 +576,20 @@ class DeviceDataProviderTest extends UnitTestCase
             'property' => 'visit:device',
             'metrics' => 'visitors',
         ];
-        if ($filters) {
-            $authorizedRequestParams['filters'] = $filters[0]['name'];
+        if (!empty($filters)) {
+            $authorizedRequestParams['filters'] = $filters[0]['name'] . '==' . $filters[0]['value'];
         }
 
-        $plausibleServiceProphecy->sendAuthorizedRequest(
-            $plausibleSiteId,
-            'api/v1/stats/breakdown?',
-            $authorizedRequestParams
-        )
-        ->willReturn($endpointData)
-        ->shouldBeCalled();
+        $plausibleServiceMock->expects($this->exactly(1))
+            ->method('sendAuthorizedRequest')
+            ->with(
+                $plausibleSiteId,
+                'api/v1/stats/breakdown?',
+                $authorizedRequestParams,
+            )
+            ->willReturn($endpointData);
 
-        $subject = new DeviceDataProvider($plausibleServiceProphecy->reveal());
+        $subject = new DeviceDataProvider($plausibleServiceMock);
         self::assertSame($expected, $subject->getDeviceData($plausibleSiteId, $timeFrame, $filters));
-    }
-
-    /**
-     * @test
-     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::__construct
-     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::calcPercentage
-     */
-    public function calcPercentageReturnsProperValue()
-    {
-        $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
-        $subject = new DeviceDataProvider($plausibleServiceProphecy->reveal());
-
-        self::assertSame(
-            [
-                ['device' => 'Tablet', 'visitors' => 3, 'percentage' => 25.0],
-                ['device' => 'Desktop', 'visitors' => 9, 'percentage' => 75.0],
-            ],
-            $subject->calcPercentage([
-                ['device' => 'Tablet', 'visitors' => 3,],
-                ['device' => 'Desktop', 'visitors' => 9,],
-            ])
-        );
     }
 }

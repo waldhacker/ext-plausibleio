@@ -32,18 +32,10 @@ class SourceDataProvider
 
     public function getAllSourcesData(string $plausibleSiteId, string $timeFrame, array $filters = []): array
     {
-        $map = [];
         $responseData = $this->getData($plausibleSiteId, $timeFrame, 'visit:source', $filters);
 
-        // clean up data
-        foreach ($responseData['data'] as $item) {
-            if (!isset($item['source']) || !isset($item['visitors'])) {
-                continue;
-            }
-            $map[] = $item;
-        }
-
-        $map = $this->calcPercentage($map);
+        $map = $this->plausibleService->dataCleanUp(['source', 'visitors'], $responseData['data']);
+        $map = $this->plausibleService->calcPercentage($map);
         $responseData['data'] = $map;
 
         array_unshift(
@@ -63,18 +55,10 @@ class SourceDataProvider
 
     public function getMediumData(string $plausibleSiteId, string $timeFrame, array $filters = []): array
     {
-        $map = [];
         $responseData = $this->getData($plausibleSiteId, $timeFrame, 'visit:utm_medium', $filters);
 
-        // clean up data
-        foreach ($responseData['data'] as $item) {
-            if (!isset($item['utm_medium']) || !isset($item['visitors'])) {
-                continue;
-            }
-            $map[] = $item;
-        }
-
-        $map = $this->calcPercentage($map);
+        $map = $this->plausibleService->dataCleanUp(['utm_medium', 'visitors'], $responseData['data']);
+        $map = $this->plausibleService->calcPercentage($map);
         $responseData['data'] = $map;
 
         array_unshift(
@@ -94,18 +78,10 @@ class SourceDataProvider
 
     public function getSourceData(string $plausibleSiteId, string $timeFrame, array $filters = []): array
     {
-        $map = [];
         $responseData = $this->getData($plausibleSiteId, $timeFrame, 'visit:utm_source', $filters);
 
-        // clean up data
-        foreach ($responseData['data'] as $item) {
-            if (!isset($item['utm_source']) || !isset($item['visitors'])) {
-                continue;
-            }
-            $map[] = $item;
-        }
-
-        $map = $this->calcPercentage($map);
+        $map = $this->plausibleService->dataCleanUp(['utm_source', 'visitors'], $responseData['data']);
+        $map = $this->plausibleService->calcPercentage($map);
         $responseData['data'] = $map;
 
         array_unshift(
@@ -125,18 +101,10 @@ class SourceDataProvider
 
     public function getCampaignData(string $plausibleSiteId, string $timeFrame, array $filters = []): array
     {
-        $map = [];
         $responseData = $this->getData($plausibleSiteId, $timeFrame, 'visit:utm_campaign', $filters);
 
-        // clean up data
-        foreach ($responseData['data'] as $item) {
-            if (!isset($item['utm_campaign']) || !isset($item['visitors'])) {
-                continue;
-            }
-            $map[] = $item;
-        }
-
-        $map = $this->calcPercentage($map);
+        $map = $this->plausibleService->dataCleanUp(['utm_campaign', 'visitors'], $responseData['data']);
+        $map = $this->plausibleService->calcPercentage($map);
         $responseData['data'] = $map;
 
         array_unshift(
@@ -156,18 +124,10 @@ class SourceDataProvider
 
     public function getTermData(string $plausibleSiteId, string $timeFrame, array $filters = []): array
     {
-        $map = [];
         $responseData = $this->getData($plausibleSiteId, $timeFrame, 'visit:utm_term', $filters);
 
-        // clean up data
-        foreach ($responseData['data'] as $item) {
-            if (!isset($item['utm_term']) || !isset($item['visitors'])) {
-                continue;
-            }
-            $map[] = $item;
-        }
-
-        $map = $this->calcPercentage($map);
+        $map = $this->plausibleService->dataCleanUp(['utm_term', 'visitors'], $responseData['data']);
+        $map = $this->plausibleService->calcPercentage($map);
         $responseData['data'] = $map;
 
         array_unshift(
@@ -187,24 +147,16 @@ class SourceDataProvider
 
     public function getContentData(string $plausibleSiteId, string $timeFrame, array $filters = []): array
     {
-        $map = [];
         $responseData = $this->getData($plausibleSiteId, $timeFrame, 'visit:utm_content', $filters);
 
-        // clean up data
-        foreach ($responseData['data'] as $item) {
-            if (!isset($item['utm_content']) || !isset($item['visitors'])) {
-                continue;
-            }
-            $map[] = $item;
-        }
-
-        $map = $this->calcPercentage($map);
+        $map = $this->plausibleService->dataCleanUp(['utm_content', 'visitors'], $responseData['data']);
+        $map = $this->plausibleService->calcPercentage($map);
         $responseData['data'] = $map;
 
         array_unshift(
             $responseData['columns'],
             [
-                'name' => 'utm_term',
+                'name' => 'utm_content',
                 'label' => $this->getLanguageService()->getLL('barChart.labels.UTMContent'),
                 'filter' => [
                     'name' => 'visit:utm_content',
@@ -242,20 +194,6 @@ class SourceDataProvider
         ];
 
         return $responseData;
-    }
-
-    public function calcPercentage(array $dataArray): array
-    {
-        $visitorsSum = 0;
-
-        foreach ($dataArray as $item) {
-            $visitorsSum = $visitorsSum + $item['visitors'];
-        }
-        foreach ($dataArray as $key => $value) {
-            $dataArray[$key]['percentage'] = $value['visitors'] / $visitorsSum * 100;
-        }
-
-        return $dataArray;
     }
 
     private function getLanguageService(): LanguageService

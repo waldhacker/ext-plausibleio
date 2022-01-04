@@ -98,7 +98,7 @@ define([
           value = D3Format.format('.2~s')(value);
           dataset[iso] = {
             numberOfThings: value,
-            fillColor: paletteScale(value),
+            fillColor: paletteScale(item.visitors),
             filter: {
               name: 'visit:country',
               value: item.alpha2,

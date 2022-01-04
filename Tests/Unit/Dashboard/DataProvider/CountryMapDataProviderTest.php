@@ -18,11 +18,16 @@ declare(strict_types=1);
 
 namespace Waldhacker\Plausibleio\Tests\Unit\Dashboard\DataProvider;
 
+use GuzzleHttp\Client;
 use Prophecy\PhpUnit\ProphecyTrait;
+use Psr\Http\Client\ClientInterface;
+use Psr\Http\Message\RequestFactoryInterface;
 use TYPO3\CMS\Core\Localization\LanguageService;
+use TYPO3\CMS\Core\Http\RequestFactory;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 use Waldhacker\Plausibleio\Dashboard\DataProvider\CountryMapDataProvider;
 use Waldhacker\Plausibleio\Services\ISO3166Service;
+use Waldhacker\Plausibleio\Services\ConfigurationService;
 use Waldhacker\Plausibleio\Services\PlausibleService;
 
 class CountryMapDataProviderTest extends UnitTestCase
@@ -165,7 +170,7 @@ class CountryMapDataProviderTest extends UnitTestCase
         yield 'all items are transformed with filter' => [
             'plausibleSiteId' => 'waldhacker.dev',
             'timeFrame' => '7d',
-            'filters' => [['name' => 'visit:country==CU']],
+            'filters' => [['name' => 'visit:country', 'value' => 'CU']],
             'endpointData' => [
                 ['country' => 'CU', 'visitors' => 9],
             ],
@@ -199,9 +204,12 @@ class CountryMapDataProviderTest extends UnitTestCase
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\CountryMapDataProvider::getCountryDataForDataMap
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\CountryMapDataProvider::getCountryData
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\CountryMapDataProvider::plausibleToDataMap
-     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\CountryMapDataProvider::calcPercentage
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\CountryMapDataProvider::getLanguageService
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::__construct
      * @covers \Waldhacker\Plausibleio\Services\PlausibleService::isFilterActivated
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::filtersToPlausibleFilterString
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::calcPercentage
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::dataCleanUp
      * @covers \Waldhacker\Plausibleio\Services\ISO3166Service::alpha2
      * @covers \Waldhacker\Plausibleio\Services\ISO3166Service::search
      */
@@ -212,58 +220,39 @@ class CountryMapDataProviderTest extends UnitTestCase
         ?array $endpointData,
         array $expected
     ): void {
-        $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
+        $configurationServiceProphecy = $this->prophesize(ConfigurationService::class);
+        $plausibleServiceMock = $this->getMockBuilder(PlausibleService::class)
+            ->onlyMethods(['sendAuthorizedRequest'])
+            ->setConstructorArgs([
+                new RequestFactory(),
+                new Client(),
+                $configurationServiceProphecy->reveal(),
+            ])
+            ->getMock();
 
         $this->languageServiceProphecy->getLL('barChart.labels.visitors')->willReturn('Visitors');
         $this->languageServiceProphecy->getLL('barChart.labels.country')->willReturn('Country');
         $this->languageServiceProphecy->getLL('filter.deviceData.countryIs')->willReturn('Country is');
-
-        $plausibleServiceProphecy->isFilterActivated('visit:country', [['name' => 'visit:country==CU']])->willReturn(['name' => 'visit:country==CU']);
-        $plausibleServiceProphecy->isFilterActivated('visit:country', [])->willReturn(null);
-        $plausibleServiceProphecy->filtersToPlausibleFilterString([['name' => 'visit:country==CU']])->willReturn('visit:country==CU');
-        $plausibleServiceProphecy->filtersToPlausibleFilterString([])->willReturn('');
 
         $authorizedRequestParams = [
             'site_id' => $plausibleSiteId,
             'period' => $timeFrame,
             'property' => 'visit:country',
         ];
-        if ($filters) {
-            $authorizedRequestParams['filters'] = 'visit:country==CU';
+        if (!empty($filters)) {
+            $authorizedRequestParams['filters'] = $filters[0]['name'] . '==' . $filters[0]['value'];
         }
 
-        $plausibleServiceProphecy->sendAuthorizedRequest(
-            $plausibleSiteId,
-            'api/v1/stats/breakdown?',
-            $authorizedRequestParams,
-        )
-        ->willReturn($endpointData)
-        ->shouldBeCalled();
+        $plausibleServiceMock->expects($this->exactly(1))
+            ->method('sendAuthorizedRequest')
+            ->with(
+                $plausibleSiteId,
+                'api/v1/stats/breakdown?',
+                $authorizedRequestParams,
+            )
+            ->willReturn($endpointData);
 
-        $subject = new CountryMapDataProvider($plausibleServiceProphecy->reveal(), new ISO3166Service());
+        $subject = new CountryMapDataProvider($plausibleServiceMock, new ISO3166Service());
         self::assertSame($expected, $subject->getCountryDataForDataMap($plausibleSiteId, $timeFrame, $filters));
-    }
-
-    /**
-     * @test
-     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\CountryMapDataProvider::__construct
-     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\CountryMapDataProvider::calcPercentage
-     */
-    public function calcPercentageReturnsProperValue()
-    {
-        $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
-        $ISO3166ServiceProphecy = $this->prophesize(ISO3166Service::class);
-        $subject = new CountryMapDataProvider($plausibleServiceProphecy->reveal(), $ISO3166ServiceProphecy->reveal());
-
-        self::assertSame(
-            [
-                ['device' => 'Tablet', 'visitors' => 3, 'percentage' => 25.0],
-                ['device' => 'Desktop', 'visitors' => 9, 'percentage' => 75.0],
-            ],
-            $subject->calcPercentage([
-                ['device' => 'Tablet', 'visitors' => 3,],
-                ['device' => 'Desktop', 'visitors' => 9,],
-            ])
-        );
     }
 }

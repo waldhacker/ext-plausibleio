@@ -39,7 +39,7 @@ define([
         .withQueryArguments({
           timeFrame: evt.detail.timeFrame,
           siteId: evt.detail.siteId,
-          filter: evt.detail.filter,
+          filter: evt.detail.filter
         })
         .get()
         .then(async (response) => {

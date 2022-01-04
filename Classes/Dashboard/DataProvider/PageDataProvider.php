@@ -32,18 +32,10 @@ class PageDataProvider
 
     public function getTopPageData(string $plausibleSiteId, string $timeFrame, array $filter = []): array
     {
-        $map = [];
         $responseData = $this->getData($plausibleSiteId, $timeFrame, 'event:page', $filter);
 
-        // clean up data
-        foreach ($responseData['data'] as $item) {
-            if (!isset($item['page']) || !isset($item['visitors'])) {
-                continue;
-            }
-            $map[] = $item;
-        }
-
-        $map = $this->calcPercentage($map);
+        $map = $this->plausibleService->dataCleanUp(['page', 'visitors'], $responseData['data']);
+        $map = $this->plausibleService->calcPercentage($map);
         $responseData['data'] = $map;
         $responseData['columns'] = [
             [
@@ -65,18 +57,10 @@ class PageDataProvider
 
     public function getEntryPageData(string $plausibleSiteId, string $timeFrame, array $filter = []): array
     {
-        $map = [];
         $responseData = $this->getData($plausibleSiteId, $timeFrame, 'visit:entry_page', $filter);
 
-        // clean up data
-        foreach ($responseData['data'] as $item) {
-            if (!isset($item['entry_page']) || !isset($item['visitors'])) {
-                continue;
-            }
-            $map[] = $item;
-        }
-
-        $map = $this->calcPercentage($map);
+        $map = $this->plausibleService->dataCleanUp(['entry_page', 'visitors'], $responseData['data']);
+        $map = $this->plausibleService->calcPercentage($map);
         $responseData['data'] = $map;
         $responseData['columns'] = [
             [
@@ -98,18 +82,10 @@ class PageDataProvider
 
     public function getExitPageData(string $plausibleSiteId, string $timeFrame, array $filter = []): array
     {
-        $map = [];
         $responseData = $this->getData($plausibleSiteId, $timeFrame, 'visit:exit_page', $filter);
 
-        // clean up data
-        foreach ($responseData['data'] as $item) {
-            if (!isset($item['exit_page']) || !isset($item['visitors'])) {
-                continue;
-            }
-            $map[] = $item;
-        }
-
-        $map = $this->calcPercentage($map);
+        $map = $this->plausibleService->dataCleanUp(['exit_page', 'visitors'], $responseData['data']);
+        $map = $this->plausibleService->calcPercentage($map);
         $responseData['data'] = $map;
         $responseData['columns'] =  [
             [
@@ -137,7 +113,6 @@ class PageDataProvider
             'period' => $timeFrame,
             'property' => $property,
             'metrics' => 'visitors',
-            //'filters' => 'visit:browser==Firefox;event:page==/extensions/unsere-extensions',
         ];
         $filterStr = $this->plausibleService->filtersToPlausibleFilterString($filter);
         if ($filterStr) {
@@ -151,21 +126,6 @@ class PageDataProvider
         }
 
         return $responseData;
-    }
-
-
-    public function calcPercentage(array $dataArray): array
-    {
-        $visitorsSum = 0;
-
-        foreach ($dataArray as $item) {
-            $visitorsSum = $visitorsSum + $item['visitors'];
-        }
-        foreach ($dataArray as $key => $value) {
-            $dataArray[$key]['percentage'] = $value['visitors'] / $visitorsSum * 100;
-        }
-
-        return $dataArray;
     }
 
     private function getLanguageService(): LanguageService

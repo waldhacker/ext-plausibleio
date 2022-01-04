@@ -90,12 +90,15 @@ $barChartBarPaddingSide: 0.5rem;
                     color: #5a5a5a;
 
                     .headerText {
+                        min-width: 5em;
                         padding-left: $barChartBarPaddingSide;
                         padding-right: $barChartBarPaddingSide;
+                        text-align: right;
                     }
 
                     .firstHeader {
                         margin-right: auto;
+                        text-align: left;
                     }
                 }
             }
@@ -117,7 +120,7 @@ $barChartBarPaddingSide: 0.5rem;
             div {
                 position: relative;
                 width: 100%;
-                max-width: calc(100% - 5rem);
+                max-width: calc(100% - 1rem);
 
                 div {
                     position: absolute;

@@ -26,6 +26,7 @@ use GuzzleHttp\Psr7\Response;
 use GuzzleHttp\Psr7\ServerRequest;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
+use Psr\Http\Client\ClientInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -433,6 +434,130 @@ class PlausibleServiceTest extends UnitTestCase
                 ]
             ),
             ['name' => 'event:page', 'value' => 'page/site']
+        );
+    }
+
+    /**
+     * @test
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::__construct
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::calcPercentage
+     */
+    public function calcPercentageReturnsProperValue()
+    {
+        $configurationServiceProphecy = $this->prophesize(ConfigurationService::class);
+        $subject = new PlausibleService(new RequestFactory(), new Client(), $configurationServiceProphecy->reveal());
+
+        self::assertSame(
+            [
+                ['device' => 'Tablet', 'visitors' => 3, 'percentage' => 25.0],
+                ['device' => 'Desktop', 'visitors' => 9, 'percentage' => 75.0],
+            ],
+            $subject->calcPercentage([
+                ['device' => 'Tablet', 'visitors' => 3,],
+                ['device' => 'Desktop', 'visitors' => 9,],
+            ])
+        );
+    }
+
+    /**
+     * @test
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::__construct
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::calcConversionRate
+     */
+    public function calcConversionRateReturnsProperValue()
+    {
+        $configurationServiceProphecy = $this->prophesize(ConfigurationService::class);
+        $requestFactoryInterfaceProphecy = $this->prophesize(RequestFactoryInterface::class);
+        $clientInterfaceProphecy = $this->prophesize(ClientInterface::class);
+
+        $plausibleServiceMock = $this->getMockBuilder(PlausibleService::class)
+            ->onlyMethods(['sendAuthorizedRequest'])
+            ->setConstructorArgs([
+                $requestFactoryInterfaceProphecy->reveal(),
+                $clientInterfaceProphecy->reveal(),
+                $configurationServiceProphecy->reveal(),
+            ])
+            ->getMock();
+
+        $plausibleServiceMock->expects($this->exactly(1))
+            ->method('sendAuthorizedRequest')
+            ->willReturnOnConsecutiveCalls(['visitors' => ['value' => 20]]);
+
+        self::assertSame(
+            [
+                ['goal' => 'Happy ending', 'visitors' => 6, 'events' => 5, 'cr' => '30%'],
+                ['goal' => 'Mordor', 'visitors' => 10, 'events' => 6, 'cr' => '50%'],
+            ],
+
+            $plausibleServiceMock->calcConversionRate(
+                'waldhacker.dev',
+                '7d',
+                [
+                    ['goal' => 'Happy ending', 'visitors' => 6, 'events' => 5],
+                    ['goal' => 'Mordor', 'visitors' => 10, 'events' => 6],
+                ]
+            )
+        );
+    }
+
+    /**
+     * @test
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::__construct
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::dataCleanUp
+     */
+    public function dataCleanUpReturnsValidResult(): void
+    {
+        $configurationServiceProphecy = $this->prophesize(ConfigurationService::class);
+        $subject = new PlausibleService(new RequestFactory(), new Client(), $configurationServiceProphecy->reveal());
+
+        // all fields are correctly present
+        self::assertSame(
+            $subject->dataCleanUp(
+                ['name', 'value'],
+                [
+                    ['name' => 'event:page', 'value' => 'page/site'],
+                    ['name' => 'visit:browser_version', 'value' => '46.0', 'extra' => 'empty'],
+                ]
+            ),
+            [
+                ['name' => 'event:page', 'value' => 'page/site'],
+                ['name' => 'visit:browser_version', 'value' => '46.0', 'extra' => 'empty'],
+            ]
+        );
+        // a field is missing
+        self::assertSame(
+            $subject->dataCleanUp(
+                ['name', 'value'],
+                [
+                    ['' => 'event:page', 'value' => 'page/site'],
+                    ['name' => 'visit:browser_version', 'value' => '46.0'],
+                ]
+            ),
+            [
+                ['name' => 'visit:browser_version', 'value' => '46.0'],
+            ]
+        );
+        // dataArray is empty
+        self::assertSame(
+            $subject->dataCleanUp(
+                ['name', 'value'],
+                []
+            ),
+            []
+        );
+        // mandatoryFields is empty
+        self::assertSame(
+            $subject->dataCleanUp(
+                [],
+                [
+                    ['' => 'event:page', 'value' => 'page/site'],
+                    ['name' => 'visit:browser_version', 'value' => '46.0'],
+                ]
+            ),
+            [
+                ['' => 'event:page', 'value' => 'page/site'],
+                ['name' => 'visit:browser_version', 'value' => '46.0'],
+            ]
         );
     }
 

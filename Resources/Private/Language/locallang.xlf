@@ -160,6 +160,15 @@
 			<trans-unit id="barChart.labels.country">
 				<source>Country</source>
 			</trans-unit>
+			<trans-unit id="barChart.labels.uniques">
+				<source>Uniques</source>
+			</trans-unit>
+			<trans-unit id="barChart.labels.total">
+				<source>Total</source>
+			</trans-unit>
+			<trans-unit id="barChart.labels.cr">
+				<source>CR</source>
+			</trans-unit>
 			<trans-unit id="barChart.labels.unknown">
 				<source>Unknown</source>
 			</trans-unit>
@@ -208,6 +217,9 @@
 			</trans-unit>
 			<trans-unit id="filter.sourceData.UTMContentIs">
 				<source>UTM Content is</source>
+			</trans-unit>
+			<trans-unit id="filter.goalData.goalIs">
+				<source>Completed goal is</source>
 			</trans-unit>
 
 			<trans-unit id="timeframes.d">

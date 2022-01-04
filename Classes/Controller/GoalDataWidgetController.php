@@ -23,21 +23,25 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Waldhacker\Plausibleio\Dashboard\DataProvider\GoalDataProvider;
 use Waldhacker\Plausibleio\Services\ConfigurationService;
+use Waldhacker\Plausibleio\Services\PlausibleService;
 
 class GoalDataWidgetController
 {
     private ResponseFactoryInterface $responseFactory;
     private GoalDataProvider $dataProvider;
     private ConfigurationService $configurationService;
+    private PlausibleService $plausibleService;
 
     public function __construct(
         GoalDataProvider $dataProvider,
         ConfigurationService $configurationService,
+        PlausibleService $plausibleService,
         ResponseFactoryInterface $responseFactory
     ) {
         $this->responseFactory = $responseFactory;
         $this->dataProvider = $dataProvider;
         $this->configurationService = $configurationService;
+        $this->plausibleService = $plausibleService;
     }
 
     public function __invoke(ServerRequestInterface $request): ResponseInterface
@@ -52,13 +56,21 @@ class GoalDataWidgetController
             $timeFrame = $this->configurationService->getTimeFrameValueFromUserConfiguration();
         }
 
+        // request->getQueryParams() already returns a json decoded array
+        $filters = $request->getQueryParams()['filter'] ?? null;
+        if (!is_array($filters)) {
+            $filters = [];
+        }
+        $filters = $this->plausibleService->checkFilters($filters);
+
         $this->configurationService->persistPlausibleSiteIdInUserConfiguration($plausibleSiteId);
         $this->configurationService->persistTimeFrameValueInUserConfiguration($timeFrame);
+        $this->configurationService->persistFiltersInUserConfiguration($filters);
 
         $data = [
             [
                 'tab' => 'goal',
-                'data'=> $this->dataProvider->getGoals($plausibleSiteId, $timeFrame),
+                'data'=> $this->dataProvider->getGoalsData($plausibleSiteId, $timeFrame /*, $filters*/),
             ],
         ];
 

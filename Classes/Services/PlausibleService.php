@@ -45,6 +45,7 @@ class PlausibleService implements LoggerAwareInterface
         'visit:utm_medium',
         'visit:utm_source',
         'visit:utm_campaign',
+        'event:goal',
     ];
 
     private RequestFactoryInterface $factory;
@@ -339,5 +340,77 @@ class PlausibleService implements LoggerAwareInterface
         }
 
         return null;
+    }
+
+    /**
+     * Checks whether all $mandatoryFields in the subarrays of $dataArray are
+     * present. If this is not the case, the subarray is not included in the
+     * return value.
+     *
+     * @param array $mandatoryFields Array of strings. e.g. ['name', 'location']
+     * @param array $dataArray Array of arrays. e.g. [['name' => 'berlin', 'location' => 'de'], ['name' => 'rome', 'location' => 'it'], ['name' => 'paris']]
+     *                         The result of this example will be: [['name' => 'berlin', 'location' => 'de'], ['name' => 'rome', 'location' => 'it']]
+     * @return array
+     */
+    public function dataCleanUp(array $mandatoryFields, array $dataArray): array
+    {
+        $result = [];
+
+        foreach ($dataArray as $item) {
+            $takeOver = true;
+
+            foreach ($mandatoryFields as $mf) {
+                if (!isset($item[$mf])) {
+                    $takeOver = false;
+                    break;
+                }
+            }
+
+            if ($takeOver) {
+                $result[] = $item;
+            }
+        }
+
+        return $result;
+    }
+
+    public function calcPercentage(array $dataArray): array
+    {
+        $visitorsSum = 0;
+
+        foreach ($dataArray as $item) {
+            $visitorsSum = $visitorsSum + $item['visitors'];
+        }
+        foreach ($dataArray as $key => $value) {
+            $dataArray[$key]['percentage'] = $value['visitors'] / $visitorsSum * 100;
+        }
+
+        return $dataArray;
+    }
+
+    public function calcConversionRate(string $plausibleSiteId, string $timeFrame, array $dataArray): array
+    {
+        $endpoint = '/api/v1/stats/aggregate?';
+        $params = [
+            'site_id' => $plausibleSiteId,
+            'period' => $timeFrame,
+            'metrics' => 'visitors',
+        ];
+
+        $totalVisitor = 1;
+        $responseData = $this->sendAuthorizedRequest($plausibleSiteId, $endpoint, $params);
+        if (
+            is_array($responseData)
+            && isset($responseData['visitors']['value'])
+        ) {
+            $totalVisitor = $responseData['visitors']['value'];
+        }
+
+        foreach ($dataArray as $id => $item) {
+            $dataArray[$id]['cr'] = round($item['visitors'] / $totalVisitor * 100);
+            $dataArray[$id]['cr'] .= '%';
+        }
+
+        return $dataArray;
     }
 }

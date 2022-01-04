@@ -35,21 +35,21 @@ class CountryMapDataProvider
         $this->ISO3166Service = $ISO3166Service;
     }
 
-    public function getCountryDataForDataMap(string $plausibleSiteId, string $timeFrame, array $filter = []): array
+    public function getCountryDataForDataMap(string $plausibleSiteId, string $timeFrame, array $filters = []): array
     {
-        $data = $this->getCountryData($plausibleSiteId, $timeFrame, $filter);
+        $data = $this->getCountryData($plausibleSiteId, $timeFrame, $filters);
         $data['data'] = $this->plausibleToDataMap($data['data']);
         /* plausibleToDataMap needs more data (e.g. valid ISO code) than getCountryData
          * and may therefore remove data sets. For this reason, the percentage proportions
          * must be calculated again.
          */
-        $data['data'] = $this->calcPercentage($data['data']);
+        $data['data'] = $this->plausibleService->calcPercentage($data['data']);
         return $data;
     }
 
-    private function getCountryData(string $plausibleSiteId, string $timeFrame, array $filter = []): array
+    private function getCountryData(string $plausibleSiteId, string $timeFrame, array $filters = []): array
     {
-        $countryFilterActivated = $this->plausibleService->isFilterActivated('visit:country', $filter);
+        $countryFilterActivated = $this->plausibleService->isFilterActivated('visit:country', $filters);
         $property = 'visit:country';
         $dataColumnName = 'country';
         /*$property = $countryFilterActivated ? 'visit:region' : 'visit:country';
@@ -64,22 +64,19 @@ class CountryMapDataProvider
             'period' => $timeFrame,
             'property' => $property,
         ];
-        $filterStr = $this->plausibleService->filtersToPlausibleFilterString($filter);
+        $filterStr = $this->plausibleService->filtersToPlausibleFilterString($filters);
         if ($filterStr) {
             $params['filters'] = $filterStr;
         }
 
-        $map = [];
-        $responseData = $this->plausibleService->sendAuthorizedRequest($plausibleSiteId, $endpoint, $params);
-        // clean up data
-        foreach ($responseData as $item) {
-            if (!isset($item[$dataColumnName]) || !isset($item['visitors'])) {
-                continue;
-            }
-            $map[] = $item;
+        $responseData = [];
+        $responseData['data'] = $this->plausibleService->sendAuthorizedRequest($plausibleSiteId, $endpoint, $params);
+        if (!is_array($responseData['data'])) {
+            $responseData['data'] = [];
         }
 
-        $map = $this->calcPercentage($map);
+        $map = $this->plausibleService->dataCleanUp([$dataColumnName, 'visitors'], $responseData['data']);
+        $map = $this->plausibleService->calcPercentage($map);
         $resultData['data'] = $map;
         $resultData['columns'] = [
             [
@@ -126,24 +123,6 @@ class CountryMapDataProvider
         }
 
         return $result;
-    }
-
-    public function calcPercentage(array $dataArray): array
-    {
-        $visitorsSum = 0;
-
-        foreach ($dataArray as $item) {
-            if (array_key_exists('visitors', $item)) {
-                $visitorsSum = $visitorsSum + $item['visitors'];
-            }
-        }
-        foreach ($dataArray as $key => $value) {
-            if (array_key_exists('visitors', $value)) {
-                $dataArray[$key]['percentage'] = $value['visitors'] / $visitorsSum * 100;
-            }
-        }
-
-        return $dataArray;
     }
 
     private function getLanguageService(): LanguageService

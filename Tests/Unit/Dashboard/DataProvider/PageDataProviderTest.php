@@ -18,11 +18,14 @@ declare(strict_types=1);
 
 namespace Waldhacker\Plausibleio\Tests\Unit\Dashboard\DataProvider;
 
+use GuzzleHttp\Client;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
+use TYPO3\CMS\Core\Http\RequestFactory;
 use TYPO3\CMS\Core\Localization\LanguageService;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 use Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider;
+use Waldhacker\Plausibleio\Services\ConfigurationService;
 use Waldhacker\Plausibleio\Services\PlausibleService;
 
 class PageDataProviderTest extends UnitTestCase
@@ -45,6 +48,36 @@ class PageDataProviderTest extends UnitTestCase
             'plausibleSiteId' => 'waldhacker.dev',
             'timeFrame' => '7d',
             'filters' => [],
+            'endpointData' => [
+                ['page' => '/de', 'visitors' => 12],
+                ['page' => '/en', 'visitors' => 4],
+            ],
+            'expected' => [
+                'data' => [
+                    ['page' => '/de', 'visitors' => 12, 'percentage' => 75.0],
+                    ['page' => '/en', 'visitors' => 4, 'percentage' => 25.0],
+                ],
+                'columns' => [
+                    [
+                        'name' => 'page',
+                        'label' => 'Page url',
+                        'filter' => [
+                            'name' => 'event:page',
+                            'label' => 'Page is',
+                        ],
+                    ],
+                    [
+                        'name' => 'visitors',
+                        'label' => 'Visitors',
+                    ],
+                ],
+            ],
+        ];
+
+        yield 'all items are transformed with filter' => [
+            'plausibleSiteId' => 'waldhacker.dev',
+            'timeFrame' => '7d',
+            'filters' => [['name' => 'visit:entry_page', 'value' => '/startpage/subpage']],
             'endpointData' => [
                 ['page' => '/de', 'visitors' => 12],
                 ['page' => '/en', 'visitors' => 4],
@@ -139,8 +172,11 @@ class PageDataProviderTest extends UnitTestCase
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::__construct
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::getTopPageData
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::getData
-     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::calcPercentage
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::getLanguageService
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::__construct
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::filtersToPlausibleFilterString
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::calcPercentage
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::dataCleanUp
      */
     public function getTopPageDataReturnsProperValues(
         string $plausibleSiteId,
@@ -149,32 +185,42 @@ class PageDataProviderTest extends UnitTestCase
         ?array $endpointData,
         array $expected
     ): void {
-        $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
+        $configurationServiceProphecy = $this->prophesize(ConfigurationService::class);
+        $plausibleServiceMock = $this->getMockBuilder(PlausibleService::class)
+            ->onlyMethods(['sendAuthorizedRequest'])
+            ->setConstructorArgs([
+                new RequestFactory(),
+                new Client(),
+                $configurationServiceProphecy->reveal(),
+            ])
+            ->getMock();
 
         $this->languageServiceProphecy->getLL('barChart.labels.pageUrl')->willReturn('Page url');
         $this->languageServiceProphecy->getLL('barChart.labels.visitors')->willReturn('Visitors');
         $this->languageServiceProphecy->getLL('filter.pageData.pageIs')->willReturn('Page is');
 
-        //$plausibleServiceProphecy->filtersToPlausibleFilterString([['name' => 'visit:browser==firefox']])->willReturn('visit:browser==firefox');
-        $plausibleServiceProphecy->filtersToPlausibleFilterString([])->willReturn('');
-        //$plausibleServiceProphecy->isFilterActivated('visit:device', [['name' => 'visit:browser==firefox']])->willReturn(['name' => 'visit:browser==firefox']);
-        $plausibleServiceProphecy->isFilterActivated('event:page', [])->willReturn(null);
+        $authorizedRequestParams = [
+            'site_id' => $plausibleSiteId,
+            'period' => $timeFrame,
+            'property' => 'event:page',
+            'metrics' => 'visitors',
+        ];
+        if (!empty($filters)) {
+            $authorizedRequestParams['filters'] = $filters[0]['name'] . '==' . $filters[0]['value'];
+        }
 
-        $plausibleServiceProphecy->sendAuthorizedRequest(
-            $plausibleSiteId,
-            'api/v1/stats/breakdown?',
-            [
-                'site_id' => $plausibleSiteId,
-                'period' => $timeFrame,
-                'property' => 'event:page',
-                'metrics' => 'visitors',
-            ]
-        )
-        ->willReturn($endpointData)
-        ->shouldBeCalled();
+        $plausibleServiceMock->expects($this->exactly(1))
+            ->method('sendAuthorizedRequest')
+            ->with(
+                $plausibleSiteId,
+                'api/v1/stats/breakdown?',
+                $authorizedRequestParams,
+            )
+            ->willReturn($endpointData);
 
-        $subject = new PageDataProvider($plausibleServiceProphecy->reveal());
+        $subject = new PageDataProvider($plausibleServiceMock);
         self::assertSame($expected, $subject->getTopPageData($plausibleSiteId, $timeFrame, $filters));
+
     }
 
     public function getEntryPageDataReturnsProperValuesDataProvider(): \Generator
@@ -183,6 +229,36 @@ class PageDataProviderTest extends UnitTestCase
             'plausibleSiteId' => 'waldhacker.dev',
             'timeFrame' => '7d',
             'filters' => [],
+            'endpointData' => [
+                ['entry_page' => '/de', 'visitors' => 12],
+                ['entry_page' => '/en', 'visitors' => 4],
+            ],
+            'expected' => [
+                'data' => [
+                    ['entry_page' => '/de', 'visitors' => 12, 'percentage' => 75.0],
+                    ['entry_page' => '/en', 'visitors' => 4, 'percentage' => 25.0],
+                ],
+                'columns' => [
+                    [
+                        'name' => 'entry_page',
+                        'label' => 'Page url',
+                        'filter' => [
+                            'name' => 'visit:entry_page',
+                            'label' => 'Entry page is',
+                        ],
+                    ],
+                    [
+                        'name' => 'visitors',
+                        'label' => 'Unique Entrances',
+                    ],
+                ],
+            ],
+        ];
+
+        yield 'all items are transformed with filter' => [
+            'plausibleSiteId' => 'waldhacker.dev',
+            'timeFrame' => '7d',
+            'filters' => [['name' => 'visit:entry_page', 'value' => '/startpage/subpage']],
             'endpointData' => [
                 ['entry_page' => '/de', 'visitors' => 12],
                 ['entry_page' => '/en', 'visitors' => 4],
@@ -277,8 +353,11 @@ class PageDataProviderTest extends UnitTestCase
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::__construct
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::getEntryPageData
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::getData
-     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::calcPercentage
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::getLanguageService
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::__construct
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::filtersToPlausibleFilterString
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::calcPercentage
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::dataCleanUp
      */
     public function getEntryPageDataReturnsProperValues(
         string $plausibleSiteId,
@@ -287,31 +366,40 @@ class PageDataProviderTest extends UnitTestCase
         ?array $endpointData,
         array $expected
     ): void {
-        $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
+        $configurationServiceProphecy = $this->prophesize(ConfigurationService::class);
+        $plausibleServiceMock = $this->getMockBuilder(PlausibleService::class)
+            ->onlyMethods(['sendAuthorizedRequest'])
+            ->setConstructorArgs([
+                new RequestFactory(),
+                new Client(),
+                $configurationServiceProphecy->reveal(),
+            ])
+            ->getMock();
 
         $this->languageServiceProphecy->getLL('barChart.labels.pageUrl')->willReturn('Page url');
         $this->languageServiceProphecy->getLL('barChart.labels.uniqueEntrances')->willReturn('Unique Entrances');
         $this->languageServiceProphecy->getLL('filter.pageData.entryPageIs')->willReturn('Entry page is');
 
-        //$plausibleServiceProphecy->filtersToPlausibleFilterString([['name' => 'visit:browser==firefox']])->willReturn('visit:browser==firefox');
-        $plausibleServiceProphecy->filtersToPlausibleFilterString([])->willReturn('');
-        //$plausibleServiceProphecy->isFilterActivated('visit:device', [['name' => 'visit:browser==firefox']])->willReturn(['name' => 'visit:browser==firefox']);
-        $plausibleServiceProphecy->isFilterActivated('visit:entry_page', [])->willReturn(null);
+        $authorizedRequestParams = [
+            'site_id' => $plausibleSiteId,
+            'period' => $timeFrame,
+            'property' => 'visit:entry_page',
+            'metrics' => 'visitors',
+        ];
+        if (!empty($filters)) {
+            $authorizedRequestParams['filters'] = $filters[0]['name'] . '==' . $filters[0]['value'];
+        }
 
-        $plausibleServiceProphecy->sendAuthorizedRequest(
-            $plausibleSiteId,
-            'api/v1/stats/breakdown?',
-            [
-                'site_id' => $plausibleSiteId,
-                'period' => $timeFrame,
-                'property' => 'visit:entry_page',
-                'metrics' => 'visitors',
-            ]
-        )
-        ->willReturn($endpointData)
-        ->shouldBeCalled();
+        $plausibleServiceMock->expects($this->exactly(1))
+            ->method('sendAuthorizedRequest')
+            ->with(
+                $plausibleSiteId,
+                'api/v1/stats/breakdown?',
+                $authorizedRequestParams,
+            )
+            ->willReturn($endpointData);
 
-        $subject = new PageDataProvider($plausibleServiceProphecy->reveal());
+        $subject = new PageDataProvider($plausibleServiceMock);
         self::assertSame($expected, $subject->getEntryPageData($plausibleSiteId, $timeFrame, $filters));
     }
 
@@ -321,6 +409,36 @@ class PageDataProviderTest extends UnitTestCase
             'plausibleSiteId' => 'waldhacker.dev',
             'timeFrame' => '7d',
             'filters' => [],
+            'endpointData' => [
+                ['exit_page' => '/de', 'visitors' => 12],
+                ['exit_page' => '/en', 'visitors' => 4],
+            ],
+            'expected' => [
+                'data' => [
+                    ['exit_page' => '/de', 'visitors' => 12, 'percentage' => 75.0],
+                    ['exit_page' => '/en', 'visitors' => 4, 'percentage' => 25.0],
+                ],
+                'columns' => [
+                    [
+                        'name' => 'exit_page',
+                        'label' => 'Page url',
+                        'filter' => [
+                            'name' => 'visit:exit_page',
+                            'label' => 'Exit page is',
+                        ],
+                    ],
+                    [
+                        'name' => 'visitors',
+                        'label' => 'Unique Exits',
+                    ],
+                ],
+            ],
+        ];
+
+        yield 'all items are transformed with filter' => [
+            'plausibleSiteId' => 'waldhacker.dev',
+            'timeFrame' => '7d',
+            'filters' => [['name' => 'visit:entry_page', 'value' => '/startpage/subpage']],
             'endpointData' => [
                 ['exit_page' => '/de', 'visitors' => 12],
                 ['exit_page' => '/en', 'visitors' => 4],
@@ -416,8 +534,11 @@ class PageDataProviderTest extends UnitTestCase
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::getExitPageData
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::getData
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::__construct
-     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::calcPercentage
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::getLanguageService
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::__construct
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::filtersToPlausibleFilterString
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::calcPercentage
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::dataCleanUp
  */
     public function getExitPageDataReturnsProperValues(
         string $plausibleSiteId,
@@ -426,53 +547,40 @@ class PageDataProviderTest extends UnitTestCase
         ?array $endpointData,
         array $expected
     ): void {
-        $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
+        $configurationServiceProphecy = $this->prophesize(ConfigurationService::class);
+        $plausibleServiceMock = $this->getMockBuilder(PlausibleService::class)
+            ->onlyMethods(['sendAuthorizedRequest'])
+            ->setConstructorArgs([
+                new RequestFactory(),
+                new Client(),
+                $configurationServiceProphecy->reveal(),
+            ])
+            ->getMock();
 
         $this->languageServiceProphecy->getLL('barChart.labels.pageUrl')->willReturn('Page url');
         $this->languageServiceProphecy->getLL('barChart.labels.uniqueExits')->willReturn('Unique Exits');
         $this->languageServiceProphecy->getLL('filter.pageData.exitPageIs')->willReturn('Exit page is');
 
-        //$plausibleServiceProphecy->filtersToPlausibleFilterString([['name' => 'visit:browser==firefox']])->willReturn('visit:browser==firefox');
-        $plausibleServiceProphecy->filtersToPlausibleFilterString([])->willReturn('');
-        //$plausibleServiceProphecy->isFilterActivated('visit:device', [['name' => 'visit:browser==firefox']])->willReturn(['name' => 'visit:browser==firefox']);
-        //$plausibleServiceProphecy->isFilterActivated('visit:exit_page', [])->willReturn(null);
+        $authorizedRequestParams = [
+            'site_id' => $plausibleSiteId,
+            'period' => $timeFrame,
+            'property' => 'visit:exit_page',
+            'metrics' => 'visitors',
+        ];
+        if (!empty($filters)) {
+            $authorizedRequestParams['filters'] = $filters[0]['name'] . '==' . $filters[0]['value'];
+        }
 
-        $plausibleServiceProphecy->sendAuthorizedRequest(
-            $plausibleSiteId,
-            'api/v1/stats/breakdown?',
-            [
-                'site_id' => $plausibleSiteId,
-                'period' => $timeFrame,
-                'property' => 'visit:exit_page',
-                'metrics' => 'visitors',
-            ]
-        )
-        ->willReturn($endpointData)
-        ->shouldBeCalled();
+        $plausibleServiceMock->expects($this->exactly(1))
+            ->method('sendAuthorizedRequest')
+            ->with(
+                $plausibleSiteId,
+                'api/v1/stats/breakdown?',
+                $authorizedRequestParams,
+            )
+            ->willReturn($endpointData);
 
-        $subject = new PageDataProvider($plausibleServiceProphecy->reveal());
+        $subject = new PageDataProvider($plausibleServiceMock);
         self::assertSame($expected, $subject->getExitPageData($plausibleSiteId, $timeFrame, $filters));
-    }
-
-    /**
-     * @test
-     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::__construct
-     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::calcPercentage
-     */
-    public function calcPercentageReturnsProperValue()
-    {
-        $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
-        $subject = new PageDataProvider($plausibleServiceProphecy->reveal());
-
-        self::assertSame(
-            [
-                ['device' => 'Tablet', 'visitors' => 3, 'percentage' => 25.0],
-                ['device' => 'Desktop', 'visitors' => 9, 'percentage' => 75.0],
-            ],
-            $subject->calcPercentage([
-                ['device' => 'Tablet', 'visitors' => 3,],
-                ['device' => 'Desktop', 'visitors' => 9,],
-            ])
-        );
     }
 }

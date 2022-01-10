@@ -174,6 +174,7 @@ class PageDataProviderTest extends UnitTestCase
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::getData
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::getLanguageService
      * @covers \Waldhacker\Plausibleio\Services\PlausibleService::__construct
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::isFilterActivated
      * @covers \Waldhacker\Plausibleio\Services\PlausibleService::filtersToPlausibleFilterString
      * @covers \Waldhacker\Plausibleio\Services\PlausibleService::calcPercentage
      * @covers \Waldhacker\Plausibleio\Services\PlausibleService::dataCleanUp
@@ -272,10 +273,6 @@ class PageDataProviderTest extends UnitTestCase
                     [
                         'name' => 'entry_page',
                         'label' => 'Page url',
-                        'filter' => [
-                            'name' => 'visit:entry_page',
-                            'label' => 'Entry page is',
-                        ],
                     ],
                     [
                         'name' => 'visitors',
@@ -355,6 +352,7 @@ class PageDataProviderTest extends UnitTestCase
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::getData
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::getLanguageService
      * @covers \Waldhacker\Plausibleio\Services\PlausibleService::__construct
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::isFilterActivated
      * @covers \Waldhacker\Plausibleio\Services\PlausibleService::filtersToPlausibleFilterString
      * @covers \Waldhacker\Plausibleio\Services\PlausibleService::calcPercentage
      * @covers \Waldhacker\Plausibleio\Services\PlausibleService::dataCleanUp
@@ -438,7 +436,7 @@ class PageDataProviderTest extends UnitTestCase
         yield 'all items are transformed with filter' => [
             'plausibleSiteId' => 'waldhacker.dev',
             'timeFrame' => '7d',
-            'filters' => [['name' => 'visit:entry_page', 'value' => '/startpage/subpage']],
+            'filters' => [['name' => 'visit:exit_page', 'value' => '/startpage/subpage']],
             'endpointData' => [
                 ['exit_page' => '/de', 'visitors' => 12],
                 ['exit_page' => '/en', 'visitors' => 4],
@@ -452,10 +450,6 @@ class PageDataProviderTest extends UnitTestCase
                     [
                         'name' => 'exit_page',
                         'label' => 'Page url',
-                        'filter' => [
-                            'name' => 'visit:exit_page',
-                            'label' => 'Exit page is',
-                        ],
                     ],
                     [
                         'name' => 'visitors',
@@ -536,6 +530,7 @@ class PageDataProviderTest extends UnitTestCase
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::__construct
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::getLanguageService
      * @covers \Waldhacker\Plausibleio\Services\PlausibleService::__construct
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::isFilterActivated
      * @covers \Waldhacker\Plausibleio\Services\PlausibleService::filtersToPlausibleFilterString
      * @covers \Waldhacker\Plausibleio\Services\PlausibleService::calcPercentage
      * @covers \Waldhacker\Plausibleio\Services\PlausibleService::dataCleanUp

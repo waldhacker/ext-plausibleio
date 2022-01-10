@@ -91,10 +91,6 @@ class SourceDataProviderTest extends UnitTestCase
                     [
                         'name' => 'source',
                         'label' => 'Source',
-                        'filter' => [
-                            'name' => 'visit:source',
-                            'label' => 'Source is',
-                        ],
                     ],
                     [
                         'name' => 'visitors',
@@ -174,6 +170,7 @@ class SourceDataProviderTest extends UnitTestCase
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider::getData
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider::getLanguageService
      * @covers \Waldhacker\Plausibleio\Services\PlausibleService::__construct
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::isFilterActivated
      * @covers \Waldhacker\Plausibleio\Services\PlausibleService::filtersToPlausibleFilterString
      * @covers \Waldhacker\Plausibleio\Services\PlausibleService::calcPercentage
      * @covers \Waldhacker\Plausibleio\Services\PlausibleService::dataCleanUp
@@ -257,7 +254,7 @@ class SourceDataProviderTest extends UnitTestCase
         yield 'all items are transformed with filter' => [
             'plausibleSiteId' => 'waldhacker.dev',
             'timeFrame' => '7d',
-            'filters' => [['name' => 'visit:source', 'value' => 'waldhacker . dev']],
+            'filters' => [['name' => 'visit:utm_medium', 'value' => 'waldhacker . dev']],
             'endpointData' => [
                 ['utm_medium' => 'source1', 'visitors' => 4],
                 ['utm_medium' => 'source2', 'visitors' => 12],
@@ -271,10 +268,6 @@ class SourceDataProviderTest extends UnitTestCase
                     [
                         'name' => 'utm_medium',
                         'label' => 'UTM Medium',
-                        'filter' => [
-                            'name' => 'visit:utm_medium',
-                            'label' => 'UTM Medium is',
-                        ],
                     ],
                     [
                         'name' => 'visitors',
@@ -354,6 +347,7 @@ class SourceDataProviderTest extends UnitTestCase
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider::getData
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider::getLanguageService
      * @covers \Waldhacker\Plausibleio\Services\PlausibleService::__construct
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::isFilterActivated
      * @covers \Waldhacker\Plausibleio\Services\PlausibleService::filtersToPlausibleFilterString
      * @covers \Waldhacker\Plausibleio\Services\PlausibleService::calcPercentage
      * @covers \Waldhacker\Plausibleio\Services\PlausibleService::dataCleanUp
@@ -437,7 +431,7 @@ class SourceDataProviderTest extends UnitTestCase
         yield 'all items are transformed with filter' => [
             'plausibleSiteId' => 'waldhacker.dev',
             'timeFrame' => '7d',
-            'filters' => [['name' => 'visit:source', 'value' => 'waldhacker . dev']],
+            'filters' => [['name' => 'visit:utm_source', 'value' => 'waldhacker . dev']],
             'endpointData' => [
                 ['utm_source' => 'source1', 'visitors' => 12],
                 ['utm_source' => 'source2', 'visitors' => 4],
@@ -451,10 +445,6 @@ class SourceDataProviderTest extends UnitTestCase
                     [
                         'name' => 'utm_source',
                         'label' => 'UTM Source',
-                        'filter' => [
-                            'name' => 'visit:utm_source',
-                            'label' => 'UTM Source is',
-                        ],
                     ],
                     [
                         'name' => 'visitors',
@@ -534,6 +524,7 @@ class SourceDataProviderTest extends UnitTestCase
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider::getData
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider::getLanguageService
      * @covers \Waldhacker\Plausibleio\Services\PlausibleService::__construct
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::isFilterActivated
      * @covers \Waldhacker\Plausibleio\Services\PlausibleService::filtersToPlausibleFilterString
      * @covers \Waldhacker\Plausibleio\Services\PlausibleService::calcPercentage
      * @covers \Waldhacker\Plausibleio\Services\PlausibleService::dataCleanUp
@@ -617,7 +608,7 @@ class SourceDataProviderTest extends UnitTestCase
         yield 'all items are transformed with filter' => [
             'plausibleSiteId' => 'waldhacker.dev',
             'timeFrame' => '7d',
-            'filters' => [['name' => 'visit:source', 'value' => 'waldhacker . dev']],
+            'filters' => [['name' => 'visit:utm_campaign', 'value' => 'waldhacker . dev']],
             'endpointData' => [
                 ['utm_campaign' => 'source1', 'visitors' => 4],
                 ['utm_campaign' => 'source2', 'visitors' => 12],
@@ -631,10 +622,6 @@ class SourceDataProviderTest extends UnitTestCase
                     [
                         'name' => 'utm_campaign',
                         'label' => 'UTM Campaign',
-                        'filter' => [
-                            'name' => 'visit:utm_campaign',
-                            'label' => 'UTM Campaign is',
-                        ],
                     ],
                     [
                         'name' => 'visitors',
@@ -714,6 +701,7 @@ class SourceDataProviderTest extends UnitTestCase
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider::getData
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider::getLanguageService
      * @covers \Waldhacker\Plausibleio\Services\PlausibleService::__construct
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::isFilterActivated
      * @covers \Waldhacker\Plausibleio\Services\PlausibleService::filtersToPlausibleFilterString
      * @covers \Waldhacker\Plausibleio\Services\PlausibleService::calcPercentage
      * @covers \Waldhacker\Plausibleio\Services\PlausibleService::dataCleanUp
@@ -797,7 +785,7 @@ class SourceDataProviderTest extends UnitTestCase
         yield 'all items are transformed with filter' => [
             'plausibleSiteId' => 'waldhacker.dev',
             'timeFrame' => '7d',
-            'filters' => [['name' => 'visit:source', 'value' => 'waldhacker . dev']],
+            'filters' => [['name' => 'visit:utm_term', 'value' => 'waldhacker . dev']],
             'endpointData' => [
                 ['utm_term' => 'source1', 'visitors' => 4],
                 ['utm_term' => 'source2', 'visitors' => 12],
@@ -811,10 +799,6 @@ class SourceDataProviderTest extends UnitTestCase
                     [
                         'name' => 'utm_term',
                         'label' => 'UTM Term',
-                        'filter' => [
-                            'name' => 'visit:utm_term',
-                            'label' => 'UTM Term is',
-                        ],
                     ],
                     [
                         'name' => 'visitors',
@@ -894,6 +878,7 @@ class SourceDataProviderTest extends UnitTestCase
      * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider::getData
      * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider::getLanguageService
      * @covers       \Waldhacker\Plausibleio\Services\PlausibleService::__construct
+     * @covers       \Waldhacker\Plausibleio\Services\PlausibleService::isFilterActivated
      * @covers       \Waldhacker\Plausibleio\Services\PlausibleService::filtersToPlausibleFilterString
      * @covers       \Waldhacker\Plausibleio\Services\PlausibleService::calcPercentage
      * @covers       \Waldhacker\Plausibleio\Services\PlausibleService::dataCleanUp
@@ -977,7 +962,7 @@ class SourceDataProviderTest extends UnitTestCase
         yield 'all items are transformed with filter' => [
             'plausibleSiteId' => 'waldhacker.dev',
             'timeFrame' => '7d',
-            'filters' => [['name' => 'visit:source', 'value' => 'waldhacker . dev']],
+            'filters' => [['name' => 'visit:utm_content', 'value' => 'waldhacker . dev']],
             'endpointData' => [
                 ['utm_content' => 'source1', 'visitors' => 4],
                 ['utm_content' => 'source2', 'visitors' => 12],
@@ -991,10 +976,6 @@ class SourceDataProviderTest extends UnitTestCase
                     [
                         'name' => 'utm_content',
                         'label' => 'UTM Content',
-                        'filter' => [
-                            'name' => 'visit:utm_content',
-                            'label' => 'UTM Content is',
-                        ],
                     ],
                     [
                         'name' => 'visitors',
@@ -1074,6 +1055,7 @@ class SourceDataProviderTest extends UnitTestCase
      * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider::getData
      * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider::getLanguageService
      * @covers       \Waldhacker\Plausibleio\Services\PlausibleService::__construct
+     * @covers       \Waldhacker\Plausibleio\Services\PlausibleService::isFilterActivated
      * @covers       \Waldhacker\Plausibleio\Services\PlausibleService::filtersToPlausibleFilterString
      * @covers       \Waldhacker\Plausibleio\Services\PlausibleService::calcPercentage
      * @covers       \Waldhacker\Plausibleio\Services\PlausibleService::dataCleanUp

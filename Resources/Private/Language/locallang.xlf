@@ -160,6 +160,12 @@
 			<trans-unit id="barChart.labels.country">
 				<source>Country</source>
 			</trans-unit>
+			<trans-unit id="barChart.labels.region">
+				<source>Region</source>
+			</trans-unit>
+			<trans-unit id="barChart.labels.city">
+				<source>City</source>
+			</trans-unit>
 			<trans-unit id="barChart.labels.uniques">
 				<source>Uniques</source>
 			</trans-unit>
@@ -197,8 +203,14 @@
 			<trans-unit id="filter.deviceData.osVersionIs">
 				<source>${os} version is</source>
 			</trans-unit>
-			<trans-unit id="filter.deviceData.countryIs">
+			<trans-unit id="filter.locationData.countryIs">
 				<source>Country is</source>
+			</trans-unit>
+			<trans-unit id="filter.locationData.regionIs">
+				<source>Region is</source>
+			</trans-unit>
+			<trans-unit id="filter.locationData.cityIs">
+				<source>City is</source>
 			</trans-unit>
 			<trans-unit id="filter.sourceData.sourceIs">
 				<source>Source is</source>

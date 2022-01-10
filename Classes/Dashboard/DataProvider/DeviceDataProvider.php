@@ -32,41 +32,29 @@ class DeviceDataProvider
 
     public function getBrowserData(string $plausibleSiteId, string $timeFrame, array $filters = []): array
     {
-        $map = [];
         $browserFilterActivated = $this->plausibleService->isFilterActivated('visit:browser', $filters);
+        $browserVersionFilterActivated = $this->plausibleService->isFilterActivated('visit:browser_version', $filters);
         $property = $browserFilterActivated ? 'visit:browser_version' : 'visit:browser';
         $dataColumnName = $browserFilterActivated ? 'browser_version' : 'browser';
+        $filterLabel = $browserFilterActivated ? 'filter.deviceData.browserVersionIs' : 'filter.deviceData.browserIs';
+        $columnLabel = $browserFilterActivated ? 'barChart.labels.browserVersion' : 'barChart.labels.browser';
 
         // show only browser data or, if browser is filtered, show all versions of the selected (filtered) browser
         $responseData = $this->getData($plausibleSiteId, $timeFrame, $property, $filters);
 
-        // show only browser data or, if browser is filtered, show all versions of the selected (filtered) browser
-        if ($browserFilterActivated) {
-            array_unshift(
-                $responseData['columns'],
-                [
-                    'name' => $dataColumnName,
-                    'label' => $this->getLanguageService()->getLL('barChart.labels.browserVersion'),
-                    'filter' => [
-                        'name' => $property,
-                        'label' => $this->getLanguageService()->getLL('filter.deviceData.browserVersionIs'),
-                    ],
-                ]
-            );
+        // Show only browser data or, if browser is filtered, show all versions of the selected (filtered) browser
+        $browserColumn = [
+            'name' => $dataColumnName,
+            'label' => $this->getLanguageService()->getLL($columnLabel),
+        ];
+        // When filtering by browser version there is no deeper filter than that
+        if (!$browserVersionFilterActivated) {
+            $browserColumn['filter'] = [
+                'name' => $property,
+                'label' => $this->getLanguageService()->getLL($filterLabel),
+            ];
         }
-        else {
-            array_unshift(
-                $responseData['columns'],
-                [
-                    'name' => $dataColumnName,
-                    'label' => $this->getLanguageService()->getLL('barChart.labels.browser'),
-                    'filter' => [
-                        'name' => $property,
-                        'label' => $this->getLanguageService()->getLL('filter.deviceData.browserIs'),
-                    ],
-                ]
-            );
-        }
+        array_unshift($responseData['columns'], $browserColumn);
 
         $map = $this->plausibleService->dataCleanUp([$dataColumnName, 'visitors'], $responseData['data']);
         $map = $this->plausibleService->calcPercentage($map);
@@ -77,8 +65,8 @@ class DeviceDataProvider
 
     public function getOSData(string $plausibleSiteId, string $timeFrame, array $filters = []): array
     {
-        $map = [];
         $osFilterActivated = $this->plausibleService->isFilterActivated('visit:os', $filters);
+        $osVersionFilterActivated = $this->plausibleService->isFilterActivated('visit:os_version', $filters);
         $property = $osFilterActivated ? 'visit:os_version' : 'visit:os';
         $dataColumnName = $osFilterActivated ? 'os_version' : 'os';
         $filterLabel = $osFilterActivated ? 'filter.deviceData.osVersionIs' : 'filter.deviceData.osIs';
@@ -86,18 +74,20 @@ class DeviceDataProvider
 
         $responseData = $this->getData($plausibleSiteId, $timeFrame, $property, $filters);
 
-        // show only browser data or, if browser is filtered, show all versions of the selected (filtered) browser
-        array_unshift(
-            $responseData['columns'],
-            [
-                'name' => $dataColumnName,
-                'label' => $this->getLanguageService()->getLL($columnLabel),
-                'filter' => [
-                    'name' => $property,
-                    'label' => $this->getLanguageService()->getLL($filterLabel),
-                ],
-            ]
-        );
+        // Show only os data or, if os is filtered, show all versions of the selected (filtered) browser
+        $osColumn = [
+            'name' => $dataColumnName,
+            'label' => $this->getLanguageService()->getLL($columnLabel),
+
+        ];
+        // When filtering by os version there is no deeper filter than that
+        if (!$osVersionFilterActivated) {
+            $osColumn['filter'] = [
+                'name' => $property,
+                'label' => $this->getLanguageService()->getLL($filterLabel),
+            ];
+        }
+        array_unshift($responseData['columns'], $osColumn);
 
         $map = $this->plausibleService->dataCleanUp([$dataColumnName, 'visitors'], $responseData['data']);
         $map = $this->plausibleService->calcPercentage($map);
@@ -108,23 +98,25 @@ class DeviceDataProvider
 
     public function getDeviceData(string $plausibleSiteId, string $timeFrame, array $filters = []): array
     {
+        $deviceFilterActivated = $this->plausibleService->isFilterActivated('visit:device', $filters);
         $responseData = $this->getData($plausibleSiteId, $timeFrame, 'visit:device', $filters);
 
         $map = $this->plausibleService->dataCleanUp(['device', 'visitors'], $responseData['data']);
         $map = $this->plausibleService->calcPercentage($map);
         $responseData['data'] = $map;
 
-        array_unshift(
-            $responseData['columns'],
-            [
-                'name' => 'device',
-                'label' => $this->getLanguageService()->getLL('barChart.labels.screenSize'),
-                'filter' => [
-                    'name' => 'visit:device',
-                    'label' => $this->getLanguageService()->getLL('filter.deviceData.screenSizeIs'),
-                ],
-            ]
-        );
+        $deviceColumn = [
+            'name' => 'device',
+            'label' => $this->getLanguageService()->getLL('barChart.labels.screenSize'),
+        ];
+        // there is no deeper filter than Device
+        if (!$deviceFilterActivated) {
+            $deviceColumn['filter'] = [
+                'name' => 'visit:device',
+                'label' => $this->getLanguageService()->getLL('filter.deviceData.screenSizeIs'),
+            ];
+        }
+        array_unshift($responseData['columns'], $deviceColumn);
 
         return $responseData;
     }

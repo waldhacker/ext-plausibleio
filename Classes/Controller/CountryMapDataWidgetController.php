@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 /*
  * This file is part of the plausibleio extension for TYPO3
@@ -67,7 +67,18 @@ class CountryMapDataWidgetController
         $this->configurationService->persistTimeFrameValueInUserConfiguration($timeFrame);
         $this->configurationService->persistFiltersInUserConfiguration($filters);
 
-        $data = $this->countryMapDataProvider->getCountryDataForDataMap($plausibleSiteId, $timeFrame, $filters);
+        $countryListData = $this->countryMapDataProvider->getCountryDataForDataMap($plausibleSiteId, $timeFrame, $filters);
+        $mapData = $this->countryMapDataProvider->getCountryDataOnlyForDataMap($plausibleSiteId, $timeFrame, $filters);
+        $data = [
+            [
+                'tab' => 'map',
+                'data' => $mapData['data'],
+            ],
+            [
+                'tab' => 'countries',
+                'data' => $countryListData,
+            ],
+        ];
 
         $response = $this->responseFactory->createResponse(200)
             ->withHeader('Content-Type', 'application/json');

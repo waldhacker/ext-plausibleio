@@ -440,6 +440,68 @@ class PlausibleServiceTest extends UnitTestCase
     /**
      * @test
      * @covers \Waldhacker\Plausibleio\Services\PlausibleService::__construct
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::removeFilter
+     */
+    public function removeFilterReturnsValidResult(): void
+    {
+        $configurationServiceProphecy = $this->prophesize(ConfigurationService::class);
+        $subject = new PlausibleService(new RequestFactory(), new Client(), $configurationServiceProphecy->reveal());
+
+        self::assertSame(
+            $subject->removeFilter(
+                ['event:page'],
+                [
+                    ['name' => 'visit:browser_version'],
+                    ['name' => 'visit:browser'],
+                    ['name' => 'event:page'],
+                    ['name' => 'visit:city'],
+                ]
+            ),
+            [
+                ['name' => 'visit:browser_version'],
+                ['name' => 'visit:browser'],
+                ['name' => 'visit:city'],
+            ]
+        );
+
+        self::assertSame(
+            $subject->removeFilter(
+                ['event:page', 'visit:browser_version'],
+                [
+                    ['name' => 'visit:browser_version'],
+                    ['name' => 'visit:browser'],
+                    ['name' => 'event:page'],
+                    ['name' => 'visit:city'],
+                ]
+            ),
+            [
+                ['name' => 'visit:browser'],
+                ['name' => 'visit:city'],
+            ]
+        );
+
+        self::assertSame(
+            $subject->removeFilter(
+                [],
+                [
+                    ['name' => 'visit:browser_version'],
+                    ['name' => 'visit:browser'],
+                    ['name' => 'event:page'],
+                    ['name' => 'visit:city'],
+                ]
+            ),
+            [
+                ['name' => 'visit:browser_version'],
+                ['name' => 'visit:browser'],
+                ['name' => 'event:page'],
+                ['name' => 'visit:city'],
+            ]
+        );
+    }
+
+    /**
+     * @test
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::__construct
      * @covers \Waldhacker\Plausibleio\Services\PlausibleService::calcPercentage
      */
     public function calcPercentageReturnsProperValue()
@@ -536,6 +598,34 @@ class PlausibleServiceTest extends UnitTestCase
             [
                 ['name' => 'visit:browser_version', 'value' => '46.0'],
             ]
+        );
+        // a field is empty
+        self::assertSame(
+            $subject->dataCleanUp(
+                ['name', 'value'],
+                [
+                    ['name' => 'event:page', 'value' => ''],
+                    ['name' => 'visit:browser_version', 'value' => '46.0'],
+                ]
+            ),
+            [
+                ['name' => 'event:page', 'value' => ''],
+                ['name' => 'visit:browser_version', 'value' => '46.0'],
+            ]
+        );
+        // a field is empty and strict clean up
+        self::assertSame(
+            $subject->dataCleanUp(
+                ['name', 'value'],
+                [
+                    ['name' => 'event:page', 'value' => ''],
+                    ['name' => 'visit:browser_version', 'value' => '46.0'],
+                ],
+                true
+            ),
+            [
+                ['name' => 'visit:browser_version', 'value' => '46.0'],
+            ],
         );
         // dataArray is empty
         self::assertSame(

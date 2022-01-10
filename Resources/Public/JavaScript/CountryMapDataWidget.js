@@ -48,12 +48,17 @@ define([
         .get()
         .then(async (response) => {
           const data = await response.resolve();
-          this.setMapData(map, data.data);
-
-          let tab = widget.querySelector(this.options.tabSelector.replace('${tabId}', 'countries'));
-          if (typeof (tab) !== 'undefined' && tab !== null) {
-            WidgetService.renderBarChart(tab, data, true);
-          }
+          data.forEach(function (tabData) {
+            if (tabData.tab === 'map') {
+              this.setMapData(map, tabData.data);
+            }
+            if (tabData.tab === 'countries') {
+              let tab = widget.querySelector(this.options.tabSelector.replace('${tabId}', 'countries'));
+              if (typeof (tab) !== 'undefined' && tab !== null) {
+                WidgetService.renderBarChart(tab, tabData.data, true);
+              }
+            }
+          }, this);
         }).catch(error => {
             let msg = error.response ? error.response.status + ' ' + error.response.statusText : 'unknown';
             console.error('Map controller request failed because of error: ' + msg);
@@ -183,6 +188,7 @@ define([
               }
             },
             done: function (datamap) {
+              // Event handler for click on map
               datamap.svg.selectAll('.datamaps-subunit').on('click', function (geography) {
                 let data = JSON.parse(this.dataset.info);
                 if (data.hasOwnProperty('numberOfThings')) {

@@ -41,6 +41,8 @@ class PlausibleService implements LoggerAwareInterface
         'visit:os',
         'visit:os_version',
         'visit:country',
+        'visit:region',
+        'visit:city',
         'visit:source',
         'visit:utm_medium',
         'visit:utm_source',
@@ -343,16 +345,46 @@ class PlausibleService implements LoggerAwareInterface
     }
 
     /**
+     * Removes all Filters from $toRemove from $filters
+     *
+     * @param array $toRemove Array of strings (filter names) to remove from $filters
+     * @param array $filters
+     * @return array Array of filters without the filters in $toRemove
+     */
+    public function removeFilter(array $toRemove, array $filters): array
+    {
+        $result = [];
+        $filterToRemove = array_pop($toRemove);
+
+        if ($filterToRemove == null) {
+            return $filters;
+        }
+
+        // Remove one filter per recursive pass
+        $filters = $this->removeFilter($toRemove, $filters);
+
+        foreach ($filters as $filter) {
+            if (strtolower($filter['name']) !== strtolower($filterToRemove)) {
+                $result[] = $filter;
+            }
+        }
+
+        return $result;
+    }
+
+    /**
      * Checks whether all $mandatoryFields in the subarrays of $dataArray are
-     * present. If this is not the case, the subarray is not included in the
-     * return value.
+     * present. The mandatory field must be set but can be empty if $strict is false.
+     * If this is not the case, the subarray is not included in the return value.
      *
      * @param array $mandatoryFields Array of strings. e.g. ['name', 'location']
      * @param array $dataArray Array of arrays. e.g. [['name' => 'berlin', 'location' => 'de'], ['name' => 'rome', 'location' => 'it'], ['name' => 'paris']]
      *                         The result of this example will be: [['name' => 'berlin', 'location' => 'de'], ['name' => 'rome', 'location' => 'it']]
+     * @param bool $strict If $strict is true the mandatory fields must be set and
+     *                     must not be empty.
      * @return array
      */
-    public function dataCleanUp(array $mandatoryFields, array $dataArray): array
+    public function dataCleanUp(array $mandatoryFields, array $dataArray, bool $strict=false): array
     {
         $result = [];
 
@@ -360,7 +392,7 @@ class PlausibleService implements LoggerAwareInterface
             $takeOver = true;
 
             foreach ($mandatoryFields as $mf) {
-                if (!isset($item[$mf])) {
+                if (!isset($item[$mf]) || ($strict && empty($item[$mf]))) {
                     $takeOver = false;
                     break;
                 }

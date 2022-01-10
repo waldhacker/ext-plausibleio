@@ -124,7 +124,8 @@ class CountryMapDataWidgetControllerTest extends UnitTestCase
         $configurationServiceProphecy->getTimeFrameValues()->willReturn($timeFrameValues);
         $configurationServiceProphecy->getPlausibleSiteIdFromUserConfiguration()->willReturn($siteIdFromConfiguration);
         $configurationServiceProphecy->getTimeFrameValueFromUserConfiguration()->willReturn($timeFrameFromConfiguration);
-        $countryMapDataProviderProphecy->getCountryDataForDataMap($expectedSiteId, $expectedTimeFrame, $expectedFilters)->willReturn(['country' => 'data']);
+        $countryMapDataProviderProphecy->getCountryDataForDataMap($expectedSiteId, $expectedTimeFrame, $expectedFilters)->willReturn(['data' => 'countries']);
+        $countryMapDataProviderProphecy->getCountryDataOnlyForDataMap($expectedSiteId, $expectedTimeFrame, $expectedFilters)->willReturn(['data' => 'map']);
 
         $configurationServiceProphecy->persistPlausibleSiteIdInUserConfiguration($expectedSiteId)->shouldBeCalled();
         $configurationServiceProphecy->persistTimeFrameValueInUserConfiguration($expectedTimeFrame)->shouldBeCalled();
@@ -134,7 +135,7 @@ class CountryMapDataWidgetControllerTest extends UnitTestCase
         $plausibleServiceProphecy->checkFilters($expectedFilters)->willReturn([]);
         $plausibleServiceProphecy->checkFilters($expectedFilters)->shouldBeCalled();
 
-        $streamProphecy->write('{"country":"data"}')->shouldBeCalled();
+        $streamProphecy->write('[{"tab":"map","data":"map"},{"tab":"countries","data":{"data":"countries"}}]')->shouldBeCalled();
 
         $subject = new CountryMapDataWidgetController(
             $countryMapDataProviderProphecy->reveal(),

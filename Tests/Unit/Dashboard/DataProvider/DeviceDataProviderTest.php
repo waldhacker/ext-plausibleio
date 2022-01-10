@@ -463,10 +463,6 @@ class DeviceDataProviderTest extends UnitTestCase
                     [
                         'name' => 'device',
                         'label' => 'Screen Size',
-                        'filter' => [
-                            'name' => 'visit:device',
-                            'label' => 'Screen size is',
-                        ],
                     ],
                     [
                         'name' => 'visitors',

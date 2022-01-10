@@ -32,138 +32,150 @@ class SourceDataProvider
 
     public function getAllSourcesData(string $plausibleSiteId, string $timeFrame, array $filters = []): array
     {
+        $sourceFilterActivated = $this->plausibleService->isFilterActivated('visit:source', $filters);
         $responseData = $this->getData($plausibleSiteId, $timeFrame, 'visit:source', $filters);
 
         $map = $this->plausibleService->dataCleanUp(['source', 'visitors'], $responseData['data']);
         $map = $this->plausibleService->calcPercentage($map);
         $responseData['data'] = $map;
 
-        array_unshift(
-            $responseData['columns'],
-            [
-                'name' => 'source',
-                'label' => $this->getLanguageService()->getLL('barChart.labels.source'),
-                'filter' => [
-                    'name' => 'visit:source',
-                    'label' => $this->getLanguageService()->getLL('filter.sourceData.sourceIs'),
-                ],
-            ]
-        );
+        $sourceColumn = [
+            'name' => 'source',
+            'label' => $this->getLanguageService()->getLL('barChart.labels.source'),
+        ];
+        // When filtering by source there is no deeper filter than that
+        if (!$sourceFilterActivated) {
+            $sourceColumn['filter'] = [
+                'name' => 'visit:source',
+                'label' => $this->getLanguageService()->getLL('filter.sourceData.sourceIs'),
+            ];
+        }
+        array_unshift($responseData['columns'], $sourceColumn);
 
         return $responseData;
     }
 
     public function getMediumData(string $plausibleSiteId, string $timeFrame, array $filters = []): array
     {
+        $mediumFilterActivated = $this->plausibleService->isFilterActivated('visit:utm_medium', $filters);
         $responseData = $this->getData($plausibleSiteId, $timeFrame, 'visit:utm_medium', $filters);
 
         $map = $this->plausibleService->dataCleanUp(['utm_medium', 'visitors'], $responseData['data']);
         $map = $this->plausibleService->calcPercentage($map);
         $responseData['data'] = $map;
 
-        array_unshift(
-            $responseData['columns'],
-            [
-                'name' => 'utm_medium',
-                'label' => $this->getLanguageService()->getLL('barChart.labels.UTMMedium'),
-                'filter' => [
-                    'name' => 'visit:utm_medium',
-                    'label' => $this->getLanguageService()->getLL('filter.sourceData.UTMMediumIs'),
-                ],
-            ]
-        );
+        $mediumColumn = [
+            'name' => 'utm_medium',
+            'label' => $this->getLanguageService()->getLL('barChart.labels.UTMMedium'),
+        ];
+        // When filtering by medium there is no deeper filter than that
+        if (!$mediumFilterActivated) {
+            $mediumColumn['filter'] = [
+                'name' => 'visit:utm_medium',
+                'label' => $this->getLanguageService()->getLL('filter.sourceData.UTMMediumIs'),
+            ];
+        }
+        array_unshift($responseData['columns'], $mediumColumn);
 
         return $responseData;
     }
 
     public function getSourceData(string $plausibleSiteId, string $timeFrame, array $filters = []): array
     {
+        $sourceFilterActivated = $this->plausibleService->isFilterActivated('visit:utm_source', $filters);
         $responseData = $this->getData($plausibleSiteId, $timeFrame, 'visit:utm_source', $filters);
 
         $map = $this->plausibleService->dataCleanUp(['utm_source', 'visitors'], $responseData['data']);
         $map = $this->plausibleService->calcPercentage($map);
         $responseData['data'] = $map;
 
-        array_unshift(
-            $responseData['columns'],
-            [
-                'name' => 'utm_source',
-                'label' => $this->getLanguageService()->getLL('barChart.labels.UTMSource'),
-                'filter' => [
-                    'name' => 'visit:utm_source',
-                    'label' => $this->getLanguageService()->getLL('filter.sourceData.UTMSourceIs'),
-                ],
-            ]
-        );
+        $sourceColumn = [
+            'name' => 'utm_source',
+            'label' => $this->getLanguageService()->getLL('barChart.labels.UTMSource'),
+        ];
+        // When filtering by source there is no deeper filter than that
+        if (!$sourceFilterActivated) {
+            $sourceColumn['filter'] = [
+                'name' => 'visit:utm_source',
+                'label' => $this->getLanguageService()->getLL('filter.sourceData.UTMSourceIs'),
+            ];
+        }
+        array_unshift($responseData['columns'], $sourceColumn);
 
         return $responseData;
     }
 
     public function getCampaignData(string $plausibleSiteId, string $timeFrame, array $filters = []): array
     {
+        $campaignFilterActivated = $this->plausibleService->isFilterActivated('visit:utm_campaign', $filters);
         $responseData = $this->getData($plausibleSiteId, $timeFrame, 'visit:utm_campaign', $filters);
 
         $map = $this->plausibleService->dataCleanUp(['utm_campaign', 'visitors'], $responseData['data']);
         $map = $this->plausibleService->calcPercentage($map);
         $responseData['data'] = $map;
 
-        array_unshift(
-            $responseData['columns'],
-            [
-                'name' => 'utm_campaign',
-                'label' => $this->getLanguageService()->getLL('barChart.labels.UTMCampaign'),
-                'filter' => [
-                    'name' => 'visit:utm_campaign',
-                    'label' => $this->getLanguageService()->getLL('filter.sourceData.UTMCampaignIs'),
-                ],
-            ]
-        );
+        $campaignColumn = [
+            'name' => 'utm_campaign',
+            'label' => $this->getLanguageService()->getLL('barChart.labels.UTMCampaign'),
+        ];
+        // When filtering by campaign there is no deeper filter than that
+        if (!$campaignFilterActivated) {
+            $campaignColumn['filter'] = [
+                'name' => 'visit:utm_campaign',
+                'label' => $this->getLanguageService()->getLL('filter.sourceData.UTMCampaignIs'),
+            ];
+        }
+        array_unshift($responseData['columns'], $campaignColumn);
 
         return $responseData;
     }
 
     public function getTermData(string $plausibleSiteId, string $timeFrame, array $filters = []): array
     {
+        $termFilterActivated = $this->plausibleService->isFilterActivated('visit:utm_term', $filters);
         $responseData = $this->getData($plausibleSiteId, $timeFrame, 'visit:utm_term', $filters);
 
         $map = $this->plausibleService->dataCleanUp(['utm_term', 'visitors'], $responseData['data']);
         $map = $this->plausibleService->calcPercentage($map);
         $responseData['data'] = $map;
 
-        array_unshift(
-            $responseData['columns'],
-            [
-                'name' => 'utm_term',
-                'label' => $this->getLanguageService()->getLL('barChart.labels.UTMTerm'),
-                'filter' => [
-                    'name' => 'visit:utm_term',
-                    'label' => $this->getLanguageService()->getLL('filter.sourceData.UTMTermIs'),
-                ],
-            ]
-        );
+        $termColumn = [
+            'name' => 'utm_term',
+            'label' => $this->getLanguageService()->getLL('barChart.labels.UTMTerm'),
+        ];
+        // When filtering by term there is no deeper filter than that
+        if (!$termFilterActivated) {
+            $termColumn['filter'] = [
+                'name' => 'visit:utm_term',
+                'label' => $this->getLanguageService()->getLL('filter.sourceData.UTMTermIs'),
+            ];
+        }
+        array_unshift($responseData['columns'], $termColumn);
 
         return $responseData;
     }
 
     public function getContentData(string $plausibleSiteId, string $timeFrame, array $filters = []): array
     {
+        $contentFilterActivated = $this->plausibleService->isFilterActivated('visit:utm_content', $filters);
         $responseData = $this->getData($plausibleSiteId, $timeFrame, 'visit:utm_content', $filters);
 
         $map = $this->plausibleService->dataCleanUp(['utm_content', 'visitors'], $responseData['data']);
         $map = $this->plausibleService->calcPercentage($map);
         $responseData['data'] = $map;
 
-        array_unshift(
-            $responseData['columns'],
-            [
-                'name' => 'utm_content',
-                'label' => $this->getLanguageService()->getLL('barChart.labels.UTMContent'),
-                'filter' => [
-                    'name' => 'visit:utm_content',
-                    'label' => $this->getLanguageService()->getLL('filter.sourceData.UTMContentIs'),
-                ],
-            ]
-        );
+        $contentColumn = [
+            'name' => 'utm_content',
+            'label' => $this->getLanguageService()->getLL('barChart.labels.UTMContent'),
+        ];
+        // When filtering by content there is no deeper filter than that
+        if (!$contentFilterActivated) {
+            $contentColumn['filter'] = [
+                'name' => 'visit:utm_content',
+                'label' => $this->getLanguageService()->getLL('filter.sourceData.UTMContentIs'),
+            ];
+        }
+        array_unshift($responseData['columns'], $contentColumn);
 
         return $responseData;
     }

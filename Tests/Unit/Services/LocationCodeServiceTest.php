@@ -27,11 +27,13 @@ class LocationCodeServiceTest extends UnitTestCase
     public function codeToCityDataReturnsProperValuesDataProvider(): \Generator
     {
         yield 'existing locationId returns related dataset' => [
-            'locationId' => 2987642, 'expected' => ['locationId' => '2987642', 'code' => 'Petit-Noir']
+            'locationId' => 2987642,
+            'expected' => ['locationId' => '2987642', 'code' => 'Petit-Noir']
         ];
 
         yield 'non existing locationId returns null' => [
-            'locationId' => 12, 'expected' => null
+            'locationId' => 12,
+            'expected' => null
         ];
     }
 

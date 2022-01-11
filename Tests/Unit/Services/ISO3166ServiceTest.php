@@ -26,7 +26,7 @@ class ISO3166ServiceTest extends UnitTestCase
     public function alpha2ReturnsProperValuesDataProvider(): \Generator
     {
         yield 'existing alpha2 returns related dataset' => [
-            'input' => 'DE', 'expected' => ['name' => 'Germany', 'alpha2' => 'DE', 'alpha3' => 'DEU']
+            'input' => 'DE', 'expected' => [ISO3166Service::COUNTRYNAME => 'Germany', ISO3166Service::ALPHA2 => 'DE', ISO3166Service::ALPHA3 => 'DEU']
         ];
 
         yield 'non existing alpha2 returns null' => [
@@ -49,7 +49,7 @@ class ISO3166ServiceTest extends UnitTestCase
     public function alpha3ReturnsProperValuesDataProvider(): \Generator
     {
         yield 'existing alpha3 returns related dataset' => [
-            'input' => 'DEU', 'expected' => ['name' => 'Germany', 'alpha2' => 'DE', 'alpha3' => 'DEU']
+            'input' => 'DEU', 'expected' => [ISO3166Service::COUNTRYNAME => 'Germany', ISO3166Service::ALPHA2 => 'DE', ISO3166Service::ALPHA3 => 'DEU']
         ];
 
         yield 'non existing alpha3 returns null' => [

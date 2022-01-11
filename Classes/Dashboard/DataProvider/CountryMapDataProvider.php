@@ -106,11 +106,11 @@ class CountryMapDataProvider
         $resultData['data'] = $map;
         $resultData['columns'] = [
             [
-                'name' => 'country',
+                'name' => ISO3166Service::COUNTRYNAME,
                 'label' => $this->getLanguageService()->getLL('barChart.labels.country'),
                 'filter' => [
                     'name' => 'visit:country',
-                    'value' => 'alpha2',
+                    'value' => ISO3166Service::ALPHA2,
                     'label' => $this->getLanguageService()->getLL('filter.locationData.countryIs'),
                 ],
             ],
@@ -130,10 +130,12 @@ class CountryMapDataProvider
         $cityFilterActivated = $this->plausibleService->isFilterActivated('visit:city', $filters);
         $property = $countryFilterActivated ? 'visit:region' : 'visit:country';
         $property = $regionFilterActivated ? 'visit:city' : $property;
-        $dataColumnName = $countryFilterActivated ? 'region' : 'country';
-        $dataColumnName = $regionFilterActivated ? 'city' : $dataColumnName;
-        $filterValueName = $countryFilterActivated ? 'isoCode' : 'alpha2';
-        $filterValueName = $regionFilterActivated ? 'locationId' : $filterValueName;
+        $dataColumnName = $countryFilterActivated ? ISO3166_2_Service::REGIONNAME : ISO3166Service::COUNTRYNAME;
+        $dataColumnName = $regionFilterActivated ? LocationCodeService::CITYNAME : $dataColumnName;
+        $plausibleDataName = $countryFilterActivated ? 'region' : 'country';
+        $plausibleDataName = $regionFilterActivated ? 'city' : $plausibleDataName;
+        $filterValueName = $countryFilterActivated ? ISO3166_2_Service::ISOCODE : ISO3166Service::ALPHA2;
+        $filterValueName = $regionFilterActivated ? LocationCodeService::LOCATIONIDNAME : $filterValueName;
         $filterLabel = $countryFilterActivated ? 'filter.locationData.regionIs' : 'filter.locationData.countryIs';
         $filterLabel = $regionFilterActivated ? 'filter.locationData.cityIs' : $filterLabel;
         $columnLabel = $countryFilterActivated ? 'barChart.labels.region' : 'barChart.labels.country';
@@ -157,7 +159,7 @@ class CountryMapDataProvider
             $responseData['data'] = [];
         }
 
-        $map = $this->plausibleService->dataCleanUp([$dataColumnName, 'visitors'], $responseData['data'], true);
+        $map = $this->plausibleService->dataCleanUp([$plausibleDataName, 'visitors'], $responseData['data'], true);
         $map = $this->plausibleService->calcPercentage($map);
         $resultData['data'] = $map;
         $resultData['columns'] = [
@@ -171,8 +173,10 @@ class CountryMapDataProvider
                 'label' => $this->getLanguageService()->getLL('barChart.labels.visitors'),
             ],
         ];
-        // When filtering by country, region and city there is no deeper filter than that
-        if (!$countryFilterActivated || !$regionFilterActivated || !$cityFilterActivated) {
+        // When filtering by country, region and city or region and city there is no deeper filter than that
+        // because the list of cities is shown
+        if (!($countryFilterActivated && $regionFilterActivated && $cityFilterActivated) &&
+            !($regionFilterActivated && $cityFilterActivated)) {
             $resultData['columns'][0]['filter'] = [
                 'name' => $property,
                 'value' => $filterValueName,
@@ -187,24 +191,15 @@ class CountryMapDataProvider
     {
         $result = [];
         foreach ($data as $item) {
-            /*
-            if (
-                !is_array($item)
-                || !isset($item['country'])
-                || !isset($item['visitors'])
-            ) {
-                continue;
-            }
-            */
             $iso3166Data = $this->ISO3166Service->alpha2($item['country']);
             if ($iso3166Data === null) {
                 continue;
             }
 
             $result[] = [
-                'alpha2' => $iso3166Data[ISO3166Service::ALPHA2],
-                'alpha3' => $iso3166Data[ISO3166Service::ALPHA3],
-                'country' => $iso3166Data[ISO3166Service::COUNTRYNAME],
+                ISO3166Service::ALPHA2 => $iso3166Data[ISO3166Service::ALPHA2],
+                ISO3166Service::ALPHA3 => $iso3166Data[ISO3166Service::ALPHA3],
+                ISO3166Service::COUNTRYNAME => $iso3166Data[ISO3166Service::COUNTRYNAME],
                 'visitors' => $item['visitors'],
                 'percentage' => $item['percentage'],
             ];
@@ -224,8 +219,8 @@ class CountryMapDataProvider
             }
 
             $result[] = [
-                'region' => $iso3166_2_Data[ISO3166_2_Service::REGIONNAME],
-                'isoCode' => $iso3166_2_Data[ISO3166_2_Service::ISOCODE],
+                ISO3166_2_Service::REGIONNAME => $iso3166_2_Data[ISO3166_2_Service::REGIONNAME],
+                ISO3166_2_Service::ISOCODE => $iso3166_2_Data[ISO3166_2_Service::ISOCODE],
                 'visitors' => $item['visitors'],
                 'percentage' => $item['percentage'],
             ];
@@ -245,8 +240,8 @@ class CountryMapDataProvider
             }
 
             $result[] = [
-                'city' => $cityData[LocationCodeService::CITYNAME],
-                'locationId' => $cityData[LocationCodeService::LOCATIONIDNAME],
+                LocationCodeService::CITYNAME => $cityData[LocationCodeService::CITYNAME],
+                LocationCodeService::LOCATIONIDNAME => $cityData[LocationCodeService::LOCATIONIDNAME],
                 'visitors' => $item['visitors'],
                 'percentage' => $item['percentage'],
             ];

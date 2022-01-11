@@ -26,7 +26,7 @@ class ISO3166_2_ServiceTest extends UnitTestCase
     public function regionReturnsProperValuesDataProvider(): \Generator
     {
         yield 'existing isocode returns related dataset' => [
-            'input' => 'AF-PAR', 'expected' => ['name' => 'Parwan', 'code' => 'AF-PAR']
+            'input' => 'AF-PAR', 'expected' => [ISO3166_2_Service::REGIONNAME => 'Parwan', ISO3166_2_Service::ISOCODE => 'AF-PAR']
         ];
 
         yield 'non existing alpha2 returns null' => [

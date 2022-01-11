@@ -132,7 +132,7 @@ class CountryMapDataWidget implements WidgetInterface, EventDataInterface, Requi
             'config' => [
                 'TYPO3/CMS/Plausibleio/WidgetService' => [
                     'lang' => [
-                        'filter.deviceData.countryIs' => $this->getLanguageService()->getLL('filter.deviceData.countryIs'),
+                        'filter.deviceData.countryIs' => $this->getLanguageService()->getLL('filter.locationData.countryIs'),
                     ],
                 ],
             ],

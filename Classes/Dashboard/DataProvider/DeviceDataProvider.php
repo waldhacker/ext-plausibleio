@@ -47,8 +47,8 @@ class DeviceDataProvider
             'name' => $dataColumnName,
             'label' => $this->getLanguageService()->getLL($columnLabel),
         ];
-        // When filtering by browser version there is no deeper filter than that
-        if (!$browserVersionFilterActivated) {
+        // When filtering by browser and browser version there is no deeper filter than that
+        if (!$browserFilterActivated || !$browserVersionFilterActivated) {
             $browserColumn['filter'] = [
                 'name' => $property,
                 'label' => $this->getLanguageService()->getLL($filterLabel),
@@ -80,8 +80,8 @@ class DeviceDataProvider
             'label' => $this->getLanguageService()->getLL($columnLabel),
 
         ];
-        // When filtering by os version there is no deeper filter than that
-        if (!$osVersionFilterActivated) {
+        // When filtering by os and os version there is no deeper filter than that
+        if (!$osFilterActivated || !$osVersionFilterActivated) {
             $osColumn['filter'] = [
                 'name' => $property,
                 'label' => $this->getLanguageService()->getLL($filterLabel),

@@ -50,16 +50,14 @@ class CountryMapDataProvider
 
         $data = $this->getCountryData($plausibleSiteId, $timeFrame, $filters);
 
-        if ($countryFilterActivated) {
-            if ($regionFilterActivated) {
-                $data['data'] = $this->plausibleCitiesToDataMap($data['data']);
-            }
-            else {
-                $data['data'] = $this->plausibleRegionsToDataMap($data['data']);
-            }
-        }
-        else {
+        if (!$countryFilterActivated && !$regionFilterActivated) {
             $data['data'] = $this->plausibleCountriesToDataMap($data['data']);
+        }
+        if ($countryFilterActivated && !$regionFilterActivated) {
+            $data['data'] = $this->plausibleRegionsToDataMap($data['data']);
+        }
+        if ($regionFilterActivated) {
+            $data['data'] = $this->plausibleCitiesToDataMap($data['data']);
         }
 
         /* plausible***ToDataMap needs more data (e.g. valid ISO code) than getCountryData
@@ -86,7 +84,6 @@ class CountryMapDataProvider
             'period' => $timeFrame,
             'property' => 'visit:country',
         ];
-        $filters = $this->plausibleService->removeFilter(['visit:region', 'visit:city'], $filters);
         $filterStr = $this->plausibleService->filtersToPlausibleFilterString($filters);
         if ($filterStr) {
             $params['filters'] = $filterStr;
@@ -138,7 +135,9 @@ class CountryMapDataProvider
         $filterValueName = $countryFilterActivated ? 'isoCode' : 'alpha2';
         $filterValueName = $regionFilterActivated ? 'locationId' : $filterValueName;
         $filterLabel = $countryFilterActivated ? 'filter.locationData.regionIs' : 'filter.locationData.countryIs';
+        $filterLabel = $regionFilterActivated ? 'filter.locationData.cityIs' : $filterLabel;
         $columnLabel = $countryFilterActivated ? 'barChart.labels.region' : 'barChart.labels.country';
+        $columnLabel = $regionFilterActivated ? 'barChart.labels.city' : $columnLabel;
 
 
         $endpoint = 'api/v1/stats/breakdown?';
@@ -172,8 +171,8 @@ class CountryMapDataProvider
                 'label' => $this->getLanguageService()->getLL('barChart.labels.visitors'),
             ],
         ];
-        // When filtering by city there is no deeper filter than that
-        if (!$cityFilterActivated) {
+        // When filtering by country, region and city there is no deeper filter than that
+        if (!$countryFilterActivated || !$regionFilterActivated || !$cityFilterActivated) {
             $resultData['columns'][0]['filter'] = [
                 'name' => $property,
                 'value' => $filterValueName,

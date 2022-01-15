@@ -18,25 +18,16 @@ declare(strict_types=1);
 
 namespace Waldhacker\Plausibleio\Services;
 
-use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class LocationCodeService
 {
     private const EXT_KEY = 'plausibleio';
-    private const CITYFILE = 'Resources' . \DIRECTORY_SEPARATOR . 'Private' . \DIRECTORY_SEPARATOR . 'Vendor' . \DIRECTORY_SEPARATOR . 'cities.csv';
+    private const CITYFILE = \DIRECTORY_SEPARATOR . 'Resources' . \DIRECTORY_SEPARATOR . 'Private' . \DIRECTORY_SEPARATOR . 'Vendor' . \DIRECTORY_SEPARATOR . 'cities.csv';
     public const CITYNAME = 'city';
     public const LOCATIONIDNAME = 'locationID';
 
-    //private ExtensionManagementUtility $extensionManagementUtility;
     private array $citiesData = [];
-
-    /*
-    public function __construct(
-        ExtensionManagementUtility $extensionManagementUtility
-    ) {
-        $this->extensionManagementUtility = $extensionManagementUtility;
-    }
-    */
 
     private function binarySearch(int $locationCode, array $citiesData): ?array
     {
@@ -72,7 +63,7 @@ class LocationCodeService
 
     public function codeToCityData(int $locationCode): ?array
     {
-        $csvFilePathAndName = ExtensionManagementUtility::extPath(self::EXT_KEY) . self::CITYFILE;
+        $csvFilePathAndName = GeneralUtility::getFileAbsFileName('EXT:' . self::EXT_KEY . self::CITYFILE);
 
         if (empty($this->citiesData) && file_exists($csvFilePathAndName)) {
             if (($handle = fopen($csvFilePathAndName, "r")) !== false) {

@@ -43,12 +43,15 @@ $barChartBarPaddingSide: 0.5rem;
 
         div {
             display: flex;
+            flex-wrap: wrap;
 
             .filterBadge {
                 color: black;
                 background-color: white;
                 display: flex;
                 margin-left: 0.25em;
+                margin-top: 0.2em;
+                margin-bottom: 0.2em;
                 font-size: 80%;
                 font-weight: normal;
                 line-height: 1;

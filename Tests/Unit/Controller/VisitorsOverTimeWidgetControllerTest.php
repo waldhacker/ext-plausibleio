@@ -111,16 +111,16 @@ class VisitorsOverTimeWidgetControllerTest extends UnitTestCase
         $serverRequestProphecy->getQueryParams()->willReturn($queryParameters);
         $configurationServiceProphecy->getAvailablePlausibleSiteIds()->willReturn($availablePlausibleSiteIds);
         $configurationServiceProphecy->getTimeFrameValues()->willReturn($timeFrameValues);
-        $configurationServiceProphecy->getPlausibleSiteIdFromUserConfiguration()->willReturn($siteIdFromConfiguration);
-        $configurationServiceProphecy->getTimeFrameValueFromUserConfiguration()->willReturn($timeFrameFromConfiguration);
+        $configurationServiceProphecy->getPlausibleSiteIdFromUserConfiguration(ConfigurationService::DASHBOARD_DEFAULT_ID)->willReturn($siteIdFromConfiguration);
+        $configurationServiceProphecy->getTimeFrameValueFromUserConfiguration(ConfigurationService::DASHBOARD_DEFAULT_ID)->willReturn($timeFrameFromConfiguration);
 
         $visitorsOverTimeDataProviderProphecy->getChartData($expectedSiteId, $expectedTimeFrame, $expectedFilters)->willReturn(['chart' => 'data']);
         $visitorsOverTimeDataProviderProphecy->getOverview($expectedSiteId, $expectedTimeFrame, $expectedFilters)->willReturn(['overview' => 'data']);
         $visitorsOverTimeDataProviderProphecy->getCurrentVisitors($expectedSiteId, $expectedTimeFrame, $expectedFilters)->willReturn(['visitors' => 'data']);
 
-        $configurationServiceProphecy->persistPlausibleSiteIdInUserConfiguration($expectedSiteId)->shouldBeCalled();
-        $configurationServiceProphecy->persistTimeFrameValueInUserConfiguration($expectedTimeFrame)->shouldBeCalled();
-        $configurationServiceProphecy->persistFiltersInUserConfiguration($expectedFilters)->shouldBeCalled();
+        $configurationServiceProphecy->persistPlausibleSiteIdInUserConfiguration($expectedSiteId, ConfigurationService::DASHBOARD_DEFAULT_ID)->shouldBeCalled();
+        $configurationServiceProphecy->persistTimeFrameValueInUserConfiguration($expectedTimeFrame, ConfigurationService::DASHBOARD_DEFAULT_ID)->shouldBeCalled();
+        $configurationServiceProphecy->persistFiltersInUserConfiguration($expectedFilters, ConfigurationService::DASHBOARD_DEFAULT_ID)->shouldBeCalled();
         $visitorsOverTimeDataProviderProphecy->getChartData($expectedSiteId, $expectedTimeFrame, $expectedFilters)->shouldBeCalled();
         $visitorsOverTimeDataProviderProphecy->getOverview($expectedSiteId, $expectedTimeFrame, $expectedFilters)->shouldBeCalled();
         $visitorsOverTimeDataProviderProphecy->getCurrentVisitors($expectedSiteId, $expectedFilters)->shouldBeCalled();

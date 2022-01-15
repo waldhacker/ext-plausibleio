@@ -122,16 +122,16 @@ class PageDataWidgetControllerTest extends UnitTestCase
         $serverRequestProphecy->getQueryParams()->willReturn($queryParameters);
         $configurationServiceProphecy->getAvailablePlausibleSiteIds()->willReturn($availablePlausibleSiteIds);
         $configurationServiceProphecy->getTimeFrameValues()->willReturn($timeFrameValues);
-        $configurationServiceProphecy->getPlausibleSiteIdFromUserConfiguration()->willReturn($siteIdFromConfiguration);
-        $configurationServiceProphecy->getTimeFrameValueFromUserConfiguration()->willReturn($timeFrameFromConfiguration);
+        $configurationServiceProphecy->getPlausibleSiteIdFromUserConfiguration(ConfigurationService::DASHBOARD_DEFAULT_ID)->willReturn($siteIdFromConfiguration);
+        $configurationServiceProphecy->getTimeFrameValueFromUserConfiguration(ConfigurationService::DASHBOARD_DEFAULT_ID)->willReturn($timeFrameFromConfiguration);
 
         $pageDataProviderProphecy->getTopPageData($expectedSiteId, $expectedTimeFrame, $expectedFilters)->willReturn(['toppage' => 'data']);
         $pageDataProviderProphecy->getEntryPageData($expectedSiteId, $expectedTimeFrame, $expectedFilters)->willReturn(['entrypage' => 'data']);
         $pageDataProviderProphecy->getExitPageData($expectedSiteId, $expectedTimeFrame, $expectedFilters)->willReturn(['exitpage' => 'data']);
 
-        $configurationServiceProphecy->persistPlausibleSiteIdInUserConfiguration($expectedSiteId)->shouldBeCalled();
-        $configurationServiceProphecy->persistTimeFrameValueInUserConfiguration($expectedTimeFrame)->shouldBeCalled();
-        $configurationServiceProphecy->persistFiltersInUserConfiguration($expectedFilters)->shouldBeCalled();
+        $configurationServiceProphecy->persistPlausibleSiteIdInUserConfiguration($expectedSiteId, ConfigurationService::DASHBOARD_DEFAULT_ID)->shouldBeCalled();
+        $configurationServiceProphecy->persistTimeFrameValueInUserConfiguration($expectedTimeFrame, ConfigurationService::DASHBOARD_DEFAULT_ID)->shouldBeCalled();
+        $configurationServiceProphecy->persistFiltersInUserConfiguration($expectedFilters, ConfigurationService::DASHBOARD_DEFAULT_ID)->shouldBeCalled();
         $pageDataProviderProphecy->getTopPageData($expectedSiteId, $expectedTimeFrame, $expectedFilters)->shouldBeCalled();
         $pageDataProviderProphecy->getEntryPageData($expectedSiteId, $expectedTimeFrame, $expectedFilters)->shouldBeCalled();
         $pageDataProviderProphecy->getExitPageData($expectedSiteId, $expectedTimeFrame, $expectedFilters)->shouldBeCalled();

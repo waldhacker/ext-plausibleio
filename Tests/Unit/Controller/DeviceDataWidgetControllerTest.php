@@ -122,16 +122,16 @@ class DeviceDataWidgetControllerTest extends UnitTestCase
         $serverRequestProphecy->getQueryParams()->willReturn($queryParameters);
         $configurationServiceProphecy->getAvailablePlausibleSiteIds()->willReturn($availablePlausibleSiteIds);
         $configurationServiceProphecy->getTimeFrameValues()->willReturn($timeFrameValues);
-        $configurationServiceProphecy->getPlausibleSiteIdFromUserConfiguration()->willReturn($siteIdFromConfiguration);
-        $configurationServiceProphecy->getTimeFrameValueFromUserConfiguration()->willReturn($timeFrameFromConfiguration);
+        $configurationServiceProphecy->getPlausibleSiteIdFromUserConfiguration(ConfigurationService::DASHBOARD_DEFAULT_ID)->willReturn($siteIdFromConfiguration);
+        $configurationServiceProphecy->getTimeFrameValueFromUserConfiguration(ConfigurationService::DASHBOARD_DEFAULT_ID)->willReturn($timeFrameFromConfiguration);
 
         $deviceDataProviderProphecy->getBrowserData($expectedSiteId, $expectedTimeFrame, $expectedFilters)->willReturn(['browser' => 'data']);
         $deviceDataProviderProphecy->getDeviceData($expectedSiteId, $expectedTimeFrame, $expectedFilters)->willReturn(['device' => 'data']);
         $deviceDataProviderProphecy->getOSData($expectedSiteId, $expectedTimeFrame, $expectedFilters)->willReturn(['os' => 'data']);
 
-        $configurationServiceProphecy->persistPlausibleSiteIdInUserConfiguration($expectedSiteId)->shouldBeCalled();
-        $configurationServiceProphecy->persistTimeFrameValueInUserConfiguration($expectedTimeFrame)->shouldBeCalled();
-        $configurationServiceProphecy->persistFiltersInUserConfiguration($expectedFilters)->shouldBeCalled();
+        $configurationServiceProphecy->persistPlausibleSiteIdInUserConfiguration($expectedSiteId, ConfigurationService::DASHBOARD_DEFAULT_ID)->shouldBeCalled();
+        $configurationServiceProphecy->persistTimeFrameValueInUserConfiguration($expectedTimeFrame, ConfigurationService::DASHBOARD_DEFAULT_ID)->shouldBeCalled();
+        $configurationServiceProphecy->persistFiltersInUserConfiguration($expectedFilters, ConfigurationService::DASHBOARD_DEFAULT_ID)->shouldBeCalled();
         $deviceDataProviderProphecy->getBrowserData($expectedSiteId, $expectedTimeFrame, $expectedFilters)->shouldBeCalled();
         $deviceDataProviderProphecy->getDeviceData($expectedSiteId, $expectedTimeFrame, $expectedFilters)->shouldBeCalled();
         $deviceDataProviderProphecy->getOSData($expectedSiteId, $expectedTimeFrame, $expectedFilters)->shouldBeCalled();

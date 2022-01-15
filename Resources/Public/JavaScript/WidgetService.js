@@ -53,6 +53,7 @@ define([
         let siteSelect = dashboardItem.querySelector(this.options.siteSelector);
         let predefinedTimeframeElement = dashboardItem.querySelector(this.options.predefinedTimeframeSelectSelector);
         let predefinedSiteElement = dashboardItem.querySelector(this.options.predefinedSiteSelector);
+
         if (typeof(predefinedSiteElement) !== 'undefined' && predefinedSiteElement !== null) {
           configuration.site = predefinedSiteElement.dataset.widgetPlausiblePredefinedSite;
         } else if (typeof(siteSelect) !== 'undefined' && siteSelect !== null) {
@@ -134,8 +135,11 @@ define([
         return;
       }
 
+      let dashBoardId = this.getDashboardIdFromSubElement(widget);
+
       let event = new CustomEvent('plausible:timeframechange', {
         detail: {
+          dashboard: dashBoardId,
           siteId: siteId,
           timeFrame: timeFrame,
           filter: filter,
@@ -156,8 +160,11 @@ define([
         return;
       }
 
+      let dashBoardId = this.getDashboardIdFromSubElement(widget);
+
       let event = new CustomEvent('plausible:sitechange', {
         detail: {
+          dashboard: dashBoardId,
           siteId: siteId,
           timeFrame: timeFrame,
           filter: filter,
@@ -178,8 +185,11 @@ define([
         return;
       }
 
+      let dashBoardId = this.getDashboardIdFromSubElement(widget);
+
       let event = new CustomEvent('plausible:filterchange', {
         detail: {
+          dashboard: dashBoardId,
           siteId: siteId,
           timeFrame: timeFrame, // filter müssen für jedes dashboard einzeln gespeichert werden
           filter: filter,
@@ -232,7 +242,16 @@ define([
     getLL(id, defaultValue) {
       if (module.config().hasOwnProperty('lang')) {
         if (module.config().lang.hasOwnProperty(id)) {
-          return module.config().lang[id];
+          if (typeof module.config().lang[id] === 'string') {
+            return module.config().lang[id];
+          } else if (typeof module.config().lang[id] === 'object') {
+            // If a language key has been set multiple times using addRequireJsConfiguration,
+            // then one setting does not overwrite the previous one, instead all settings are
+            // passed in an array.
+            if (module.config().lang[id].length > 0) {
+              return module.config().lang[id][0];
+            }
+          }
         }
       }
 
@@ -443,15 +462,25 @@ define([
         `)
       }`;
 
-      let template = lit.html`
-        ${rowsData.map((row) => {
-        return lit.html`
-          <div class="bar">
-            ${barLabelTemplate(row)}
-            ${hitColumnsTemplate(row)}
+      let template;
+      if (rowsData.length > 0) {
+        template = lit.html`
+          ${rowsData.map((row) => {
+            return lit.html`
+            <div class="bar">
+              ${barLabelTemplate(row)}
+              ${hitColumnsTemplate(row)}
+            </div>
+          `
+          })}
+        `;
+      } else {
+        template = lit.html`
+          <div class="alert alert-info">
+              ${this.getLL('noDataAvailable', 'Unfortunately no further data are availablee')}
           </div>
-        `})}
-      `;
+        `;
+      }
 
       if (clear) {
         parentElement.innerHTML = '';
@@ -497,6 +526,42 @@ define([
       let targetElement = container.appendChild(newChild);
 
       lit.render(headingsTemplate, targetElement);
+    }
+
+    getDashboardFromSubElement(element) {
+      if (element !== undefined) {
+        return element.closest(this.options.dashBoardGridSelector);
+      } else {
+        return null;
+      }
+    }
+
+    getDashboardIdFromSubElement(element) {
+      let dashBoard = this.getDashboardFromSubElement(element);
+      if (dashBoard) {
+        if (dashBoard.dataset !== undefined && dashBoard.dataset.dashboardHash !== undefined) {
+          return dashBoard.dataset.dashboardHash;
+        }
+      }
+
+      return this.options.defaultDashBoardId;
+    }
+
+    /**
+     * Checks whether all necessary data for a request are available
+     *
+     * @param evt Event containing the data
+     */
+    checkDataForRequest(evt) {
+      if (evt.detail.dashboard === undefined ||
+          evt.detail.timeFrame === undefined ||
+          evt.detail.siteId === undefined ||
+          evt.detail.filter === undefined
+      ) {
+        throw 'Controller request failed because of insufficient data.';
+      } else {
+        return true;
+      }
     }
   }
 

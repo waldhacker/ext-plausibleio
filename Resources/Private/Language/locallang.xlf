@@ -264,6 +264,10 @@
 			<trans-unit id="visitors">
 				<source>Visitors</source>
 			</trans-unit>
+
+			<trans-unit id="noDataAvailable">
+				<source>Unfortunately no further data are available</source>
+			</trans-unit>
 		</body>
 	</file>
 </xliff>

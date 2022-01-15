@@ -57,7 +57,8 @@ class CountryMapDataWidget implements WidgetInterface, EventDataInterface, Requi
 
     public function renderWidgetContent(): string
     {
-        $plausibleSiteId = $this->configurationService->getPlausibleSiteIdFromUserConfiguration();
+        $dashBoardId = $this->plausibleService->getCurrentDashboardId();
+        $plausibleSiteId = $this->configurationService->getPlausibleSiteIdFromUserConfiguration($dashBoardId);
 
         $this->view->setTemplate('BaseTabs');
         $this->view->assignMultiple([
@@ -67,7 +68,7 @@ class CountryMapDataWidget implements WidgetInterface, EventDataInterface, Requi
             'validConfiguration' => $this->configurationService->isValidConfiguration($plausibleSiteId),
             'timeSelectorConfig' => [
                 'items' => $this->configurationService->getTimeFrames(),
-                'selected' => $this->configurationService->getTimeFrameValueFromUserConfiguration(),
+                'selected' => $this->configurationService->getTimeFrameValueFromUserConfiguration($dashBoardId),
             ],
             'siteSelectorConfig' => [
                 'items' => $this->configurationService->getAvailablePlausibleSiteIds(),
@@ -93,8 +94,10 @@ class CountryMapDataWidget implements WidgetInterface, EventDataInterface, Requi
 
     public function getEventData(): array
     {
+        $dashBoardId = $this->plausibleService->getCurrentDashboardId();
+
         return [
-            'filters' => $this->configurationService->getAllFiltersFromUserConfiguration(),
+            'filters' => $this->configurationService->getFiltersFromUserConfiguration($dashBoardId),
         ];
     }
 
@@ -133,6 +136,7 @@ class CountryMapDataWidget implements WidgetInterface, EventDataInterface, Requi
                 'TYPO3/CMS/Plausibleio/WidgetService' => [
                     'lang' => [
                         'filter.deviceData.countryIs' => $this->getLanguageService()->getLL('filter.locationData.countryIs'),
+                        'noDataAvailable' => $this->getLanguageService()->getLL('noDataAvailable'),
                     ],
                 ],
             ],

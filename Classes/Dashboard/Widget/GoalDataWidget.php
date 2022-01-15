@@ -18,6 +18,7 @@ declare(strict_types=1);
 
 namespace Waldhacker\Plausibleio\Dashboard\Widget;
 
+use TYPO3\CMS\Core\Localization\LanguageService;
 use TYPO3\CMS\Core\Page\PageRenderer;
 use TYPO3\CMS\Dashboard\Widgets\AdditionalCssInterface;
 use TYPO3\CMS\Dashboard\Widgets\EventDataInterface;
@@ -60,7 +61,8 @@ class GoalDataWidget implements WidgetInterface, EventDataInterface, AdditionalC
 
     public function renderWidgetContent(): string
     {
-        $plausibleSiteId = $this->configurationService->getPlausibleSiteIdFromUserConfiguration();
+        $dashBoardId = $this->plausibleService->getCurrentDashboardId();
+        $plausibleSiteId = $this->configurationService->getPlausibleSiteIdFromUserConfiguration($dashBoardId);
 
         $this->view->setTemplate('BaseTabs');
         $this->view->assignMultiple([
@@ -71,7 +73,7 @@ class GoalDataWidget implements WidgetInterface, EventDataInterface, AdditionalC
             'validConfiguration' => $this->configurationService->isValidConfiguration($plausibleSiteId),
             'timeSelectorConfig' => [
                 'items' => $this->configurationService->getTimeFrames(),
-                'selected' => $this->configurationService->getTimeFrameValueFromUserConfiguration(),
+                'selected' => $this->configurationService->getTimeFrameValueFromUserConfiguration($dashBoardId),
             ],
             'siteSelectorConfig' => [
                 'items' => $this->configurationService->getAvailablePlausibleSiteIds(),
@@ -92,8 +94,10 @@ class GoalDataWidget implements WidgetInterface, EventDataInterface, AdditionalC
 
     public function getEventData(): array
     {
+        $dashBoardId = $this->plausibleService->getCurrentDashboardId();
+
         return [
-            'filters' => $this->configurationService->getAllFiltersFromUserConfiguration(),
+            'filters' => $this->configurationService->getFiltersFromUserConfiguration($dashBoardId),
         ];
     }
 
@@ -120,6 +124,13 @@ class GoalDataWidget implements WidgetInterface, EventDataInterface, AdditionalC
     private function preparePageRenderer(): void
     {
         $this->pageRenderer->addRequireJsConfiguration([
+            'config' => [
+                'TYPO3/CMS/Plausibleio/WidgetService' => [
+                    'lang' => [
+                        'noDataAvailable' => $this->getLanguageService()->getLL('noDataAvailable'),
+                    ],
+                ],
+            ],
             'shim' => [
                 'TYPO3/CMS/Dashboard/WidgetContentCollector' => [
                     'deps' => [
@@ -128,5 +139,10 @@ class GoalDataWidget implements WidgetInterface, EventDataInterface, AdditionalC
                 ],
             ],
         ]);
+    }
+
+    private function getLanguageService(): LanguageService
+    {
+        return $GLOBALS['LANG'];
     }
 }

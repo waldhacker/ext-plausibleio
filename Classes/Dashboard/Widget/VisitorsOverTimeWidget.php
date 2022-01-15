@@ -56,7 +56,8 @@ class VisitorsOverTimeWidget implements WidgetInterface, EventDataInterface, Add
 
     public function renderWidgetContent(): string
     {
-        $plausibleSiteId = $this->configurationService->getPlausibleSiteIdFromUserConfiguration();
+        $dashBoardId = $this->plausibleService->getCurrentDashboardId();
+        $plausibleSiteId = $this->configurationService->getPlausibleSiteIdFromUserConfiguration($dashBoardId);
 
         $this->view->setTemplate('VisitorsOverTimeWidget');
         $this->view->assignMultiple([
@@ -66,7 +67,7 @@ class VisitorsOverTimeWidget implements WidgetInterface, EventDataInterface, Add
             'validConfiguration' => $this->configurationService->isValidConfiguration($plausibleSiteId),
             'timeSelectorConfig' => [
                 'items' => $this->configurationService->getTimeFrames(),
-                'selected' => $this->configurationService->getTimeFrameValueFromUserConfiguration(),
+                'selected' => $this->configurationService->getTimeFrameValueFromUserConfiguration($dashBoardId),
             ],
             'siteSelectorConfig' => [
                 'items' => $this->configurationService->getAvailablePlausibleSiteIds(),
@@ -81,6 +82,8 @@ class VisitorsOverTimeWidget implements WidgetInterface, EventDataInterface, Add
 
     public function getEventData(): array
     {
+        $dashBoardId = $this->plausibleService->getCurrentDashboardId();
+
         return [
             'graphConfig' => [
                 'type' => 'line',
@@ -88,7 +91,7 @@ class VisitorsOverTimeWidget implements WidgetInterface, EventDataInterface, Add
                     'maintainAspectRatio' => false,
                 ],
             ],
-            'filters' => $this->configurationService->getAllFiltersFromUserConfiguration(),
+            'filters' => $this->configurationService->getFiltersFromUserConfiguration($dashBoardId),
         ];
     }
 

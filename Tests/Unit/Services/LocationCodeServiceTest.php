@@ -18,7 +18,7 @@ declare(strict_types=1);
 
 namespace Waldhacker\Plausibleio\Tests\Unit\Services;
 
-use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 use Waldhacker\Plausibleio\Services\LocationCodeService;
 
@@ -38,17 +38,13 @@ class LocationCodeServiceTest extends UnitTestCase
     }
 
     /**
-     *
+     * @test----
      * @dataProvider codeToCityDataReturnsProperValuesDataProvider
      * @covers \Waldhacker\Plausibleio\Services\LocationCodeService::codeToCityData
      */
     public function codeToCityDataReturnsProperValues(int $locationId, ?array $expected): void
     {
-        /*
-        $extensionManagementUtilityProphecy = $this->prophesize(ExtensionManagementUtility::class);
-        $extensionManagementUtilityProphecy->extPath()->willReturn(__DIR__ . '');
-        $subject = new LocationCodeService($extensionManagementUtilityProphecy);
-        self::assertSame($expected, $subject->codeToCityData($locationId));
-        */
+        //$subject = new LocationCodeService();
+        //self::assertSame($expected, $subject->codeToCityData($locationId));
     }
 }

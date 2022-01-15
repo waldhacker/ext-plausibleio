@@ -25,9 +25,10 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use TYPO3\CMS\Core\Utility\MathUtility;
+use TYPO3\CMS\Dashboard\Controller\AbstractController;
 use GuzzleHttp\Exception\ClientException;
 
-class PlausibleService implements LoggerAwareInterface
+class PlausibleService extends AbstractController implements LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
@@ -444,5 +445,10 @@ class PlausibleService implements LoggerAwareInterface
         }
 
         return $dataArray;
+    }
+
+    public function getCurrentDashboardId(): string {
+        // method comes from implemented AbstractController
+        return $this->loadCurrentDashboard();
     }
 }

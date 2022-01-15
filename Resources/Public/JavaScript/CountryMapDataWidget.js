@@ -39,8 +39,11 @@ define([
     }
 
     requestUpdatedData(evt, widget, map) {
+      WidgetService.checkDataForRequest(evt);
+
       new AjaxRequest(this.options.visitorsCountryEndpoint)
         .withQueryArguments({
+          dashboard: evt.detail.dashboard,
           timeFrame: evt.detail.timeFrame,
           siteId: evt.detail.siteId,
           filter: evt.detail.filter,
@@ -218,9 +221,7 @@ define([
           });
 
           // Set filters from BE user configuration
-          let dashBoardId = WidgetService.options.defaultDashBoardId;
-          let filters = evt.detail.filters.hasOwnProperty(dashBoardId) ? evt.detail.filters[dashBoardId] : [];
-          WidgetService.setFilters(filters);
+          WidgetService.setFilters(evt.detail.filters);
           widget.addEventListener('plausible:filterchange', function (evt) {
             if (filterBar) {
               WidgetService.renderFilterBar(filterBar);

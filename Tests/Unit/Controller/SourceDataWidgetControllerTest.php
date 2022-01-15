@@ -111,8 +111,8 @@ class SourceDataWidgetControllerTest extends UnitTestCase
         $serverRequestProphecy->getQueryParams()->willReturn($queryParameters);
         $configurationServiceProphecy->getAvailablePlausibleSiteIds()->willReturn($availablePlausibleSiteIds);
         $configurationServiceProphecy->getTimeFrameValues()->willReturn($timeFrameValues);
-        $configurationServiceProphecy->getPlausibleSiteIdFromUserConfiguration()->willReturn($siteIdFromConfiguration);
-        $configurationServiceProphecy->getTimeFrameValueFromUserConfiguration()->willReturn($timeFrameFromConfiguration);
+        $configurationServiceProphecy->getPlausibleSiteIdFromUserConfiguration(ConfigurationService::DASHBOARD_DEFAULT_ID)->willReturn($siteIdFromConfiguration);
+        $configurationServiceProphecy->getTimeFrameValueFromUserConfiguration(ConfigurationService::DASHBOARD_DEFAULT_ID)->willReturn($timeFrameFromConfiguration);
 
         $sourceDataProviderProphecy->getAllSourcesData($expectedSiteId, $expectedTimeFrame, $expectedFilters)->willReturn(['allsources' => 'data']);
         $sourceDataProviderProphecy->getMediumData($expectedSiteId, $expectedTimeFrame, $expectedFilters)->willReturn(['mediumsource' => 'data']);
@@ -121,9 +121,9 @@ class SourceDataWidgetControllerTest extends UnitTestCase
         $sourceDataProviderProphecy->getTermData($expectedSiteId, $expectedTimeFrame, $expectedFilters)->willReturn(['termsource' => 'data']);
         $sourceDataProviderProphecy->getContentData($expectedSiteId, $expectedTimeFrame, $expectedFilters)->willReturn(['contentsource' => 'data']);
 
-        $configurationServiceProphecy->persistPlausibleSiteIdInUserConfiguration($expectedSiteId)->shouldBeCalled();
-        $configurationServiceProphecy->persistTimeFrameValueInUserConfiguration($expectedTimeFrame)->shouldBeCalled();
-        $configurationServiceProphecy->persistFiltersInUserConfiguration($expectedFilters)->shouldBeCalled();
+        $configurationServiceProphecy->persistPlausibleSiteIdInUserConfiguration($expectedSiteId, ConfigurationService::DASHBOARD_DEFAULT_ID)->shouldBeCalled();
+        $configurationServiceProphecy->persistTimeFrameValueInUserConfiguration($expectedTimeFrame, ConfigurationService::DASHBOARD_DEFAULT_ID)->shouldBeCalled();
+        $configurationServiceProphecy->persistFiltersInUserConfiguration($expectedFilters, ConfigurationService::DASHBOARD_DEFAULT_ID)->shouldBeCalled();
         $sourceDataProviderProphecy->getAllSourcesData($expectedSiteId, $expectedTimeFrame, $expectedFilters)->shouldBeCalled();
         $sourceDataProviderProphecy->getMediumData($expectedSiteId, $expectedTimeFrame, $expectedFilters)->shouldBeCalled();
         $sourceDataProviderProphecy->getSourceData($expectedSiteId, $expectedTimeFrame, $expectedFilters)->shouldBeCalled();

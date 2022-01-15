@@ -57,7 +57,8 @@ class DeviceDataWidget implements WidgetInterface, EventDataInterface, Additiona
 
     public function renderWidgetContent(): string
     {
-        $plausibleSiteId = $this->configurationService->getPlausibleSiteIdFromUserConfiguration();
+        $dashBoardId = $this->plausibleService->getCurrentDashboardId();
+        $plausibleSiteId = $this->configurationService->getPlausibleSiteIdFromUserConfiguration($dashBoardId);
 
         $this->view->setTemplate('BaseTabs');
         $this->view->assignMultiple([
@@ -67,7 +68,7 @@ class DeviceDataWidget implements WidgetInterface, EventDataInterface, Additiona
             'validConfiguration' => $this->configurationService->isValidConfiguration($plausibleSiteId),
             'timeSelectorConfig' => [
                 'items' => $this->configurationService->getTimeFrames(),
-                'selected' => $this->configurationService->getTimeFrameValueFromUserConfiguration(),
+                'selected' => $this->configurationService->getTimeFrameValueFromUserConfiguration($dashBoardId),
             ],
             'siteSelectorConfig' => [
                 'items' => $this->configurationService->getAvailablePlausibleSiteIds(),
@@ -97,8 +98,10 @@ class DeviceDataWidget implements WidgetInterface, EventDataInterface, Additiona
 
     public function getEventData(): array
     {
+        $dashBoardId = $this->plausibleService->getCurrentDashboardId();
+
         return [
-            'filters' => $this->configurationService->getAllFiltersFromUserConfiguration(),
+            'filters' => $this->configurationService->getFiltersFromUserConfiguration($dashBoardId),
         ];
     }
 
@@ -126,6 +129,7 @@ class DeviceDataWidget implements WidgetInterface, EventDataInterface, Additiona
                         'barChart.labels.os' => $this->getLanguageService()->getLL('barChart.labels.os'),
                         'barChart.labels.browser' => $this->getLanguageService()->getLL('barChart.labels.browser'),
                         'barChart.labels.unknown' => $this->getLanguageService()->getLL('barChart.labels.unknown'),
+                        'noDataAvailable' => $this->getLanguageService()->getLL('noDataAvailable'),
                     ],
                 ],
             ],

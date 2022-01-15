@@ -2,6 +2,7 @@ module.tx_dashboard {
   view {
     templateRootPaths {
       110 = EXT:plausibleio/Resources/Private/Templates/Widgets/
+      120 = EXT:plausibleio/Resources/Private/Templates/
     }
     layoutRootPaths {
       110 = EXT:plausibleio/Resources/Private/Layouts/Widgets/

@@ -174,7 +174,7 @@ class CountryMapDataProvider
             ],
         ];
         // When filtering by country, region and city or region and city there is no deeper filter than that
-        // because the list of cities is shown
+        // because then it is filtered for a specific city and this city is also displayed
         if (!($countryFilterActivated && $regionFilterActivated && $cityFilterActivated) &&
             !($regionFilterActivated && $cityFilterActivated)) {
             $resultData['columns'][0]['filter'] = [

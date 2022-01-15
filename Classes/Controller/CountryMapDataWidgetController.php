@@ -46,14 +46,16 @@ class CountryMapDataWidgetController
 
     public function __invoke(ServerRequestInterface $request): ResponseInterface
     {
+        $dashBoardId = $request->getQueryParams()['dashboard'] ?? ConfigurationService::DASHBOARD_DEFAULT_ID;
+
         $plausibleSiteId = $request->getQueryParams()['siteId'] ?? null;
         if ($plausibleSiteId === null || !in_array($plausibleSiteId, $this->configurationService->getAvailablePlausibleSiteIds(), true)) {
-            $plausibleSiteId = $this->configurationService->getPlausibleSiteIdFromUserConfiguration();
+            $plausibleSiteId = $this->configurationService->getPlausibleSiteIdFromUserConfiguration($dashBoardId);
         }
 
         $timeFrame = $request->getQueryParams()['timeFrame'] ?? null;
         if ($timeFrame === null || !in_array($timeFrame, $this->configurationService->getTimeFrameValues(), true)) {
-            $timeFrame = $this->configurationService->getTimeFrameValueFromUserConfiguration();
+            $timeFrame = $this->configurationService->getTimeFrameValueFromUserConfiguration($dashBoardId);
         }
 
         // request->getQueryParams() already returns a json decoded array
@@ -63,9 +65,9 @@ class CountryMapDataWidgetController
         }
         $filters = $this->plausibleService->checkFilters($filters);
 
-        $this->configurationService->persistPlausibleSiteIdInUserConfiguration($plausibleSiteId);
-        $this->configurationService->persistTimeFrameValueInUserConfiguration($timeFrame);
-        $this->configurationService->persistFiltersInUserConfiguration($filters);
+        $this->configurationService->persistPlausibleSiteIdInUserConfiguration($plausibleSiteId, $dashBoardId);
+        $this->configurationService->persistTimeFrameValueInUserConfiguration($timeFrame, $dashBoardId);
+        $this->configurationService->persistFiltersInUserConfiguration($filters, $dashBoardId);
 
         $countryListData = $this->countryMapDataProvider->getCountryDataForDataMap($plausibleSiteId, $timeFrame, $filters);
         $mapData = $this->countryMapDataProvider->getCountryDataOnlyForDataMap($plausibleSiteId, $timeFrame, $filters);

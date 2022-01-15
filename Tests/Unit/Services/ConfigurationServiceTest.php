@@ -172,9 +172,15 @@ class ConfigurationServiceTest extends UnitTestCase
     {
         $GLOBALS['TYPO3_CONF_VARS']['BE']['cookieName'] = '';
         $GLOBALS['BE_USER'] = new BackendUserAuthentication();
-        $GLOBALS['BE_USER']->uc = ['plausible' => ['timeFrame' => '7d']];
+        $GLOBALS['BE_USER']->uc = [
+            'plausible' => [
+                ConfigurationService::DASHBOARD_DEFAULT_ID => [
+                    'timeFrame' => '7d',
+                ]
+            ]
+        ];
 
-        self::assertSame('7d', $this->subject->getTimeFrameValueFromUserConfiguration());
+        self::assertSame('7d', $this->subject->getTimeFrameValueFromUserConfiguration(ConfigurationService::DASHBOARD_DEFAULT_ID));
     }
 
     /**
@@ -192,7 +198,7 @@ class ConfigurationServiceTest extends UnitTestCase
         $GLOBALS['BE_USER']->uc = [];
         $this->extensionConfigurationProphecy->get('plausibleio', 'defaultTimeFrame')->willReturn('30d');
 
-        self::assertSame('30d', $this->subject->getTimeFrameValueFromUserConfiguration());
+        self::assertSame('30d', $this->subject->getTimeFrameValueFromUserConfiguration(ConfigurationService::DASHBOARD_DEFAULT_ID));
     }
 
     /**
@@ -208,7 +214,7 @@ class ConfigurationServiceTest extends UnitTestCase
         $GLOBALS['BE_USER'] = $backendUserProphecy->reveal();
 
         $backendUserProphecy->writeUC()->shouldNotBeCalled();
-        self::assertNull($this->subject->persistTimeFrameValueInUserConfiguration('7d'));
+        self::assertNull($this->subject->persistTimeFrameValueInUserConfiguration('7d', ConfigurationService::DASHBOARD_DEFAULT_ID));
     }
 
     /**
@@ -225,8 +231,14 @@ class ConfigurationServiceTest extends UnitTestCase
         $GLOBALS['BE_USER']->uc = [];
 
         $backendUserProphecy->writeUC()->shouldBeCalled();
-        self::assertNull($this->subject->persistTimeFrameValueInUserConfiguration('7d'));
-        self::assertSame(['plausible' => ['timeFrame' => '7d']], $backendUserProphecy->uc);
+        self::assertNull($this->subject->persistTimeFrameValueInUserConfiguration('7d', ConfigurationService::DASHBOARD_DEFAULT_ID));
+        self::assertSame([
+            'plausible' => [
+                ConfigurationService::DASHBOARD_DEFAULT_ID => [
+                    'timeFrame' => '7d',
+                ],
+            ],
+        ], $backendUserProphecy->uc);
     }
 
     /**
@@ -264,9 +276,15 @@ class ConfigurationServiceTest extends UnitTestCase
     {
         $GLOBALS['TYPO3_CONF_VARS']['BE']['cookieName'] = '';
         $GLOBALS['BE_USER'] = new BackendUserAuthentication();
-        $GLOBALS['BE_USER']->uc = ['plausible' => ['siteId' => 'waldhacker.dev']];
+        $GLOBALS['BE_USER']->uc = [
+            'plausible' => [
+                ConfigurationService::DASHBOARD_DEFAULT_ID => [
+                    'siteId' => 'waldhacker.dev',
+                ],
+            ],
+        ];
 
-        self::assertSame('waldhacker.dev', $this->subject->getPlausibleSiteIdFromUserConfiguration());
+        self::assertSame('waldhacker.dev', $this->subject->getPlausibleSiteIdFromUserConfiguration(ConfigurationService::DASHBOARD_DEFAULT_ID));
     }
 
     /**
@@ -292,7 +310,7 @@ class ConfigurationServiceTest extends UnitTestCase
 
         $subject->expects(self::any())->method('getFirstAvailablePlausibleSiteId')->willReturn('waldhacker.dev');
 
-        self::assertSame('waldhacker.dev', $subject->getPlausibleSiteIdFromUserConfiguration());
+        self::assertSame('waldhacker.dev', $subject->getPlausibleSiteIdFromUserConfiguration(ConfigurationService::DASHBOARD_DEFAULT_ID));
     }
 
     /**
@@ -308,7 +326,7 @@ class ConfigurationServiceTest extends UnitTestCase
         $GLOBALS['BE_USER'] = $backendUserProphecy->reveal();
 
         $backendUserProphecy->writeUC()->shouldNotBeCalled();
-        self::assertNull($this->subject->persistPlausibleSiteIdInUserConfiguration('waldhacker.dev'));
+        self::assertNull($this->subject->persistPlausibleSiteIdInUserConfiguration('waldhacker.dev', ConfigurationService::DASHBOARD_DEFAULT_ID));
     }
 
     /**
@@ -324,7 +342,7 @@ class ConfigurationServiceTest extends UnitTestCase
         $GLOBALS['BE_USER'] = $backendUserProphecy->reveal();
 
         $backendUserProphecy->writeUC()->shouldNotBeCalled();
-        self::assertNull($this->subject->persistFiltersInUserConfiguration([]));
+        self::assertNull($this->subject->persistFiltersInUserConfiguration([], ConfigurationService::DASHBOARD_DEFAULT_ID));
     }
 
     /**
@@ -341,8 +359,16 @@ class ConfigurationServiceTest extends UnitTestCase
         $GLOBALS['BE_USER']->uc = [];
 
         $backendUserProphecy->writeUC()->shouldBeCalled();
-        self::assertNull($this->subject->persistFiltersInUserConfiguration(['name' => 'visit:os==Mac']));
-        self::assertSame(['plausible' => ['filters' => [ConfigurationService::DASHBOARD_DEFAULT_ID => ['name' => 'visit:os==Mac']]]], $backendUserProphecy->uc);
+        self::assertNull($this->subject->persistFiltersInUserConfiguration(['name' => 'visit:os==Mac'], ConfigurationService::DASHBOARD_DEFAULT_ID));
+        self::assertSame([
+            'plausible' => [
+                ConfigurationService::DASHBOARD_DEFAULT_ID => [
+                    'filters' => [
+                        'name' => 'visit:os==Mac',
+                    ],
+                ],
+            ],
+        ], $backendUserProphecy->uc);
     }
 
     /**
@@ -356,9 +382,15 @@ class ConfigurationServiceTest extends UnitTestCase
     {
         $GLOBALS['TYPO3_CONF_VARS']['BE']['cookieName'] = '';
         $GLOBALS['BE_USER'] = new BackendUserAuthentication();
-        $GLOBALS['BE_USER']->uc = ['plausible' => ['filters' => [ConfigurationService::DASHBOARD_DEFAULT_ID => ['name' => 'visit:os==Mac']]]];
+        $GLOBALS['BE_USER']->uc = [
+            'plausible' => [
+                ConfigurationService::DASHBOARD_DEFAULT_ID => [
+                    'filters' => ['name' => 'visit:os==Mac'],
+                ],
+            ],
+        ];
 
-        self::assertSame(['name' => 'visit:os==Mac'], $this->subject->getFiltersFromUserConfiguration());
+        self::assertSame(['name' => 'visit:os==Mac'], $this->subject->getFiltersFromUserConfiguration(ConfigurationService::DASHBOARD_DEFAULT_ID));
     }
 
     /**
@@ -374,13 +406,11 @@ class ConfigurationServiceTest extends UnitTestCase
         $GLOBALS['BE_USER'] = new BackendUserAuthentication();
         $GLOBALS['BE_USER']->uc = [
             'plausible' => [
-                'filters' => [
-                    'dashboard_AAA' => [
-                        'name' => 'visit:os==Mac',
-                    ],
-                    ConfigurationService::DASHBOARD_DEFAULT_ID => [
-                        'name' => 'visit:os==Windows',
-                    ],
+                'dashboard_AAA' => [
+                    'filters' => ['name' => 'visit:os==Mac'],
+                ],
+                ConfigurationService::DASHBOARD_DEFAULT_ID => [
+                    'filters' => ['name' => 'visit:os==Windows'],
                 ],
             ],
         ];
@@ -425,7 +455,7 @@ class ConfigurationServiceTest extends UnitTestCase
             $GLOBALS['BE_USER']->uc = $uc;
         }
 
-        self::assertSame([], $this->subject->getFiltersFromUserConfiguration());
+        self::assertSame([], $this->subject->getFiltersFromUserConfiguration(ConfigurationService::DASHBOARD_DEFAULT_ID));
     }
 
     public function getAllFiltersFromUserConfigurationReturnsEmptyArrayOnInvalidBackendUserConfigurationDataProvider(): \Generator
@@ -481,13 +511,11 @@ class ConfigurationServiceTest extends UnitTestCase
         $GLOBALS['BE_USER'] = new BackendUserAuthentication();
         $GLOBALS['BE_USER']->uc = [
             'plausible' => [
-                'filters' => [
-                    'dashboard_AAA' => [
-                        'name' => 'visit:os==Mac',
-                    ],
-                    ConfigurationService::DASHBOARD_DEFAULT_ID => [
-                        'name' => 'visit:os==Windows',
-                    ],
+                'dashboard_AAA' => [
+                    'filters' => ['name' => 'visit:os==Mac'],
+                ],
+                ConfigurationService::DASHBOARD_DEFAULT_ID => [
+                    'filters' => ['name' => 'visit:os==Windows'],
                 ],
             ],
         ];
@@ -515,8 +543,14 @@ class ConfigurationServiceTest extends UnitTestCase
         $GLOBALS['BE_USER']->uc = [];
 
         $backendUserProphecy->writeUC()->shouldBeCalled();
-        self::assertNull($this->subject->persistPlausibleSiteIdInUserConfiguration('waldhacker.dev'));
-        self::assertSame(['plausible' => ['siteId' => 'waldhacker.dev']], $backendUserProphecy->uc);
+        self::assertNull($this->subject->persistPlausibleSiteIdInUserConfiguration('waldhacker.dev', ConfigurationService::DASHBOARD_DEFAULT_ID));
+        self::assertSame([
+            'plausible' => [
+                ConfigurationService::DASHBOARD_DEFAULT_ID => [
+                    'siteId' => 'waldhacker.dev'
+                ],
+            ],
+        ], $backendUserProphecy->uc);
     }
 
     /**

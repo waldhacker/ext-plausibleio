@@ -61,8 +61,8 @@ define([
       if (typeof(chartDiv) !== 'undefined' && chartDiv !== null && data && data.length > 0) {
         data.forEach(function (tabData) {
           let tab = chartDiv.querySelector(that.options.tabSelector.replace('${tabId}', tabData.tab));
-          if (typeof(tab) !== 'undefined' && tab !== null) {
-            WidgetService.renderBarChart(tab, tabData.data, true);
+          if (tab != null) {
+            WidgetService.renderBarChartToElement(tab, tabData.data, true);
           }
         });
       }
@@ -77,7 +77,7 @@ define([
         let filterBar = widget.querySelector(WidgetService.options.filterBarSelector);
 
         let goalChartElement = widget.querySelector(that.options.widgetContainerSelector);
-        if (typeof(goalChartElement) !== 'undefined' && goalChartElement !== null) {
+        if (goalChartElement != null) {
           widget.addEventListener('plausible:timeframechange', function (evt) {
             that.requestUpdatedData(evt, goalChartElement);
           });
@@ -96,12 +96,12 @@ define([
           });
 
           let timeFrameSelect = widget.querySelector(that.options.timeframeSelectSelector);
-          if (typeof(timeFrameSelect) !== 'undefined' && timeFrameSelect !== null) {
+          if (timeFrameSelect != null) {
             WidgetService.registerTimeSelector(timeFrameSelect);
           }
 
           let siteSelect = widget.querySelector(that.options.siteSelector);
-          if (typeof(siteSelect) !== 'undefined' && siteSelect !== null) {
+          if (siteSelect != null) {
             WidgetService.registerSiteSelector(siteSelect);
           }
 

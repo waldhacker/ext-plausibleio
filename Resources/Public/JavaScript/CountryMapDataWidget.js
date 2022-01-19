@@ -57,8 +57,8 @@ define([
             }
             if (tabData.tab === 'countries') {
               let tab = widget.querySelector(this.options.tabSelector.replace('${tabId}', 'countries'));
-              if (typeof (tab) !== 'undefined' && tab !== null) {
-                WidgetService.renderBarChart(tab, tabData.data, true);
+              if (tab != null) {
+                WidgetService.renderBarChartToElement(tab, tabData.data, true);
               }
             }
           }, this);
@@ -158,7 +158,7 @@ define([
         let filterBar = widget.querySelector(WidgetService.options.filterBarSelector);
 
         let mapElement = widget.querySelector(that.options.widgetContainerSelector);
-        if (typeof(mapElement) !== 'undefined' && mapElement !== null) {
+        if (mapElement != null) {
           // render map
           let map = new Datamap({
             element: mapElement,
@@ -231,12 +231,12 @@ define([
           });
 
           let timeFrameSelect = widget.querySelector(that.options.timeframeSelectSelector);
-          if (typeof(timeFrameSelect) !== 'undefined' && timeFrameSelect !== null) {
+          if (timeFrameSelect != null) {
             WidgetService.registerTimeSelector(timeFrameSelect);
           }
 
           let siteSelect = widget.querySelector(that.options.siteSelector);
-          if (typeof(siteSelect) !== 'undefined' && siteSelect !== null) {
+          if (siteSelect != null) {
             WidgetService.registerSiteSelector(siteSelect);
           }
 

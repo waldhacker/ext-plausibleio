@@ -17,8 +17,9 @@ define([
   'lit',
   'TYPO3/CMS/Core/Ajax/AjaxRequest',
   'TYPO3/CMS/Backend/Storage/BrowserSession',
-  'TYPO3/CMS/Plausibleio/Contrib/d3-format'
-], function (module, lit, AjaxRequest, BrowserSession, D3Format) {
+  'TYPO3/CMS/Plausibleio/Contrib/d3-format',
+  'TYPO3/CMS/Plausibleio/Tabs',
+], function (module, lit, AjaxRequest, BrowserSession, D3Format, Tabs) {
   'use strict';
 
   class WidgetService {
@@ -30,10 +31,12 @@ define([
         siteSelector: '[data-widget-plausible-sites-select]',
         predefinedTimeframeSelectSelector: '[data-widget-plausible-predefined-timeframe]',
         predefinedSiteSelector: '[data-widget-plausible-predefined-site]',
+        tabsContainerSelector: '.tabs',
         tabBodyContainerSelector: '.panel-body',
         headingsContainerSelector: '.header',
         filterBarSelector: '.widget-content-filter',
         filterLinkSelector: '[data-widget-plausible-filter]',
+        tabBarBreakdownSelector: 'div.breakdown ul.t3js-tabs',
         sessionFilterKey: 'plausible-filter',
         defaultDashBoardId: 'default',
       };
@@ -54,15 +57,15 @@ define([
         let predefinedTimeframeElement = dashboardItem.querySelector(this.options.predefinedTimeframeSelectSelector);
         let predefinedSiteElement = dashboardItem.querySelector(this.options.predefinedSiteSelector);
 
-        if (typeof(predefinedSiteElement) !== 'undefined' && predefinedSiteElement !== null) {
+        if (predefinedSiteElement != null) {
           configuration.site = predefinedSiteElement.dataset.widgetPlausiblePredefinedSite;
-        } else if (typeof(siteSelect) !== 'undefined' && siteSelect !== null) {
+        } else if (siteSelect != null) {
           configuration.site = siteSelect.value;
         }
 
-        if (typeof(predefinedTimeframeElement) !== 'undefined' && predefinedTimeframeElement !== null) {
+        if (predefinedTimeframeElement != null) {
           configuration.timeFrame = predefinedTimeframeElement.dataset.widgetPlausiblePredefinedTimeframe;
-        } else if (typeof(timeFrameSelect) !== 'undefined' && timeFrameSelect !== null) {
+        } else if (timeFrameSelect != null) {
           configuration.timeFrame = timeFrameSelect.value;
         }
 
@@ -79,7 +82,6 @@ define([
       selectElement.addEventListener('change', function (e) {
         let callingSelect = e.target;
         let dashboardGrid = callingSelect.closest(that.options.dashBoardGridSelector);
-        let dashboardItem = callingSelect.closest(that.options.dashboardItemSelector);
         let widgets = dashboardGrid.querySelectorAll(that.options.dashboardItemSelector);
         let widgetsTimeFrameSelects = dashboardGrid.querySelectorAll(that.options.timeFrameSelector);
 
@@ -106,7 +108,6 @@ define([
       selectElement.addEventListener('change', function (e) {
         let callingSelect = e.target;
         let dashboardGrid = callingSelect.closest(that.options.dashBoardGridSelector);
-        let dashboardItem = callingSelect.closest(that.options.dashboardItemSelector);
         let widgets = dashboardGrid.querySelectorAll(that.options.dashboardItemSelector);
         let widgetsSiteSelects = dashboardGrid.querySelectorAll(that.options.siteSelector);
 
@@ -420,7 +421,7 @@ define([
       let cell = '';
 
       if (dataValue != undefined && dataValue !== '')
-        cell = lit.html`<span>${dataValue}</span>`;
+        cell = lit.html`<span>${Number.isInteger(dataValue) ? D3Format.format('.2~s')(dataValue) : dataValue}</span>`;
       else
         cell = lit.html`<span>${valueUnknown}</span>`;
 
@@ -430,18 +431,19 @@ define([
       return cell;
     }
 
-    renderBarChart(parentElement, data, clear = false) {
-      if (typeof(parentElement) === 'undefined' || parentElement === null) {
-        console.error('No parent element was specified for the bar chart.')
-        return;
-      }
-
+    /**
+     *
+     * @param data
+     * @param breakDownId Id to set an unique id for breakdown tabBar
+     * @return lit-Template
+     */
+    renderBarChart(data, breakDownId = 'tab-breakdown') {
       let columns = null;
       if (data.columns !== undefined) {
         columns = data.columns;
       }
       if (columns == null || columns.length == 0) {
-        return;
+        return null;
       }
       let hitColumns = [];
       // skip first item (label of the bar), so we get only the columns on the right side of the bar
@@ -451,7 +453,7 @@ define([
       let rowsData = data.data;
 
       const barLabelTemplate = (row) => lit.html`
-        <div>
+        <div class="barChartBar">
           <div style="width: ${row.percentage}%; "></div>
           ${this.renderBarChartRowCell(row, columns[0])}
         </div>
@@ -461,16 +463,50 @@ define([
           ${this.renderBarChartRowCell(row, col)}
         `)
       }`;
+      const defaultTabIndex = 0;
+      const breakDownTemplate = (subData) => lit.html`
+        <div class="tabs breakdown">
+          <div role="tabpanel">
+            <div class="tabsContainer">
+              <span class="headerText">${this.getLL('barChart.labels.breakdown', 'Breakdown by:')}</span>
+              <ul class="nav nav-tabs t3js-tabs" role="tablist" id="${breakDownId}" data-store-last-tab="1">
+              ${subData.map((subRowData, index) =>
+                lit.html`
+                    <li role="presentation" class="t3js-tabmenu-item">
+                      <a href="#${breakDownId}-${index}" title="" aria-controls="${breakDownId}-${index}" role="tab" data-bs-toggle="tab" aria-selected="${index == defaultTabIndex ? 'true' : 'false'}" class="${index == defaultTabIndex ? 'active' : ''}">
+                        ${subRowData.columns[0].name}
+                      </a>
+                    </li>
+              `)}
+              </ul>
+            </div>
+            <div class="tab-content" style="flex-basis: 100%;">
+            ${subData.map((subRowData, index) =>
+              lit.html`
+                  <div role="tabpanel" class="tab-pane ${index == defaultTabIndex ? 'active' : ''}" id="${breakDownId}-${index}">
+                    <div class="panel panel-tab">
+                      <div class="panel-body">
+                        <div class="panel-content" data-widget-tab-id="${breakDownId}-${index}">
+                          ${this.renderBarChart(subRowData)}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+              `)}
+            </div>
+          </div>
+        </div>`;
 
       let template;
       if (rowsData.length > 0) {
         template = lit.html`
           ${rowsData.map((row) => {
             return lit.html`
-            <div class="bar">
+            <div class="barChartRow">
               ${barLabelTemplate(row)}
               ${hitColumnsTemplate(row)}
             </div>
+            ${row.hasOwnProperty('subData') && row.subData.length > 0 ? breakDownTemplate(row.subData) : ''}
           `
           })}
         `;
@@ -480,6 +516,31 @@ define([
               ${this.getLL('noDataAvailable', 'Unfortunately no further data are availablee')}
           </div>
         `;
+      }
+
+      return template;
+    }
+
+    renderBarChartToElement(parentElement, data, clear = false) {
+      if (typeof (parentElement) === 'undefined' || parentElement === null) {
+        console.error('No parent element was specified for the bar chart.')
+        return;
+      }
+
+      let subTabsIdPrefix = 'tab-breakdown';
+      let tabsContainer = parentElement.closest(this.options.tabsContainerSelector);
+      if (tabsContainer != null) {
+        if (tabsContainer.dataset.hasOwnProperty('widgetType')) {
+          subTabsIdPrefix = subTabsIdPrefix + '-' + tabsContainer.dataset.widgetType;
+        }
+      }
+      if (parentElement.dataset.hasOwnProperty('widgetTabId')) {
+        subTabsIdPrefix = subTabsIdPrefix + '-' + parentElement.dataset.widgetTabId;
+      }
+
+      let template = this.renderBarChart(data, subTabsIdPrefix);
+      if (template == null) {
+        return;
       }
 
       if (clear) {
@@ -495,8 +556,18 @@ define([
       let tabBodyContainer = parentElement.closest(this.options.tabBodyContainerSelector);
       if (tabBodyContainer != null) {
         let headingsContainer = tabBodyContainer.querySelector(this.options.headingsContainerSelector);
-        if (headingsContainer !== null)
-          this.renderBarChartHeadings(headingsContainer, columns);
+        if (headingsContainer !== null) {
+          if (data.columns !== undefined) {
+            this.renderBarChartHeadings(headingsContainer, data.columns);
+          }
+        }
+      }
+
+      // TabBar handling (last active tab) for breakdown tabs
+      let breakdownTabBar = parentElement.querySelector(Tabs.options.tabBarSelector);
+      let widget = this.getWidgetFromSubElement(parentElement);
+      if (breakdownTabBar != null && widget != null) {
+        Tabs.registerTabBarForSessionHandling(breakdownTabBar, widget);
       }
     }
 
@@ -539,12 +610,31 @@ define([
     getDashboardIdFromSubElement(element) {
       let dashBoard = this.getDashboardFromSubElement(element);
       if (dashBoard) {
-        if (dashBoard.dataset !== undefined && dashBoard.dataset.dashboardHash !== undefined) {
+        if (dashBoard.dataset.hasOwnProperty('dashboardHash')) {
           return dashBoard.dataset.dashboardHash;
         }
       }
 
       return this.options.defaultDashBoardId;
+    }
+
+    getWidgetFromSubElement(element) {
+      if (element !== undefined) {
+        return element.closest(this.options.dashboardItemSelector);
+      } else {
+        return null;
+      }
+    }
+
+    getWidgetIdFromSubElement(element) {
+      let widget = this.getWidgetFromSubElement(element);
+      if (widget != null) {
+        if (widget.dataset.hasOwnProperty('widgetHash')) {
+          return widget.dataset.widgetHash;
+        }
+      }
+
+      return '';
     }
 
     /**
@@ -553,10 +643,10 @@ define([
      * @param evt Event containing the data
      */
     checkDataForRequest(evt) {
-      if (evt.detail.dashboard === undefined ||
-          evt.detail.timeFrame === undefined ||
-          evt.detail.siteId === undefined ||
-          evt.detail.filter === undefined
+      if (!evt.detail.hasOwnProperty('dashboard') ||
+          !evt.detail.hasOwnProperty('timeFrame') ||
+          !evt.detail.hasOwnProperty('siteId') ||
+          !evt.detail.hasOwnProperty('filter')
       ) {
         throw 'Controller request failed because of insufficient data.';
       } else {

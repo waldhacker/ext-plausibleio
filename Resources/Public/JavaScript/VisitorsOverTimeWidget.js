@@ -110,12 +110,12 @@ define([
         });
 
         let timeFrameSelect = widget.querySelector(that.options.timeframeSelectSelector);
-        if (typeof(timeFrameSelect) !== 'undefined' && timeFrameSelect !== null) {
+        if (timeFrameSelect != null) {
           WidgetService.registerTimeSelector(timeFrameSelect);
         }
 
         let siteSelect = widget.querySelector(that.options.siteSelector);
-        if (typeof(siteSelect) !== 'undefined' && siteSelect !== null) {
+        if (siteSelect != null) {
           WidgetService.registerSiteSelector(siteSelect);
         }
 

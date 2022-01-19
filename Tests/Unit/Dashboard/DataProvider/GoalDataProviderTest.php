@@ -249,6 +249,8 @@ class GoalDataProviderTest extends UnitTestCase
      * @covers \Waldhacker\Plausibleio\Services\PlausibleService::calcPercentage
      * @covers \Waldhacker\Plausibleio\Services\PlausibleService::calcConversionRate
      * @covers \Waldhacker\Plausibleio\Services\PlausibleService::dataCleanUp
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::filtersToPlausibleFilterString
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::isFilterActivated
      */
     public function getGoalsDataReturnsProperValues(
         string $plausibleSiteId,

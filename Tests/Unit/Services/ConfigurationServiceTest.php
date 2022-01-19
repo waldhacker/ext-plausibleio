@@ -174,13 +174,24 @@ class ConfigurationServiceTest extends UnitTestCase
         $GLOBALS['BE_USER'] = new BackendUserAuthentication();
         $GLOBALS['BE_USER']->uc = [
             'plausible' => [
-                ConfigurationService::DASHBOARD_DEFAULT_ID => [
+                'dashBoardId_98321' => [
                     'timeFrame' => '7d',
                 ]
             ]
         ];
 
-        self::assertSame('7d', $this->subject->getTimeFrameValueFromUserConfiguration(ConfigurationService::DASHBOARD_DEFAULT_ID));
+        self::assertSame('7d', $this->subject->getTimeFrameValueFromUserConfiguration('dashBoardId_98321'));
+
+        // empty dashBoardId -> dashBoardId = ConfigurationService::DASHBOARD_DEFAULT_ID
+        $GLOBALS['BE_USER']->uc = [
+            'plausible' => [
+                ConfigurationService::DASHBOARD_DEFAULT_ID => [
+                    'timeFrame' => '31d',
+                ]
+            ]
+        ];
+
+        self::assertSame('31d', $this->subject->getTimeFrameValueFromUserConfiguration(''));
     }
 
     /**
@@ -231,7 +242,19 @@ class ConfigurationServiceTest extends UnitTestCase
         $GLOBALS['BE_USER']->uc = [];
 
         $backendUserProphecy->writeUC()->shouldBeCalled();
-        self::assertNull($this->subject->persistTimeFrameValueInUserConfiguration('7d', ConfigurationService::DASHBOARD_DEFAULT_ID));
+        self::assertNull($this->subject->persistTimeFrameValueInUserConfiguration('7d', 'dashBoardId_98321'));
+        self::assertSame([
+            'plausible' => [
+                'dashBoardId_98321' => [
+                    'timeFrame' => '7d',
+                ],
+            ],
+        ], $backendUserProphecy->uc);
+
+        // empty dashBoardId -> dashBoardId = ConfigurationService::DASHBOARD_DEFAULT_ID
+        $GLOBALS['BE_USER']->uc = [];
+        $backendUserProphecy->writeUC()->shouldBeCalled();
+        self::assertNull($this->subject->persistTimeFrameValueInUserConfiguration('7d', ''));
         self::assertSame([
             'plausible' => [
                 ConfigurationService::DASHBOARD_DEFAULT_ID => [
@@ -285,6 +308,17 @@ class ConfigurationServiceTest extends UnitTestCase
         ];
 
         self::assertSame('waldhacker.dev', $this->subject->getPlausibleSiteIdFromUserConfiguration(ConfigurationService::DASHBOARD_DEFAULT_ID));
+
+        // empty dashBoardId -> dashBoardId = ConfigurationService::DASHBOARD_DEFAULT_ID
+        $GLOBALS['BE_USER']->uc = [
+            'plausible' => [
+                ConfigurationService::DASHBOARD_DEFAULT_ID => [
+                    'siteId' => 'waldhacker.dev',
+                ],
+            ],
+        ];
+
+        self::assertSame('waldhacker.dev', $this->subject->getPlausibleSiteIdFromUserConfiguration(''));
     }
 
     /**
@@ -359,12 +393,25 @@ class ConfigurationServiceTest extends UnitTestCase
         $GLOBALS['BE_USER']->uc = [];
 
         $backendUserProphecy->writeUC()->shouldBeCalled();
-        self::assertNull($this->subject->persistFiltersInUserConfiguration(['name' => 'visit:os==Mac'], ConfigurationService::DASHBOARD_DEFAULT_ID));
+        self::assertNull($this->subject->persistFiltersInUserConfiguration(['name' => 'visit:os==Mac'], 'dashBoardId_98321'));
+        self::assertSame([
+            'plausible' => [
+                'dashBoardId_98321' => [
+                    'filters' => [
+                        'name' => 'visit:os==Mac',
+                    ],
+                ],
+            ],
+        ], $backendUserProphecy->uc);
+
+        // empty dashBoardId -> dashBoardId = ConfigurationService::DASHBOARD_DEFAULT_ID
+        $GLOBALS['BE_USER']->uc = [];
+        self::assertNull($this->subject->persistFiltersInUserConfiguration(['name' => 'visit:os==Windows'], ''));
         self::assertSame([
             'plausible' => [
                 ConfigurationService::DASHBOARD_DEFAULT_ID => [
                     'filters' => [
-                        'name' => 'visit:os==Mac',
+                        'name' => 'visit:os==Windows',
                     ],
                 ],
             ],
@@ -384,13 +431,24 @@ class ConfigurationServiceTest extends UnitTestCase
         $GLOBALS['BE_USER'] = new BackendUserAuthentication();
         $GLOBALS['BE_USER']->uc = [
             'plausible' => [
-                ConfigurationService::DASHBOARD_DEFAULT_ID => [
+                'dashBoardId_98321' => [
                     'filters' => ['name' => 'visit:os==Mac'],
                 ],
             ],
         ];
 
-        self::assertSame(['name' => 'visit:os==Mac'], $this->subject->getFiltersFromUserConfiguration(ConfigurationService::DASHBOARD_DEFAULT_ID));
+        self::assertSame(['name' => 'visit:os==Mac'], $this->subject->getFiltersFromUserConfiguration('dashBoardId_98321'));
+
+        // dashboardKey could not be found -> ConfigurationService::DASHBOARD_DEFAULT_ID is used as fallback
+        $GLOBALS['BE_USER']->uc = [
+            'plausible' => [
+                ConfigurationService::DASHBOARD_DEFAULT_ID => [
+                    'filters' => ['name' => 'visit:os==Windows'],
+                ],
+            ],
+        ];
+
+        self::assertSame(['name' => 'visit:os==Windows'], $this->subject->getFiltersFromUserConfiguration('unavailableKey'));
     }
 
     /**
@@ -544,6 +602,17 @@ class ConfigurationServiceTest extends UnitTestCase
 
         $backendUserProphecy->writeUC()->shouldBeCalled();
         self::assertNull($this->subject->persistPlausibleSiteIdInUserConfiguration('waldhacker.dev', ConfigurationService::DASHBOARD_DEFAULT_ID));
+        self::assertSame([
+            'plausible' => [
+                ConfigurationService::DASHBOARD_DEFAULT_ID => [
+                    'siteId' => 'waldhacker.dev'
+                ],
+            ],
+        ], $backendUserProphecy->uc);
+
+        // empty dashBoardId -> dashBoardId = ConfigurationService::DASHBOARD_DEFAULT_ID
+        $GLOBALS['BE_USER']->uc = [];
+        self::assertNull($this->subject->persistPlausibleSiteIdInUserConfiguration('waldhacker.dev', ''));
         self::assertSame([
             'plausible' => [
                 ConfigurationService::DASHBOARD_DEFAULT_ID => [

@@ -25,6 +25,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use TYPO3\CMS\Core\Utility\MathUtility;
+use TYPO3\CMS\Core\Utility\Exception\MissingArrayPathException;
 use TYPO3\CMS\Dashboard\Controller\AbstractController;
 use GuzzleHttp\Exception\ClientException;
 
@@ -327,15 +328,23 @@ class PlausibleService extends AbstractController implements LoggerAwareInterfac
      *
      * @param string $name An empty name is not allowed
      * @param array $filters
+     * @throws MissingArrayPathException If the filter does not have all the required fields
      * @return array|null
      */
     public function isFilterActivated(string $name, array $filters): ?array
     {
         if ($name !== '') {
             foreach ($filters as $filter) {
-                if (array_key_exists('name', $filter) &&
-                    array_key_exists('value', $filter) &&
-                    $filter['name'] !== '' &&
+                // Programming error has to be sanitized before calling the method -> global exception
+                if (!array_key_exists('name', $filter)) {
+                    throw new MissingArrayPathException('Invalid filter. Name does not exist.', 9505003);
+                }
+                if (!array_key_exists('value', $filter)) {
+                    throw new MissingArrayPathException('Invalid filter. Value does not exist.', 9505004);
+                }
+
+                if ($filter['name'] !== '' &&
+                    $filter['value'] !== '' &&
                     strtolower($filter['name']) == strtolower($name)) {
                     return $filter;
                 }
@@ -350,6 +359,7 @@ class PlausibleService extends AbstractController implements LoggerAwareInterfac
      *
      * @param array $toRemove Array of strings (filter names) to remove from $filters
      * @param array $filters
+     * @throws MissingArrayPathException If the filter does not have all the required fields
      * @return array Array of filters without the filters in $toRemove
      */
     public function removeFilter(array $toRemove, array $filters): array
@@ -365,12 +375,37 @@ class PlausibleService extends AbstractController implements LoggerAwareInterfac
         $filters = $this->removeFilter($toRemove, $filters);
 
         foreach ($filters as $filter) {
+            if (!array_key_exists('name', $filter)) {
+                // Programming error has to be sanitized before calling the method -> global exception
+                throw new MissingArrayPathException('Invalid filter. Name does not exist.', 9505002);
+            }
             if (strtolower($filter['name']) !== strtolower($filterToRemove)) {
                 $result[] = $filter;
             }
         }
 
         return $result;
+    }
+
+    /**
+     * @param string $name
+     * @param array $filters
+     * @throws MissingArrayPathException If the filter does not have all the required fields
+     * @return string
+     */
+    function getFilterValue(string $name, array $filters): string
+    {
+        foreach ($filters as $filter) {
+            // Programming error has to be sanitized before calling the method -> global exception
+            if (!array_key_exists('name', $filter)) {
+                throw new MissingArrayPathException('Invalid filter. Name does not exist.', 9505001);
+            }
+            if (strtolower($filter['name']) == strtolower($name)) {
+                return $filter['value'] ?? '';
+            }
+        }
+
+        return '';
     }
 
     /**
@@ -440,13 +475,23 @@ class PlausibleService extends AbstractController implements LoggerAwareInterfac
         }
 
         foreach ($dataArray as $id => $item) {
-            $dataArray[$id]['cr'] = round($item['visitors'] / $totalVisitor * 100);
+            $cr = $item['visitors'] / $totalVisitor * 100;
+            $precision = 0;
+            if ($cr < 1) {
+                $precision = 1;
+            } elseif ($cr < 0.1) {
+                $precision = 2;
+            }
+            $dataArray[$id]['cr'] = round($cr, $precision);
             $dataArray[$id]['cr'] .= '%';
         }
 
         return $dataArray;
     }
 
+    /**
+     * @codeCoverageIgnore
+     */
     public function getCurrentDashboardId(): string {
         // method comes from implemented AbstractController
         return $this->loadCurrentDashboard();

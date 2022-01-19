@@ -128,6 +128,7 @@ class GoalDataWidget implements WidgetInterface, EventDataInterface, AdditionalC
                 'TYPO3/CMS/Plausibleio/WidgetService' => [
                     'lang' => [
                         'noDataAvailable' => $this->getLanguageService()->getLL('noDataAvailable'),
+                        'barChart.labels.breakdown' => $this->getLanguageService()->getLL('barChart.labels.breakdown'),
                     ],
                 ],
             ],

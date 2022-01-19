@@ -178,6 +178,9 @@
 			<trans-unit id="barChart.labels.unknown">
 				<source>Unknown</source>
 			</trans-unit>
+			<trans-unit id="barChart.labels.breakdown">
+				<source>Breakdown by:</source>
+			</trans-unit>
 
 			<trans-unit id="filter.pageData.pageIs">
 				<source>Page is</source>
@@ -232,6 +235,9 @@
 			</trans-unit>
 			<trans-unit id="filter.goalData.goalIs">
 				<source>Completed goal is</source>
+			</trans-unit>
+			<trans-unit id="filter.goalData.goalPropertyIs">
+				<source>Goal property is</source>
 			</trans-unit>
 
 			<trans-unit id="timeframes.d">

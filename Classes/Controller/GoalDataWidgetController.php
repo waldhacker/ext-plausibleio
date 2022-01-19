@@ -72,7 +72,7 @@ class GoalDataWidgetController
         $data = [
             [
                 'tab' => 'goal',
-                'data'=> $this->dataProvider->getGoalsData($plausibleSiteId, $timeFrame /*, $filters*/),
+                'data'=> $this->dataProvider->getGoalsData($plausibleSiteId, $timeFrame , $filters),
             ],
         ];
 

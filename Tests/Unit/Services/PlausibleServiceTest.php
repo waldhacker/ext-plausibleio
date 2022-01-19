@@ -32,6 +32,7 @@ use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Http\NormalizedParams;
 use TYPO3\CMS\Core\Http\RequestFactory;
+use TYPO3\CMS\Core\Utility\Exception\MissingArrayPathException;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 use Waldhacker\Plausibleio\Services\ConfigurationService;
 use Waldhacker\Plausibleio\Services\PlausibleService;
@@ -413,6 +414,7 @@ class PlausibleServiceTest extends UnitTestCase
             ['name' => 'event:page', 'value' => 'page/site']
         );
         // a filter without a name was specified
+        /*
         self::assertSame(
             $subject->isFilterActivated(
                 'event:page',
@@ -423,7 +425,9 @@ class PlausibleServiceTest extends UnitTestCase
             ),
             ['name' => 'event:page', 'value' => 'page/site']
         );
+        */
         // a filter without value was specified
+        /*
         self::assertSame(
             $subject->isFilterActivated(
                 'event:page',
@@ -434,6 +438,50 @@ class PlausibleServiceTest extends UnitTestCase
                 ]
             ),
             ['name' => 'event:page', 'value' => 'page/site']
+        );
+        */
+    }
+
+    /**
+     * @test
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::__construct
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::isFilterActivated
+     */
+    public function isFilterActivatedUnsetFilterNameThrowsException(): void
+    {
+        $configurationServiceProphecy = $this->prophesize(ConfigurationService::class);
+        $subject = new PlausibleService(new RequestFactory(), new Client(), $configurationServiceProphecy->reveal());
+
+        // a filter without a name was specified
+        $this->expectException(MissingArrayPathException::class);
+        $subject->isFilterActivated(
+            'event:page',
+            [
+                ['value' => '46.0'],
+                ['name' => 'event:page', 'value' => 'page/site'],
+            ]
+        );
+    }
+
+    /**
+     * @test
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::__construct
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::isFilterActivated
+     */
+    public function isFilterActivatedUnsetFilterValueThrowsException(): void
+    {
+        $configurationServiceProphecy = $this->prophesize(ConfigurationService::class);
+        $subject = new PlausibleService(new RequestFactory(), new Client(), $configurationServiceProphecy->reveal());
+
+        // a filter without value was specified
+        $this->expectException(MissingArrayPathException::class);
+        $subject->isFilterActivated(
+            'event:page',
+            [
+                ['name' => 'visit:browser_version', 'value' => ''],
+                ['name' => 'visit:browser_version'],
+                ['name' => 'event:page', 'value' => 'page/site'],
+            ]
         );
     }
 
@@ -495,6 +543,61 @@ class PlausibleServiceTest extends UnitTestCase
                 ['name' => 'visit:browser'],
                 ['name' => 'event:page'],
                 ['name' => 'visit:city'],
+            ]
+        );
+    }
+
+    /**
+     * @test
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::__construct
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::getFilterValue
+     */
+    public function getFilterValueReturnsValidResult(): void
+    {
+        $configurationServiceProphecy = $this->prophesize(ConfigurationService::class);
+        $subject = new PlausibleService(new RequestFactory(), new Client(), $configurationServiceProphecy->reveal());
+
+        // correct input
+        self::assertSame(
+            $subject->getFilterValue(
+                'event:page',
+                [
+                    ['name' => 'event:goal', 'value' => '404'],
+                    ['name' => 'event:page', 'value' => 'page/site'],
+                ]
+            ),
+            'page/site'
+        );
+
+        // no value given
+        self::assertSame(
+            $subject->getFilterValue(
+                'event:page',
+                [
+                    ['name' => 'event:goal', 'value' => '404'],
+                    ['name' => 'event:page'],
+                ]
+            ),
+            ''
+        );
+    }
+
+    /**
+     * @test
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::__construct
+     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::getFilterValue
+     */
+    public function getFilterValueUnsetFilterNameThrowsException(): void
+    {
+        $configurationServiceProphecy = $this->prophesize(ConfigurationService::class);
+        $subject = new PlausibleService(new RequestFactory(), new Client(), $configurationServiceProphecy->reveal());
+
+        $this->expectException(MissingArrayPathException::class);
+        $subject->getFilterValue(
+            'event:page',
+            [
+                ['name' => 'event:goal', 'value' => '404'],
+                ['value' => 'page/site'],
             ]
         );
     }

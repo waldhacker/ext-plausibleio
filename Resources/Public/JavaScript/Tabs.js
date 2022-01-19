@@ -46,10 +46,12 @@ define([
         return;
       }
 
-      let widgetId = widget.dataset.widgetHash;
-      if (typeof (widgetId) === 'undefined' || widgetId == '') {
+      let widgetId = 0;
+      if (!widget.dataset.hasOwnProperty('widgetHash') || widget.dataset.widgetHash == '') {
         console.error('No valid widget id was found.');
         return;
+      } else {
+        widgetId = widget.dataset.widgetHash;
       }
 
       // set new constant id for tabBar
@@ -73,38 +75,50 @@ define([
     }
 
     /**
-     * Register tabs for session handling and set last from user selected tab
+     * Register tabs of a single tabBar for session handling and set last from user selected tab
+     *
+     * @param widget element
+     */
+    registerTabBarForSessionHandling(tabBar, widget) {
+      if (typeof (tabBar) === 'undefined' || tabBar === null) {
+        console.error('No valid tabBar was specified.');
+        return;
+      }
+
+      this.storeLastActiveTab = tabBar.dataset.storeLastTab === '1';
+
+      if (this.storeLastActiveTab) {
+        this.setTabIdsFromWidgetId(tabBar, widget);
+
+        const $tabContainer = jquery_1.default(tabBar);
+        const currentActiveTab = this.receiveActiveTab(tabBar.id);
+        if (currentActiveTab) {
+          $tabContainer.find('a[href="' + currentActiveTab + '"]').tab('show');
+        }
+
+        tabBar.addEventListener('show.bs.tab', (function (e) {
+          const id = e.currentTarget.id;
+          const target = e.target.hash;
+          this.storeActiveTab(id, target);
+        }).bind(this));
+      }
+    }
+
+    /**
+     * Register tabs of a widget for session handling and set last from user selected tab
      *
      * @param widget element
      */
     registerTabsForSessionHandling(widget) {
-      var that = this;
-
-      if (typeof (widget) === 'undefined' || widget === null) {
+       if (typeof (widget) === 'undefined' || widget === null) {
         console.error('No valid widget was specified.');
         return;
       }
 
-      let tabBars = widget.querySelectorAll(that.options.tabBarSelector);
+      let tabBars = widget.querySelectorAll(this.options.tabBarSelector);
       tabBars.forEach(function (tabBar) {
-        that.storeLastActiveTab = tabBar.dataset.storeLastTab === '1';
-
-        if (that.storeLastActiveTab) {
-          that.setTabIdsFromWidgetId(tabBar, widget);
-
-          const $tabContainer = jquery_1.default(tabBar);
-          const currentActiveTab = that.receiveActiveTab(tabBar.id);
-          if (currentActiveTab) {
-            $tabContainer.find('a[href="' + currentActiveTab + '"]').tab('show');
-          }
-
-          tabBar.addEventListener('show.bs.tab', function (e) {
-            const id = e.currentTarget.id;
-            const target = e.target.hash;
-            that.storeActiveTab(id, target);
-          });
-        }
-      });
+        this.registerTabBarForSessionHandling(tabBar, widget);
+      }, this);
     }
 
     /**

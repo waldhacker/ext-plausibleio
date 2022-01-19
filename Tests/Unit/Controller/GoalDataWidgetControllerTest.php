@@ -125,14 +125,14 @@ class GoalDataWidgetControllerTest extends UnitTestCase
         $configurationServiceProphecy->getPlausibleSiteIdFromUserConfiguration(ConfigurationService::DASHBOARD_DEFAULT_ID)->willReturn($siteIdFromConfiguration);
         $configurationServiceProphecy->getTimeFrameValueFromUserConfiguration(ConfigurationService::DASHBOARD_DEFAULT_ID)->willReturn($timeFrameFromConfiguration);
 
-        $goalDataProviderProphecy->getGoalsData($expectedSiteId, $expectedTimeFrame)->willReturn(['goal' => 'data']);
-        //$goalDataProviderProphecy->getGoalsData($expectedSiteId, $expectedTimeFrame, $expectedFilters)->willReturn(['os' => 'data']);
+        //$goalDataProviderProphecy->getGoalsData($expectedSiteId, $expectedTimeFrame)->willReturn(['goal' => 'data']);
+        $goalDataProviderProphecy->getGoalsData($expectedSiteId, $expectedTimeFrame, $expectedFilters)->willReturn(['goal' => 'data']);
 
         $configurationServiceProphecy->persistPlausibleSiteIdInUserConfiguration($expectedSiteId, ConfigurationService::DASHBOARD_DEFAULT_ID)->shouldBeCalled();
         $configurationServiceProphecy->persistTimeFrameValueInUserConfiguration($expectedTimeFrame, ConfigurationService::DASHBOARD_DEFAULT_ID)->shouldBeCalled();
         $configurationServiceProphecy->persistFiltersInUserConfiguration($expectedFilters, ConfigurationService::DASHBOARD_DEFAULT_ID)->shouldBeCalled();
-        $goalDataProviderProphecy->getGoalsData($expectedSiteId, $expectedTimeFrame)->shouldBeCalled();
-        //$goalDataProviderProphecy->getGoalsData($expectedSiteId, $expectedTimeFrame, $expectedFilters)->shouldBeCalled();
+        //$goalDataProviderProphecy->getGoalsData($expectedSiteId, $expectedTimeFrame)->shouldBeCalled();
+        $goalDataProviderProphecy->getGoalsData($expectedSiteId, $expectedTimeFrame, $expectedFilters)->shouldBeCalled();
 
         $plausibleServiceProphecy->checkFilters($expectedFilters)->willReturn([]);
         $plausibleServiceProphecy->checkFilters($expectedFilters)->shouldBeCalled();

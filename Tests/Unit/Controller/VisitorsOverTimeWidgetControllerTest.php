@@ -123,12 +123,11 @@ class VisitorsOverTimeWidgetControllerTest extends UnitTestCase
         $configurationServiceProphecy->persistFiltersInUserConfiguration($expectedFilters, ConfigurationService::DASHBOARD_DEFAULT_ID)->shouldBeCalled();
         $visitorsOverTimeDataProviderProphecy->getChartData($expectedSiteId, $expectedTimeFrame, $expectedFilters)->shouldBeCalled();
         $visitorsOverTimeDataProviderProphecy->getOverview($expectedSiteId, $expectedTimeFrame, $expectedFilters)->shouldBeCalled();
-        $visitorsOverTimeDataProviderProphecy->getCurrentVisitors($expectedSiteId, $expectedFilters)->shouldBeCalled();
 
         $plausibleServiceProphecy->checkFilters($expectedFilters)->willReturn([]);
         $plausibleServiceProphecy->checkFilters($expectedFilters)->shouldBeCalled();
 
-        $streamProphecy->write('{"chartData":{"chart":"data"},"overViewData":{"overview":"data","current_visitors":0}}')->shouldBeCalled();
+        $streamProphecy->write('{"chartData":{"chart":"data"},"overViewData":{"overview":"data"}}')->shouldBeCalled();
 
         $subject = new VisitorsOverTimeWidgetController(
             $visitorsOverTimeDataProviderProphecy->reveal(),

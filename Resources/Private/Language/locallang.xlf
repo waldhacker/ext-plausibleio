@@ -182,6 +182,19 @@
 				<source>Breakdown by:</source>
 			</trans-unit>
 
+			<trans-unit id="barChart.labels.convertedVisitors">
+				<source>Converted visitors</source>
+			</trans-unit>
+			<trans-unit id="barChart.labels.uniqueConversions">
+				<source>Unique conversions</source>
+			</trans-unit>
+			<trans-unit id="barChart.labels.totalConversions">
+				<source>Total conversions</source>
+			</trans-unit>
+			<trans-unit id="barChart.labels.conversionRate">
+				<source>Conversion rate</source>
+			</trans-unit>
+
 			<trans-unit id="filter.pageData.pageIs">
 				<source>Page is</source>
 			</trans-unit>

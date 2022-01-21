@@ -50,6 +50,7 @@ class PlausibleService extends AbstractController implements LoggerAwareInterfac
         'visit:utm_source',
         'visit:utm_campaign',
         'event:goal',
+        'event:props',
     ];
 
     private RequestFactoryInterface $factory;
@@ -450,12 +451,18 @@ class PlausibleService extends AbstractController implements LoggerAwareInterfac
             $visitorsSum = $visitorsSum + $item['visitors'];
         }
         foreach ($dataArray as $key => $value) {
-            $dataArray[$key]['percentage'] = $value['visitors'] / $visitorsSum * 100;
+            $dataArray[$key]['percentage'] = ($value['visitors'] / $visitorsSum) * 100;
         }
 
         return $dataArray;
     }
 
+    /**
+     * @param string $plausibleSiteId
+     * @param string $timeFrame
+     * @param array $dataArray array of arrays
+     * @return array
+     */
     public function calcConversionRate(string $plausibleSiteId, string $timeFrame, array $dataArray): array
     {
         $endpoint = '/api/v1/stats/aggregate?';
@@ -475,7 +482,7 @@ class PlausibleService extends AbstractController implements LoggerAwareInterfac
         }
 
         foreach ($dataArray as $id => $item) {
-            $cr = $item['visitors'] / $totalVisitor * 100;
+            $cr = ($item['visitors'] / $totalVisitor) * 100;
             $precision = 0;
             if ($cr < 1) {
                 $precision = 1;

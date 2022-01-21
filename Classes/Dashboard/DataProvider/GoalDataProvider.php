@@ -69,7 +69,7 @@ class GoalDataProvider
                     [
                         'name' => $prop,
                         'filter' => [
-                            'name' => 'event:goal:props',
+                            'name' => 'event:props',
                             'label' => $this->getLanguageService()->getLL('filter.goalData.goalPropertyIs'),
                         ],
                     ],
@@ -105,6 +105,7 @@ class GoalDataProvider
             $responseData['data'] = [];
         }
 
+        // visitors = unique conversions, events = total conversions
         $map = $this->plausibleService->dataCleanUp(['goal', 'visitors', 'events'], $responseData['data']);
         $map = $this->plausibleService->calcPercentage($map);
         $map = $this->plausibleService->calcConversionRate($plausibleSiteId, $timeFrame, $map);

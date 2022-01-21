@@ -71,7 +71,6 @@ class VisitorsOverTimeWidgetController
 
         $chartData = $this->visitorsOverTimeDataProvider->getChartData($plausibleSiteId, $timeFrame, $filters);
         $overviewData = $this->visitorsOverTimeDataProvider->getOverview($plausibleSiteId, $timeFrame, $filters);
-        $overviewData['current_visitors'] = $this->visitorsOverTimeDataProvider->getCurrentVisitors($plausibleSiteId, $filters);
 
         $data = [
             'chartData' => $chartData,

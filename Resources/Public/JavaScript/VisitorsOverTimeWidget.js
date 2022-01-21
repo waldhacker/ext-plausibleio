@@ -18,10 +18,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 define([
   'TYPO3/CMS/Core/Ajax/AjaxRequest',
   'TYPO3/CMS/Core/Event/RegularEvent',
+  'lit',
   'TYPO3/CMS/Dashboard/Contrib/chartjs',
   'TYPO3/CMS/Plausibleio/Contrib/d3-format',
   'TYPO3/CMS/Plausibleio/WidgetService',
-], function (AjaxRequest, RegularEvent, chartjs_1, D3Format, WidgetService) {
+], function (AjaxRequest, RegularEvent, lit, chartjs_1, D3Format, WidgetService) {
   'use strict';
   chartjs_1 = __importDefault(chartjs_1);
 
@@ -32,10 +33,7 @@ define([
         widgetContainerSelector: '[data-widget-type="visitorsChart"]',
         timeframeSelectSelector: '[data-widget-plausible-timeframe-select]',
         siteSelector: '[data-widget-plausible-sites-select]',
-        uniqueVisitorsOverviewItemSelector: '[data-widget-chart-overview-item="uniqueVisitors"]',
-        totalPageviewsOverviewItemSelector: '[data-widget-chart-overview-item="totalPageviews"]',
-        currentVisitorsOverviewItemSelector: '[data-widget-chart-overview-item="currentVisitors"]',
-        visitDurationOverviewItemSelector: '[data-widget-chart-overview-item="visitDuration"]',
+        overviewContainerSelector: '.chartOverviewContainer',
         visitorTimeSeriesEndpoint: TYPO3.settings.ajaxUrls.plausible_visitorsovertime
       };
       this.initialize();
@@ -128,34 +126,47 @@ define([
     }
 
     formatSIPrefix(n) {
-      // 2400 -> 2.4k
-      n = D3Format.format('.2~s')(n);
+      if (Number.isInteger(n)) {
+        // 2400 -> 2.4k
+        n = D3Format.format('.2~s')(n);
+      }
       return n;
     }
 
     renderOverviewData(widget, data) {
       if (typeof(widget) !== 'undefined' && widget !== null && data) {
-        let visitors = data.visitors ? this.formatSIPrefix(data.visitors) : '0';
-        let pageViews = data.pageviews ? this.formatSIPrefix(data.pageviews) : '0';
-        let currentVisitors = data.current_visitors ? this.formatSIPrefix(data.current_visitors) : '0';
-        widget.querySelector(this.options.uniqueVisitorsOverviewItemSelector).innerHTML = visitors;
-        widget.querySelector(this.options.totalPageviewsOverviewItemSelector).innerHTML = pageViews;
-        widget.querySelector(this.options.currentVisitorsOverviewItemSelector).innerHTML = currentVisitors;
+        if (data.columns === undefined) {
+          return;
+        }
 
-        let minutes = 0;
-        let seconds = 0;
-        if (data.visit_duration) {
-          // full minutes
-          minutes = Math.floor(data.visit_duration / 60);
-          // remaining seconds
-          seconds = data.visit_duration - minutes * 60;
+        const chartOverviewItemTemplate = (label, value) =>
+          lit.html`
+            <div class="chartOverviewItem">
+              <div class="chartOverviewItemCaption">${label}</div>
+              <div class="chartOverviewItemValue">${value !== '' && value != null ? this.formatSIPrefix(value) : '0'}</div>
+            </div>
+        `;
+
+        let template = lit.html`
+            ${data.columns.map((column) => {
+              return lit.html`
+              ${chartOverviewItemTemplate(column.label, data.data[column.name])}
+            `
+        })}
+        `;
+
+        let parentElement = widget.querySelector(this.options.overviewContainerSelector);
+        if (parentElement == null) {
+          return;
         }
-        if (minutes + seconds > 0) {
-          widget.querySelector(this.options.visitDurationOverviewItemSelector).innerHTML = (minutes > 0 ? minutes + 'm ' : '') + (seconds > 0 ? seconds + 's' : '');
-        }
-        else {
-          widget.querySelector(this.options.visitDurationOverviewItemSelector).innerHTML = '-';
-        }
+
+        parentElement.innerHTML = '';
+
+        let newChild = document.createElement('div');
+        newChild.classList.add('chartOverview');
+        let targetElement = parentElement.appendChild(newChild);
+
+        lit.render(template, targetElement, {eventContext: this});
       }
     }
   }

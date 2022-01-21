@@ -198,34 +198,42 @@ $breakdownIndent: 2em;
         }
     }
 
-    .chartOverview {
+    .chartOverviewContainer {
         display: flex;
-        flex-wrap: wrap;
+        width: 100%;
+        padding-left: 10px;
+        padding-right: 10px;
 
-        .border-l {
-            border-left-style: solid;
-            border-left-width: 1px;
-            border-color: #d1d5db;
-        }
-    }
-
-    .chartOverviewItem {
-        padding-left: 2rem;
-        padding-right: 2rem;
-        margin-bottom: 1rem;
-        width: auto;
-
-        .chartOverviewItemCaption {
-            white-space: nowrap;
-            font-size: small;
-            font-weight: bold;
-            color: #666;
-        }
-
-        .chartOverviewItemValue {
+        .chartOverview {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
             width: 100%;
-            font-size: 1rem;
-            font-weight: bold;
+
+            .border-l {
+                border-left-style: solid;
+                border-left-width: 1px;
+                border-color: #d1d5db;
+            }
+        }
+
+        .chartOverviewItem {
+            margin-left: 10px;
+            margin-bottom: 1rem;
+            width: auto;
+
+            .chartOverviewItemCaption {
+                white-space: nowrap;
+                font-size: small;
+                font-weight: bold;
+                color: #666;
+            }
+
+            .chartOverviewItemValue {
+                width: 100%;
+                font-size: 1rem;
+                font-weight: bold;
+            }
         }
     }
 

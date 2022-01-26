@@ -19,24 +19,17 @@ declare(strict_types=1);
 namespace Waldhacker\Plausibleio\Dashboard\DataProvider;
 
 use TYPO3\CMS\Core\Localization\LanguageService;
-use Waldhacker\Plausibleio\Services\PlausibleService;
+use Waldhacker\Plausibleio\FilterRepository;
 
-class PageDataProvider
+class PageDataProvider extends AbstractDataProvider
 {
-    private PlausibleService $plausibleService;
-
-    public function __construct(PlausibleService $plausibleService)
+    public function getTopPageData(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
     {
-        $this->plausibleService = $plausibleService;
-    }
-
-    public function getTopPageData(string $plausibleSiteId, string $timeFrame, array $filters = []): array
-    {
-        $topPageFilterActivated = $this->plausibleService->isFilterActivated('event:page', $filters);
+        $topPageFilterActivated = $filters->isFilterActivated(FilterRepository::FILTEREVENTPAGE);
         $responseData = $this->getData($plausibleSiteId, $timeFrame, 'event:page', $filters);
 
-        $map = $this->plausibleService->dataCleanUp(['page', 'visitors'], $responseData['data']);
-        $map = $this->plausibleService->calcPercentage($map);
+        $map = $this->dataCleanUp(['page', 'visitors'], $responseData['data']);
+        $map = $this->calcPercentage($map);
         $responseData['data'] = $map;
         $responseData['columns'] = [
             [
@@ -59,13 +52,13 @@ class PageDataProvider
         return $responseData;
     }
 
-    public function getEntryPageData(string $plausibleSiteId, string $timeFrame, array $filters = []): array
+    public function getEntryPageData(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
     {
-        $entryPageFilterActivated = $this->plausibleService->isFilterActivated('visit:entry_page', $filters);
+        $entryPageFilterActivated = $filters->isFilterActivated(FilterRepository::FILTERVISITENTRYPAGE);
         $responseData = $this->getData($plausibleSiteId, $timeFrame, 'visit:entry_page', $filters);
 
-        $map = $this->plausibleService->dataCleanUp(['entry_page', 'visitors'], $responseData['data']);
-        $map = $this->plausibleService->calcPercentage($map);
+        $map = $this->dataCleanUp(['entry_page', 'visitors'], $responseData['data']);
+        $map = $this->calcPercentage($map);
         $responseData['data'] = $map;
         $responseData['columns'] = [
             [
@@ -88,13 +81,13 @@ class PageDataProvider
         return $responseData;
     }
 
-    public function getExitPageData(string $plausibleSiteId, string $timeFrame, array $filters = []): array
+    public function getExitPageData(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
     {
-        $exitPageFilterActivated = $this->plausibleService->isFilterActivated('visit:exit_page', $filters);
+        $exitPageFilterActivated = $filters->isFilterActivated(FilterRepository::FILTERVISITEXITPAGE);
         $responseData = $this->getData($plausibleSiteId, $timeFrame, 'visit:exit_page', $filters);
 
-        $map = $this->plausibleService->dataCleanUp(['exit_page', 'visitors'], $responseData['data']);
-        $map = $this->plausibleService->calcPercentage($map);
+        $map = $this->dataCleanUp(['exit_page', 'visitors'], $responseData['data']);
+        $map = $this->calcPercentage($map);
         $responseData['data'] = $map;
         $responseData['columns'] = [
             [
@@ -117,7 +110,7 @@ class PageDataProvider
         return $responseData;
     }
 
-    private function getData(string $plausibleSiteId, string $timeFrame, string $property, array $filter=[]): array
+    private function getData(string $plausibleSiteId, string $timeFrame, string $property, FilterRepository $filters): array
     {
         $endpoint = 'api/v1/stats/breakdown?';
         $params = [
@@ -126,7 +119,7 @@ class PageDataProvider
             'property' => $property,
             'metrics' => 'visitors',
         ];
-        $filterStr = $this->plausibleService->filtersToPlausibleFilterString($filter);
+        $filterStr = $filters->toPlausibleFilterString();
         if ($filterStr) {
             $params['filters'] = $filterStr;
         }

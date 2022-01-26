@@ -23,56 +23,28 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Waldhacker\Plausibleio\Dashboard\DataProvider\GoalDataProvider;
 use Waldhacker\Plausibleio\Services\ConfigurationService;
-use Waldhacker\Plausibleio\Services\PlausibleService;
 
-class GoalDataWidgetController
+class GoalDataWidgetController extends AbstractWidgetController
 {
-    private ResponseFactoryInterface $responseFactory;
     private GoalDataProvider $dataProvider;
-    private ConfigurationService $configurationService;
-    private PlausibleService $plausibleService;
 
     public function __construct(
         GoalDataProvider $dataProvider,
         ConfigurationService $configurationService,
-        PlausibleService $plausibleService,
         ResponseFactoryInterface $responseFactory
     ) {
-        $this->responseFactory = $responseFactory;
+        parent::__construct($configurationService, $responseFactory);
         $this->dataProvider = $dataProvider;
-        $this->configurationService = $configurationService;
-        $this->plausibleService = $plausibleService;
     }
 
     public function __invoke(ServerRequestInterface $request): ResponseInterface
     {
-        $dashBoardId = $request->getQueryParams()['dashboard'] ?? ConfigurationService::DASHBOARD_DEFAULT_ID;
-
-        $plausibleSiteId = $request->getQueryParams()['siteId'] ?? null;
-        if ($plausibleSiteId === null || !in_array($plausibleSiteId, $this->configurationService->getAvailablePlausibleSiteIds(), true)) {
-            $plausibleSiteId = $this->configurationService->getPlausibleSiteIdFromUserConfiguration($dashBoardId);
-        }
-
-        $timeFrame = $request->getQueryParams()['timeFrame'] ?? null;
-        if ($timeFrame === null || !in_array($timeFrame, $this->configurationService->getTimeFrameValues(), true)) {
-            $timeFrame = $this->configurationService->getTimeFrameValueFromUserConfiguration($dashBoardId);
-        }
-
-        // request->getQueryParams() already returns a json decoded array
-        $filters = $request->getQueryParams()['filter'] ?? null;
-        if (!is_array($filters)) {
-            $filters = [];
-        }
-        $filters = $this->plausibleService->checkFilters($filters);
-
-        $this->configurationService->persistPlausibleSiteIdInUserConfiguration($plausibleSiteId, $dashBoardId);
-        $this->configurationService->persistTimeFrameValueInUserConfiguration($timeFrame, $dashBoardId);
-        $this->configurationService->persistFiltersInUserConfiguration($filters, $dashBoardId);
+        parent::__invoke($request);
 
         $data = [
             [
                 'tab' => 'goal',
-                'data'=> $this->dataProvider->getGoalsData($plausibleSiteId, $timeFrame , $filters),
+                'data'=> $this->dataProvider->getGoalsData($this->plausibleSiteId, $this->timeFrame , $this->filterRepo),
             ],
         ];
 

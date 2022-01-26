@@ -19,73 +19,67 @@ declare(strict_types=1);
 namespace Waldhacker\Plausibleio\Dashboard\DataProvider;
 
 use TYPO3\CMS\Core\Localization\LanguageService;
-use Waldhacker\Plausibleio\Services\PlausibleService;
+use Waldhacker\Plausibleio\FilterRepository;
 
-class GoalDataProvider
+class GoalDataProvider extends AbstractDataProvider
 {
-    private const EXT_KEY = 'plausibleio';
-    private PlausibleService $plausibleService;
-
-    public function __construct(PlausibleService $plausibleService)
-    {
-        $this->plausibleService = $plausibleService;
-    }
-
-    public function getGoalPropertiesData(string $goal, string $plausibleSiteId, string $timeFrame, array $filters = []): array
+    public function getGoalPropertiesData(string $goal, string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
     {
         $result = [];
 
-        // Plausible does not currently offer an endpoint to determine the properties of
-        // an event.
-        // For the 404 event, the property is known (path), at least if the event was generated
-        // by the 404Tracking middleware.
-        if ($goal == '404') {
-            $properties = ['path'];
+        if ($goal !== '') {
+            // Plausible does not currently offer an endpoint to determine the properties of
+            // an event.
+            // For the 404 event, the property is known (path), at least if the event was generated
+            // by the 404Tracking middleware.
+            if ($goal == '404') {
+                $properties = ['path'];
 
-            foreach ($properties as $prop) {
-                $endpoint = 'api/v1/stats/breakdown?';
-                $params = [
-                    'site_id' => $plausibleSiteId,
-                    'period' => $timeFrame,
-                    'property' => 'event:props:' . $prop,
-                    'metrics' => 'visitors,events',
-                ];
-                $filterStr = $this->plausibleService->filtersToPlausibleFilterString($filters);
-                if ($filterStr) {
-                    $params['filters'] = $filterStr;
-                }
+                foreach ($properties as $prop) {
+                    $endpoint = 'api/v1/stats/breakdown?';
+                    $params = [
+                        'site_id' => $plausibleSiteId,
+                        'period' => $timeFrame,
+                        'property' => 'event:props:' . $prop,
+                        'metrics' => 'visitors,events',
+                    ];
+                    $filterStr = $filters->toPlausibleFilterString();
+                    if ($filterStr) {
+                        $params['filters'] = $filterStr;
+                    }
 
-                $currentIndex = count($result);
-                $result[$currentIndex]['data'] = $this->plausibleService->sendAuthorizedRequest($plausibleSiteId, $endpoint, $params);
-                if (!is_array($result[$currentIndex]['data'])) {
-                    $result[$currentIndex]['data'] = [];
-                }
+                    $currentIndex = count($result);
+                    $result[$currentIndex]['data'] = $this->plausibleService->sendAuthorizedRequest($plausibleSiteId, $endpoint, $params);
+                    if (!is_array($result[$currentIndex]['data'])) {
+                        $result[$currentIndex]['data'] = [];
+                    }
 
-                $result[$currentIndex]['data'] = $this->plausibleService->dataCleanUp([$prop, 'visitors', 'events'], $result[$currentIndex]['data']);
-                $result[$currentIndex]['data'] = $this->plausibleService->calcPercentage($result[$currentIndex]['data']);
-                $result[$currentIndex]['data'] = $this->plausibleService->calcConversionRate($plausibleSiteId, $timeFrame, $result[$currentIndex]['data']);
+                    $result[$currentIndex]['data'] = $this->dataCleanUp([$prop, 'visitors', 'events'], $result[$currentIndex]['data']);
+                    $result[$currentIndex]['data'] = $this->calcPercentage($result[$currentIndex]['data']);
+                    $result[$currentIndex]['data'] = $this->calcConversionRate($plausibleSiteId, $timeFrame, $result[$currentIndex]['data']);
 
-                $result[$currentIndex]['columns'] = [
-                    [
-                        'name' => $prop,
-                        'filter' => [
-                            'name' => 'event:props',
-                            'label' => $this->getLanguageService()->getLL('filter.goalData.goalPropertyIs'),
+                    $result[$currentIndex]['columns'] = [
+                        [
+                            'name' => $prop,
+                            'filter' => [
+                                'name' => 'event:props:' . $prop,
+                                'label' => $this->getLanguageService()->getLL('filter.goalData.goalPropertyIs'),
+                            ],
                         ],
-                    ],
-                    ['name' => 'visitors'],
-                    ['name' => 'events'],
-                    ['name' => 'cr'],
-                ];
+                        ['name' => 'visitors'],
+                        ['name' => 'events'],
+                        ['name' => 'cr'],
+                    ];
+                }
             }
         }
 
         return $result;
     }
 
-    public function getGoalsData(string $plausibleSiteId, string $timeFrame, array $filters = []): array
+    public function getGoalsData(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
     {
-        $goalFilterActivated = $this->plausibleService->isFilterActivated('event:goal', $filters);
+        $goalFilterActivated = $filters->isFilterActivated(FilterRepository::FILTEREVENTGOAL);
 
         $endpoint = 'api/v1/stats/breakdown?';
         $params = [
@@ -94,7 +88,7 @@ class GoalDataProvider
             'property' => 'event:goal',
             'metrics' => 'visitors,events',
         ];
-        $filterStr = $this->plausibleService->filtersToPlausibleFilterString($filters);
+        $filterStr = $filters->toPlausibleFilterString();
         if ($filterStr) {
             $params['filters'] = $filterStr;
         }
@@ -106,13 +100,13 @@ class GoalDataProvider
         }
 
         // visitors = unique conversions, events = total conversions
-        $map = $this->plausibleService->dataCleanUp(['goal', 'visitors', 'events'], $responseData['data']);
-        $map = $this->plausibleService->calcPercentage($map);
-        $map = $this->plausibleService->calcConversionRate($plausibleSiteId, $timeFrame, $map);
+        $map = $this->dataCleanUp(['goal', 'visitors', 'events'], $responseData['data']);
+        $map = $this->calcPercentage($map);
+        $map = $this->calcConversionRate($plausibleSiteId, $timeFrame, $map);
         $responseData['data'] = $map;
         if ($goalFilterActivated && count($responseData['data']) > 0) {
             $subdata = $this->getGoalPropertiesData(
-                $this->plausibleService->getFilterValue('event:goal', $filters),
+                $filters->getFilterValue(FilterRepository::FILTEREVENTGOAL),
                 $plausibleSiteId,
                 $timeFrame,
                 $filters

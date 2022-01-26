@@ -23,70 +23,43 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider;
 use Waldhacker\Plausibleio\Services\ConfigurationService;
-use Waldhacker\Plausibleio\Services\PlausibleService;
 
-class DeviceDataWidgetController
+class DeviceDataWidgetController extends AbstractWidgetController
 {
-    private ResponseFactoryInterface $responseFactory;
     private DeviceDataProvider $deviceDataProvider;
-    private ConfigurationService $configurationService;
-    private PlausibleService $plausibleService;
 
     public function __construct(
         DeviceDataProvider $deviceDataProvider,
         ConfigurationService $configurationService,
-        PlausibleService $plausibleService,
         ResponseFactoryInterface $responseFactory
     ) {
-        $this->responseFactory = $responseFactory;
+        parent::__construct($configurationService, $responseFactory);
         $this->deviceDataProvider = $deviceDataProvider;
-        $this->configurationService = $configurationService;
-        $this->plausibleService = $plausibleService;
     }
 
     public function __invoke(ServerRequestInterface $request): ResponseInterface
     {
-        $dashBoardId = $request->getQueryParams()['dashboard'] ?? ConfigurationService::DASHBOARD_DEFAULT_ID;
-
-        $plausibleSiteId = $request->getQueryParams()['siteId'] ?? null;
-        if ($plausibleSiteId === null || !in_array($plausibleSiteId, $this->configurationService->getAvailablePlausibleSiteIds(), true)) {
-            $plausibleSiteId = $this->configurationService->getPlausibleSiteIdFromUserConfiguration($dashBoardId);
-        }
-
-        $timeFrame = $request->getQueryParams()['timeFrame'] ?? null;
-        if ($timeFrame === null || !in_array($timeFrame, $this->configurationService->getTimeFrameValues(), true)) {
-            $timeFrame = $this->configurationService->getTimeFrameValueFromUserConfiguration($dashBoardId);
-        }
-
-        // request->getQueryParams() already returns a json decoded array
-        $filters = $request->getQueryParams()['filter'] ?? null;
-        if (!is_array($filters)) {
-            $filters = [];
-        }
-        $filters = $this->plausibleService->checkFilters($filters);
-
-        $this->configurationService->persistPlausibleSiteIdInUserConfiguration($plausibleSiteId, $dashBoardId);
-        $this->configurationService->persistTimeFrameValueInUserConfiguration($timeFrame, $dashBoardId);
-        $this->configurationService->persistFiltersInUserConfiguration($filters, $dashBoardId);
+        parent::__invoke($request);
 
         $data = [
             [
                 'tab' => 'browser',
-                'data'=> $this->deviceDataProvider->getBrowserData($plausibleSiteId, $timeFrame, $filters),
+                'data'=> $this->deviceDataProvider->getBrowserData($this->plausibleSiteId, $this->timeFrame, $this->filterRepo),
             ],
             [
                 'tab' => 'device',
-                'data' => $this->deviceDataProvider->getDeviceData($plausibleSiteId, $timeFrame, $filters),
+                'data' => $this->deviceDataProvider->getDeviceData($this->plausibleSiteId, $this->timeFrame, $this->filterRepo),
             ],
             [
                 'tab' => 'operatingsystem',
-                'data' => $this->deviceDataProvider->getOSData($plausibleSiteId, $timeFrame, $filters),
+                'data' => $this->deviceDataProvider->getOSData($this->plausibleSiteId, $this->timeFrame, $this->filterRepo),
             ],
         ];
 
         $response = $this->responseFactory->createResponse(200)
             ->withHeader('Content-Type', 'application/json');
         $response->getBody()->write((string)json_encode($data, JSON_THROW_ON_ERROR));
+
         return $response;
     }
 }

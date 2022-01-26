@@ -20,12 +20,10 @@ namespace Waldhacker\Plausibleio\Tests\Unit\Dashboard\DataProvider;
 
 use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
-use Psr\Http\Client\ClientInterface;
-use Psr\Http\Message\RequestFactoryInterface;
 use TYPO3\CMS\Core\Localization\LanguageService;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
+use Waldhacker\Plausibleio\FilterRepository;
 use Waldhacker\Plausibleio\Dashboard\DataProvider\GoalDataProvider;
-use Waldhacker\Plausibleio\Services\ConfigurationService;
 use Waldhacker\Plausibleio\Services\PlausibleService;
 
 class GoalDataProviderTest extends UnitTestCase
@@ -42,7 +40,7 @@ class GoalDataProviderTest extends UnitTestCase
         $GLOBALS['LANG'] = $this->languageServiceProphecy->reveal();
     }
 
-    public function getDeviceDataReturnsProperValuesDataProvider(): \Generator
+    public function getGoalsDataReturnsProperValuesDataProvider(): \Generator
     {
         yield 'all items are transformed' => [
             'plausibleSiteId' => 'waldhacker.dev',
@@ -53,6 +51,7 @@ class GoalDataProviderTest extends UnitTestCase
                 ['goal' => 'Mordor', 'visitors' => 10, 'events' => 6],
             ],
             'totalVisitorData' => ['visitors' => ['value' => 20]],
+            'getGoalPropertiesData' => [],
             'expected' => [
                 'data' => [
                     ['goal' => 'Happy ending', 'visitors' => 6, 'events' => 5, 'percentage' => 37.5, 'cr' => '30%'],
@@ -82,39 +81,90 @@ class GoalDataProviderTest extends UnitTestCase
                 ],
             ],
         ];
-/*
-        yield 'all items are transformed with filter' => [
+
+        yield 'all items are transformed with goal filter filter' => [
             'plausibleSiteId' => 'waldhacker.dev',
             'timeFrame' => '7d',
-            'filters' => [
-                ['name' => 'visit:device==Desktop'],
-            ],
+            'filters' => [['name' => FilterRepository::FILTEREVENTGOAL, 'value' => '404']],
             'endpointData' => [
-                ['device' => 'Desktop', 'visitors' => 3],
-                ['device' => 'Desktop', 'visitors' => 9],
+                ['goal' => 'Mordor', 'visitors' => 10, 'events' => 6],
+            ],
+            'totalVisitorData' => ['visitors' => ['value' => 20]],
+            'getGoalPropertiesData' => [
+                [
+                    'data' => [
+                        ['path' => '/end/point', 'visitors' => 6, 'events' => 5, 'percentage' => 37.5, 'cr' => '30%'],
+                        ['path' => '/exit', 'visitors' => 10, 'events' => 6, 'percentage' => 62.5, 'cr' => '50%'],
+                    ],
+                    'columns' => [
+                        [
+                            'name' => 'path',
+                            'filter' => [
+                                'name' => 'event:props:path',
+                                'label' => 'Goals property is',
+                            ],
+                        ],
+                        ['name' => 'visitors'],
+                        ['name' => 'events'],
+                        ['name' => 'cr'],
+                    ],
+                ],
             ],
             'expected' => [
                 'data' => [
-                    ['device' => 'Desktop', 'visitors' => 3, 'percentage' => 25.0],
-                    ['device' => 'Desktop', 'visitors' => 9, 'percentage' => 75.0],
+                    [
+                        'goal' => 'Mordor',
+                        'visitors' => 10,
+                        'events' => 6,
+                        'percentage' => 100,
+                        'cr' => '50%',
+                        'subData' => [
+                            [
+                                'data' => [
+                                    ['path' => '/end/point', 'visitors' => 6, 'events' => 5, 'percentage' => 37.5, 'cr' => '30%'],
+                                    ['path' => '/exit', 'visitors' => 10, 'events' => 6, 'percentage' => 62.5, 'cr' => '50%'],
+                                ],
+                                'columns' => [
+                                    [
+                                        'name' => 'path',
+                                        'filter' => [
+                                            'name' => 'event:props:path',
+                                            'label' => 'Goals property is',
+                                        ],
+                                    ],
+                                    ['name' => 'visitors'],
+                                    ['name' => 'events'],
+                                    ['name' => 'cr'],
+                                ],
+                            ],
+                        ],
+                    ],
                 ],
                 'columns' => [
                     [
-                        'name' => 'device',
-                        'label' => 'Screen Size',
+                        'name' => 'goal',
+                        'label' => 'Goals',
                         'filter' => [
-                            'name' => 'visit:device',
-                            'label' => 'Screen size is',
+                            'name' => 'event:goal',
+                            'label' => 'Completed goal is',
                         ],
                     ],
                     [
                         'name' => 'visitors',
-                        'label' => 'Visitors',
+                        'label' => 'Uniques',
+                    ],
+                    [
+                        'name' => 'events',
+                        'label' => 'Total',
+                    ],
+                    [
+                        'name' => 'cr',
+                        'label' => 'CR',
                     ],
                 ],
             ],
         ];
-*/
+
         yield 'items without goal are ignored' => [
             'plausibleSiteId' => 'waldhacker.dev',
             'timeFrame' => '7d',
@@ -126,6 +176,7 @@ class GoalDataProviderTest extends UnitTestCase
                 ['visitors' => 10, 'events' => 6],
             ],
             'totalVisitorData' => ['visitors' => ['value' => 20]],
+            'getGoalPropertiesData' => [],
             'expected' => [
                 'data' => [
                     ['goal' => 'Happy ending', 'visitors' => 6, 'events' => 5, 'percentage' => 37.5, 'cr' => '30%'],
@@ -167,6 +218,7 @@ class GoalDataProviderTest extends UnitTestCase
                 ['goal' => 'Start', 'events' => 6],
             ],
             'totalVisitorData' => ['visitors' => ['value' => 20]],
+            'getGoalPropertiesData' => [],
             'expected' => [
                 'data' => [
                     ['goal' => 'Happy ending', 'visitors' => 6, 'events' => 5, 'percentage' => 37.5, 'cr' => '30%'],
@@ -208,6 +260,7 @@ class GoalDataProviderTest extends UnitTestCase
                 ['goal' => 'Start', 'visitors' => 10],
             ],
             'totalVisitorData' => ['visitors' => ['value' => 20]],
+            'getGoalPropertiesData' => [],
             'expected' => [
                 'data' => [
                     ['goal' => 'Happy ending', 'visitors' => 6, 'events' => 5, 'percentage' => 37.5, 'cr' => '30%'],
@@ -241,70 +294,299 @@ class GoalDataProviderTest extends UnitTestCase
 
     /**
      * @test
-     * @dataProvider getDeviceDataReturnsProperValuesDataProvider
+     * @dataProvider getGoalsDataReturnsProperValuesDataProvider
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\GoalDataProvider::__construct
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\GoalDataProvider::getGoalsData
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\GoalDataProvider::getLanguageService
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::__construct
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::calcPercentage
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::calcConversionRate
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::dataCleanUp
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::filtersToPlausibleFilterString
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::isFilterActivated
-     */
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::__construct
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::calcPercentage
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::calcConversionRate
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::dataCleanUp
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::roundAdaptivePrecision
+     * @covers \Waldhacker\Plausibleio\Filter::__construct
+     * @covers \Waldhacker\Plausibleio\FilterRepository::addFilter
+     * @covers \Waldhacker\Plausibleio\FilterRepository::checkFilter
+     * @covers \Waldhacker\Plausibleio\FilterRepository::count
+     * @covers \Waldhacker\Plausibleio\FilterRepository::empty
+     * @covers \Waldhacker\Plausibleio\FilterRepository::getFilter
+     * @covers \Waldhacker\Plausibleio\FilterRepository::getFilterValue
+     * @covers \Waldhacker\Plausibleio\FilterRepository::isFilterActivated
+     * @covers \Waldhacker\Plausibleio\FilterRepository::setFiltersFromArray
+     * @covers \Waldhacker\Plausibleio\FilterRepository::toPlausibleFilterString
+ */
     public function getGoalsDataReturnsProperValues(
         string $plausibleSiteId,
         string $timeFrame,
         array $filters,
-        ?array $endpointData,
-        ?array $totalVisitorData,
+        array $endpointData,
+        array $totalVisitorData,
+        array $getGoalPropertiesData,
         array $expected
     ): void {
-        $requestFactoryInterfaceProphecy = $this->prophesize(RequestFactoryInterface::class);
-        $clientInterfaceProphecy = $this->prophesize(ClientInterface::class);
-        $configurationServiceProphecy = $this->prophesize(ConfigurationService::class);
-
         $this->languageServiceProphecy->getLL('barChart.labels.goal')->willReturn('Goals');
         $this->languageServiceProphecy->getLL('filter.goalData.goalIs')->willReturn('Completed goal is');
         $this->languageServiceProphecy->getLL('barChart.labels.uniques')->willReturn('Uniques');
         $this->languageServiceProphecy->getLL('barChart.labels.total')->willReturn('Total');
         $this->languageServiceProphecy->getLL('barChart.labels.cr')->willReturn('CR');
 
-        $plausibleServiceMock = $this->getMockBuilder(PlausibleService::class)
-            ->onlyMethods(['sendAuthorizedRequest'])
-            ->setConstructorArgs([
-                $requestFactoryInterfaceProphecy->reveal(),
-                $clientInterfaceProphecy->reveal(),
-                $configurationServiceProphecy->reveal(),
-            ])
+        $filterRepo = new FilterRepository();
+        $filterRepo->setFiltersFromArray($filters);
+
+        $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
+
+        $sendAuthorizedRequestParams = [
+            'site_id' => $plausibleSiteId,
+            'period' => $timeFrame,
+            'property' => 'event:goal',
+            'metrics' => 'visitors,events',
+        ];
+        if (!$filterRepo->empty()) {
+            $sendAuthorizedRequestParams['filters'] = $filterRepo->toPlausibleFilterString();
+        }
+
+        $plausibleServiceProphecy
+            ->sendAuthorizedRequest($plausibleSiteId, 'api/v1/stats/breakdown?', $sendAuthorizedRequestParams)
+            ->willReturn($endpointData);
+        // for calcConversionRate
+        $plausibleServiceProphecy
+            ->sendAuthorizedRequest(
+                $plausibleSiteId,
+                '/api/v1/stats/aggregate?',
+                [
+                    'site_id' => $plausibleSiteId,
+                    'period' => $timeFrame,
+                    'metrics' => 'visitors',
+                ])
+            ->willReturn($totalVisitorData);
+
+        $subject = $this->getMockBuilder(GoalDataProvider::class)
+            ->onlyMethods(['getGoalPropertiesData'])
+            ->setConstructorArgs([$plausibleServiceProphecy->reveal()])
             ->getMock();
 
-        $plausibleServiceMock->expects($this->exactly(2))
-            ->method('sendAuthorizedRequest')
-            ->withConsecutive(
+        $subject->expects($filterRepo->isFilterActivated(FilterRepository::FILTEREVENTGOAL) ? $this->once() : $this->never())
+        ->method('getGoalPropertiesData')
+        ->with(
+            $filterRepo->getFilterValue(FilterRepository::FILTEREVENTGOAL),
+            $plausibleSiteId,
+            $timeFrame,
+            $filterRepo
+        )
+        ->willReturn($getGoalPropertiesData);
+
+        self::assertSame($expected, $subject->getGoalsData($plausibleSiteId, $timeFrame, $filterRepo));
+    }
+
+    public function getGoalPropertiesDataReturnsProperValuesDataProvider(): \Generator
+    {
+        yield 'all items are transformed' => [
+            'plausibleSiteId' => 'waldhacker.dev',
+            'timeFrame' => '7d',
+            'filters' => [],
+            'goal' => '404',
+            'property' => 'path',
+            'endpointData' => [
+                ['path' => '/end/point', 'visitors' => 6, 'events' => 5],
+                ['path' => '/exit', 'visitors' => 10, 'events' => 6],
+            ],
+            'totalVisitorData' => ['visitors' => ['value' => 20]],
+            'expected' => [
                 [
-                    $plausibleSiteId,
-                    'api/v1/stats/breakdown?',
-                    [
-                        'site_id' => $plausibleSiteId,
-                        'period' => $timeFrame,
-                        'property' => 'event:goal',
-                        'metrics' => 'visitors,events',
+                    'data' => [
+                        ['path' => '/end/point', 'visitors' => 6, 'events' => 5, 'percentage' => 37.5, 'cr' => '30%'],
+                        ['path' => '/exit', 'visitors' => 10, 'events' => 6, 'percentage' => 62.5, 'cr' => '50%'],
+                    ],
+                    'columns' => [
+                        [
+                            'name' => 'path',
+                            'filter' => [
+                                'name' => 'event:props:path',
+                                'label' => 'Goals property is',
+                            ],
+                        ],
+                        ['name' => 'visitors'],
+                        ['name' => 'events'],
+                        ['name' => 'cr'],
                     ],
                 ],
-                [
-                    $plausibleSiteId,
-                    '/api/v1/stats/aggregate?',
-                    [
-                        'site_id' => $plausibleSiteId,
-                        'period' => $timeFrame,
-                        'metrics' => 'visitors',
-                    ]
-                ],
-            )
-            ->willReturnOnConsecutiveCalls($endpointData, $totalVisitorData);
+            ],
+        ];
 
-        $subject = new GoalDataProvider($plausibleServiceMock);
-        self::assertSame($expected, $subject->getGoalsData($plausibleSiteId, $timeFrame /*, $filters*/));
+        yield 'no goal leads to empty result' => [
+            'plausibleSiteId' => 'waldhacker.dev',
+            'timeFrame' => '7d',
+            'filters' => [],
+            'goal' => '',
+            'property' => '',
+            'endpointData' => [],
+            'totalVisitorData' => [],
+            'expected' => [],
+        ];
+
+        yield 'no goal other than 404 leads to empty result' => [
+            'plausibleSiteId' => 'waldhacker.dev',
+            'timeFrame' => '7d',
+            'filters' => [],
+            'goal' => 'newsletter',
+            'property' => 'email',
+            'endpointData' => [],
+            'totalVisitorData' => [],
+            'expected' => [],
+        ];
+
+        yield 'items without goal field will be skipped' => [
+            'plausibleSiteId' => 'waldhacker.dev',
+            'timeFrame' => '7d',
+            'filters' => [],
+            'goal' => '404',
+            'property' => 'path',
+            'endpointData' => [
+                ['visitors' => 6, 'events' => 5],
+                ['path' => '/exit', 'visitors' => 10, 'events' => 6],
+            ],
+            'totalVisitorData' => ['visitors' => ['value' => 20]],
+            'expected' => [
+                [
+                    'data' => [
+                        ['path' => '/exit', 'visitors' => 10, 'events' => 6, 'percentage' => 100, 'cr' => '50%'],
+                    ],
+                    'columns' => [
+                        [
+                            'name' => 'path',
+                            'filter' => [
+                                'name' => 'event:props:path',
+                                'label' => 'Goals property is',
+                            ],
+                        ],
+                        ['name' => 'visitors'],
+                        ['name' => 'events'],
+                        ['name' => 'cr'],
+                    ],
+                ],
+            ],
+        ];
+
+        yield 'items without visitors field will be skipped' => [
+            'plausibleSiteId' => 'waldhacker.dev',
+            'timeFrame' => '7d',
+            'filters' => [],
+            'goal' => '404',
+            'property' => 'path',
+            'endpointData' => [
+                ['path' => '/end/point', 'visitors' => 6, 'events' => 5],
+                ['path' => '/exit', 'events' => 6],
+            ],
+            'totalVisitorData' => ['visitors' => ['value' => 20]],
+            'expected' => [
+                [
+                    'data' => [
+                        ['path' => '/end/point', 'visitors' => 6, 'events' => 5, 'percentage' => 100, 'cr' => '30%'],
+                    ],
+                    'columns' => [
+                        [
+                            'name' => 'path',
+                            'filter' => [
+                                'name' => 'event:props:path',
+                                'label' => 'Goals property is',
+                            ],
+                        ],
+                        ['name' => 'visitors'],
+                        ['name' => 'events'],
+                        ['name' => 'cr'],
+                    ],
+                ],
+            ],
+        ];
+
+        yield 'items without events field will be skipped' => [
+            'plausibleSiteId' => 'waldhacker.dev',
+            'timeFrame' => '7d',
+            'filters' => [],
+            'goal' => '404',
+            'property' => 'path',
+            'endpointData' => [
+                ['path' => '/end/point', 'visitors' => 6],
+                ['path' => '/exit', 'visitors' => 10, 'events' => 6],
+            ],
+            'totalVisitorData' => ['visitors' => ['value' => 20]],
+            'expected' => [
+                [
+                    'data' => [
+                        ['path' => '/exit', 'visitors' => 10, 'events' => 6, 'percentage' => 100, 'cr' => '50%'],
+                    ],
+                    'columns' => [
+                        [
+                            'name' => 'path',
+                            'filter' => [
+                                'name' => 'event:props:path',
+                                'label' => 'Goals property is',
+                            ],
+                        ],
+                        ['name' => 'visitors'],
+                        ['name' => 'events'],
+                        ['name' => 'cr'],
+                    ],
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * @test
+     * @dataProvider getGoalPropertiesDataReturnsProperValuesDataProvider
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\GoalDataProvider::__construct
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\GoalDataProvider::getGoalPropertiesData
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::__construct
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::calcPercentage
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::calcConversionRate
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::dataCleanUp
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::roundAdaptivePrecision
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\GoalDataProvider::getLanguageService
+     * @covers \Waldhacker\Plausibleio\FilterRepository::setFiltersFromArray
+     * @covers \Waldhacker\Plausibleio\FilterRepository::toPlausibleFilterString
+ */
+    public function getGoalPropertiesDataReturnsProperValues(
+        string $plausibleSiteId,
+        string $timeFrame,
+        array $filters,
+        string $goal,
+        string $property,
+        ?array $endpointData,
+        ?array $totalVisitorData,
+        array $expected): void
+    {
+        $this->languageServiceProphecy->getLL('filter.goalData.goalPropertyIs')->willReturn('Goals property is');
+
+        $filterRepo = new FilterRepository();
+        $filterRepo->setFiltersFromArray($filters);
+
+        $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
+        $plausibleServiceProphecy
+            ->sendAuthorizedRequest(
+                $plausibleSiteId,
+                'api/v1/stats/breakdown?',
+                [
+                    'site_id' => $plausibleSiteId,
+                    'period' => $timeFrame,
+                    'property' => 'event:props:' . $property,
+                    'metrics' => 'visitors,events',
+                ]
+            )
+            ->willReturn($endpointData);
+        // for calcConversionRate
+        $plausibleServiceProphecy
+            ->sendAuthorizedRequest(
+                $plausibleSiteId,
+                '/api/v1/stats/aggregate?',
+                [
+                    'site_id' => $plausibleSiteId,
+                    'period' => $timeFrame,
+                    'metrics' => 'visitors',
+                ]
+            )
+            ->willReturn($totalVisitorData);
+
+        $subject = new GoalDataProvider($plausibleServiceProphecy->reveal());
+        self::assertSame($expected, $subject->getGoalPropertiesData($goal, $plausibleSiteId, $timeFrame, $filterRepo));
     }
 }

@@ -19,14 +19,14 @@ declare(strict_types=1);
 namespace Waldhacker\Plausibleio\Dashboard\DataProvider;
 
 use TYPO3\CMS\Core\Localization\LanguageService;
+use Waldhacker\Plausibleio\FilterRepository;
 use Waldhacker\Plausibleio\Services\ISO3166Service;
 use Waldhacker\Plausibleio\Services\ISO3166_2_Service;
 use Waldhacker\Plausibleio\Services\LocationCodeService;
 use Waldhacker\Plausibleio\Services\PlausibleService;
 
-class CountryMapDataProvider
+class CountryMapDataProvider extends AbstractDataProvider
 {
-    private PlausibleService $plausibleService;
     private ISO3166Service $ISO3166Service;
     private ISO3166_2_Service $ISO3166_2_Service;
     private LocationCodeService $locationCodeService;
@@ -37,16 +37,18 @@ class CountryMapDataProvider
         ISO3166_2_Service $ISO3166_2_Service,
         LocationCodeService $locationCodeService
     ) {
-        $this->plausibleService = $plausibleService;
+        parent::__construct($plausibleService);
         $this->ISO3166Service = $ISO3166Service;
         $this->ISO3166_2_Service = $ISO3166_2_Service;
         $this->locationCodeService = $locationCodeService;
     }
 
-    public function getCountryDataForDataMap(string $plausibleSiteId, string $timeFrame, array $filters = []): array
+    public function getCountryDataForDataMap(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
     {
-        $countryFilterActivated = $this->plausibleService->isFilterActivated('visit:country', $filters);
-        $regionFilterActivated = $this->plausibleService->isFilterActivated('visit:region', $filters);
+        //$countryFilterActivated = $this->plausibleService->isFilterActivated('visit:country', $filters);
+        $countryFilterActivated = $filters->isFilterActivated(FilterRepository::FILTERVISITCOUNTRY);
+        //$regionFilterActivated = $this->plausibleService->isFilterActivated('visit:region', $filters);
+        $regionFilterActivated = $filters->isFilterActivated(FilterRepository::FILTERVISITREGION);
 
         $data = $this->getCountryData($plausibleSiteId, $timeFrame, $filters);
 
@@ -64,7 +66,7 @@ class CountryMapDataProvider
          * and may therefore remove data sets. For this reason, the percentage proportions
          * must be calculated again.
          */
-        $data['data'] = $this->plausibleService->calcPercentage($data['data']);
+        $data['data'] = $this->calcPercentage($data['data']);
 
         return $data;
     }
@@ -76,7 +78,7 @@ class CountryMapDataProvider
      * @param array $filters
      * @return array
      */
-    public function getCountryDataOnlyForDataMap(string $plausibleSiteId, string $timeFrame, array $filters = []): array
+    public function getCountryDataOnlyForDataMap(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
     {
         $endpoint = 'api/v1/stats/breakdown?';
         $params = [
@@ -84,7 +86,7 @@ class CountryMapDataProvider
             'period' => $timeFrame,
             'property' => 'visit:country',
         ];
-        $filterStr = $this->plausibleService->filtersToPlausibleFilterString($filters);
+        $filterStr = $filters->toPlausibleFilterString();
         if ($filterStr) {
             $params['filters'] = $filterStr;
         }
@@ -95,14 +97,14 @@ class CountryMapDataProvider
             $responseData['data'] = [];
         }
 
-        $map = $this->plausibleService->dataCleanUp(['country', 'visitors'], $responseData['data'], true);
-        $map = $this->plausibleService->calcPercentage($map);
+        $map = $this->dataCleanUp(['country', 'visitors'], $responseData['data'], true);
+        $map = $this->calcPercentage($map);
         $map = $this->plausibleCountriesToDataMap($map);
         /* plausibleCountriesToDataMap needs more data (e.g. valid ISO code) than getCountryData
          * and may therefore remove data sets. For this reason, the percentage proportions
          * must be calculated again.
          */
-        $map = $this->plausibleService->calcPercentage($map);
+        $map = $this->calcPercentage($map);
         $resultData['data'] = $map;
         $resultData['columns'] = [
             [
@@ -123,11 +125,14 @@ class CountryMapDataProvider
         return $resultData;
     }
 
-    private function getCountryData(string $plausibleSiteId, string $timeFrame, array $filters = []): array
+    private function getCountryData(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
     {
-        $countryFilterActivated = $this->plausibleService->isFilterActivated('visit:country', $filters);
-        $regionFilterActivated = $this->plausibleService->isFilterActivated('visit:region', $filters);
-        $cityFilterActivated = $this->plausibleService->isFilterActivated('visit:city', $filters);
+        //$countryFilterActivated = $this->plausibleService->isFilterActivated('visit:country', $filters);
+        $countryFilterActivated = $filters->isFilterActivated(FilterRepository::FILTERVISITCOUNTRY);
+        //$regionFilterActivated = $this->plausibleService->isFilterActivated('visit:region', $filters);
+        $regionFilterActivated = $filters->isFilterActivated(FilterRepository::FILTERVISITREGION);
+        //$cityFilterActivated = $this->plausibleService->isFilterActivated('visit:city', $filters);
+        $cityFilterActivated= $filters->isFilterActivated(FilterRepository::FILTERVISITCITY);
         $property = $countryFilterActivated ? 'visit:region' : 'visit:country';
         $property = $regionFilterActivated ? 'visit:city' : $property;
         $dataColumnName = $countryFilterActivated ? ISO3166_2_Service::REGIONNAME : ISO3166Service::COUNTRYNAME;
@@ -148,7 +153,7 @@ class CountryMapDataProvider
             'period' => $timeFrame,
             'property' => $property,
         ];
-        $filterStr = $this->plausibleService->filtersToPlausibleFilterString($filters);
+        $filterStr = $filters->toPlausibleFilterString();
         if ($filterStr) {
             $params['filters'] = $filterStr;
         }
@@ -159,8 +164,8 @@ class CountryMapDataProvider
             $responseData['data'] = [];
         }
 
-        $map = $this->plausibleService->dataCleanUp([$plausibleDataName, 'visitors'], $responseData['data'], true);
-        $map = $this->plausibleService->calcPercentage($map);
+        $map = $this->dataCleanUp([$plausibleDataName, 'visitors'], $responseData['data'], true);
+        $map = $this->calcPercentage($map);
         $resultData['data'] = $map;
         $resultData['columns'] = [
             [

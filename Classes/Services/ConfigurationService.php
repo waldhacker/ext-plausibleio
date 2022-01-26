@@ -28,6 +28,7 @@ use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Type\Bitmask\Permission;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
 use Waldhacker\Plausibleio\Services\Exception\InvalidConfigurationException;
+use Waldhacker\Plausibleio\FilterRepository;
 
 use function PHPUnit\Framework\isEmpty;
 
@@ -109,7 +110,7 @@ class ConfigurationService
         $this->getBackendUser()->writeUC();
     }
 
-    public function persistFiltersInUserConfiguration(array $filters, string $dashBoardId): void
+    public function persistFiltersInUserConfiguration(FilterRepository $filters, string $dashBoardId): void
     {
         if ($this->getBackendUser() === null || !is_array($this->getBackendUser()->uc)) {
             return;
@@ -119,12 +120,12 @@ class ConfigurationService
         }
 
         $userConfiguration = $this->getBackendUser()->uc['plausible'] ?? [];
-        $userConfiguration[$dashBoardId]['filters'] = $filters;
+        $userConfiguration[$dashBoardId]['filters'] = $filters->getFiltersAsArray();
         $this->getBackendUser()->uc['plausible'] = $userConfiguration;
         $this->getBackendUser()->writeUC();
     }
 
-    public function getFiltersFromUserConfiguration(string $dashBoardId): array
+    public function getFiltersFromUserConfiguration(string $dashBoardId): FilterRepository
     {
         if (empty($dashBoardId)) {
             $dashBoardId = self::DASHBOARD_DEFAULT_ID;
@@ -150,7 +151,10 @@ class ConfigurationService
             $filters = $userConfiguration['plausible'][self::DASHBOARD_DEFAULT_ID]['filters'] ?? [];
         }
 
-        return $filters;
+        $filtersRepo = new FilterRepository();
+        $filtersRepo->setFiltersFromArray($filters);
+
+        return $filtersRepo;
     }
 
     public function getAllFiltersFromUserConfiguration(): array

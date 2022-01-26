@@ -19,24 +19,17 @@ declare(strict_types=1);
 namespace Waldhacker\Plausibleio\Dashboard\DataProvider;
 
 use TYPO3\CMS\Core\Localization\LanguageService;
-use Waldhacker\Plausibleio\Services\PlausibleService;
+use Waldhacker\Plausibleio\FilterRepository;
 
-class SourceDataProvider
+class SourceDataProvider extends AbstractDataProvider
 {
-    private PlausibleService $plausibleService;
-
-    public function __construct(PlausibleService $plausibleService)
+    public function getAllSourcesData(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
     {
-        $this->plausibleService = $plausibleService;
-    }
-
-    public function getAllSourcesData(string $plausibleSiteId, string $timeFrame, array $filters = []): array
-    {
-        $sourceFilterActivated = $this->plausibleService->isFilterActivated('visit:source', $filters);
+        $sourceFilterActivated = $filters->isFilterActivated(FilterRepository::FILTERVISITSOURCE);
         $responseData = $this->getData($plausibleSiteId, $timeFrame, 'visit:source', $filters);
 
-        $map = $this->plausibleService->dataCleanUp(['source', 'visitors'], $responseData['data']);
-        $map = $this->plausibleService->calcPercentage($map);
+        $map = $this->dataCleanUp(['source', 'visitors'], $responseData['data']);
+        $map = $this->calcPercentage($map);
         $responseData['data'] = $map;
 
         $sourceColumn = [
@@ -55,13 +48,13 @@ class SourceDataProvider
         return $responseData;
     }
 
-    public function getMediumData(string $plausibleSiteId, string $timeFrame, array $filters = []): array
+    public function getMediumData(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
     {
-        $mediumFilterActivated = $this->plausibleService->isFilterActivated('visit:utm_medium', $filters);
+        $mediumFilterActivated = $filters->isFilterActivated(FilterRepository::FILTERVISITUTMMEDIUM);
         $responseData = $this->getData($plausibleSiteId, $timeFrame, 'visit:utm_medium', $filters);
 
-        $map = $this->plausibleService->dataCleanUp(['utm_medium', 'visitors'], $responseData['data']);
-        $map = $this->plausibleService->calcPercentage($map);
+        $map = $this->dataCleanUp(['utm_medium', 'visitors'], $responseData['data']);
+        $map = $this->calcPercentage($map);
         $responseData['data'] = $map;
 
         $mediumColumn = [
@@ -80,13 +73,13 @@ class SourceDataProvider
         return $responseData;
     }
 
-    public function getSourceData(string $plausibleSiteId, string $timeFrame, array $filters = []): array
+    public function getSourceData(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
     {
-        $sourceFilterActivated = $this->plausibleService->isFilterActivated('visit:utm_source', $filters);
+        $sourceFilterActivated = $filters->isFilterActivated(FilterRepository::FILTERVISITUTMSOURCE);
         $responseData = $this->getData($plausibleSiteId, $timeFrame, 'visit:utm_source', $filters);
 
-        $map = $this->plausibleService->dataCleanUp(['utm_source', 'visitors'], $responseData['data']);
-        $map = $this->plausibleService->calcPercentage($map);
+        $map = $this->dataCleanUp(['utm_source', 'visitors'], $responseData['data']);
+        $map = $this->calcPercentage($map);
         $responseData['data'] = $map;
 
         $sourceColumn = [
@@ -105,13 +98,13 @@ class SourceDataProvider
         return $responseData;
     }
 
-    public function getCampaignData(string $plausibleSiteId, string $timeFrame, array $filters = []): array
+    public function getCampaignData(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
     {
-        $campaignFilterActivated = $this->plausibleService->isFilterActivated('visit:utm_campaign', $filters);
+        $campaignFilterActivated = $filters->isFilterActivated(FilterRepository::FILTERVISITUTMCAMPAIGN);
         $responseData = $this->getData($plausibleSiteId, $timeFrame, 'visit:utm_campaign', $filters);
 
-        $map = $this->plausibleService->dataCleanUp(['utm_campaign', 'visitors'], $responseData['data']);
-        $map = $this->plausibleService->calcPercentage($map);
+        $map = $this->dataCleanUp(['utm_campaign', 'visitors'], $responseData['data']);
+        $map = $this->calcPercentage($map);
         $responseData['data'] = $map;
 
         $campaignColumn = [
@@ -130,13 +123,13 @@ class SourceDataProvider
         return $responseData;
     }
 
-    public function getTermData(string $plausibleSiteId, string $timeFrame, array $filters = []): array
+    public function getTermData(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
     {
-        $termFilterActivated = $this->plausibleService->isFilterActivated('visit:utm_term', $filters);
+        $termFilterActivated = $filters->isFilterActivated(FilterRepository::FILTERVISITUTMTERM);
         $responseData = $this->getData($plausibleSiteId, $timeFrame, 'visit:utm_term', $filters);
 
-        $map = $this->plausibleService->dataCleanUp(['utm_term', 'visitors'], $responseData['data']);
-        $map = $this->plausibleService->calcPercentage($map);
+        $map = $this->dataCleanUp(['utm_term', 'visitors'], $responseData['data']);
+        $map = $this->calcPercentage($map);
         $responseData['data'] = $map;
 
         $termColumn = [
@@ -155,13 +148,13 @@ class SourceDataProvider
         return $responseData;
     }
 
-    public function getContentData(string $plausibleSiteId, string $timeFrame, array $filters = []): array
+    public function getContentData(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
     {
-        $contentFilterActivated = $this->plausibleService->isFilterActivated('visit:utm_content', $filters);
+        $contentFilterActivated = $filters->isFilterActivated(FilterRepository::FILTERVISITUTMCONTENT);
         $responseData = $this->getData($plausibleSiteId, $timeFrame, 'visit:utm_content', $filters);
 
-        $map = $this->plausibleService->dataCleanUp(['utm_content', 'visitors'], $responseData['data']);
-        $map = $this->plausibleService->calcPercentage($map);
+        $map = $this->dataCleanUp(['utm_content', 'visitors'], $responseData['data']);
+        $map = $this->calcPercentage($map);
         $responseData['data'] = $map;
 
         $contentColumn = [
@@ -180,7 +173,7 @@ class SourceDataProvider
         return $responseData;
     }
 
-    private function getData(string $plausibleSiteId, string $timeFrame, string $property, array $filters = []): array
+    private function getData(string $plausibleSiteId, string $timeFrame, string $property, FilterRepository $filters): array
     {
         $endpoint = 'api/v1/stats/breakdown?';
         $params = [
@@ -189,7 +182,7 @@ class SourceDataProvider
             'property' => $property,
             'metrics' => 'visitors',
         ];
-        $filterStr = $this->plausibleService->filtersToPlausibleFilterString($filters);
+        $filterStr = $filters->toPlausibleFilterString();
         if ($filterStr) {
             $params['filters'] = $filterStr;
         }

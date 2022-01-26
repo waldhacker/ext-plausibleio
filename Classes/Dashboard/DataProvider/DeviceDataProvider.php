@@ -19,21 +19,49 @@ declare(strict_types=1);
 namespace Waldhacker\Plausibleio\Dashboard\DataProvider;
 
 use TYPO3\CMS\Core\Localization\LanguageService;
-use Waldhacker\Plausibleio\Services\PlausibleService;
+use Waldhacker\Plausibleio\FilterRepository;
 
-class DeviceDataProvider
+class DeviceDataProvider extends AbstractDataProvider
 {
-    private PlausibleService $plausibleService;
-
-    public function __construct(PlausibleService $plausibleService)
+    public function getBrowserDataWithGoal(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
     {
-        $this->plausibleService = $plausibleService;
+        $browserDataWithGoal = $this->getBrowserDataWithoutGoal($plausibleSiteId, $timeFrame, $filters);
+        $filtersWithoutGoal = $filters->getRepository()->removeFilter(FilterRepository::FILTEREVENTGOAL);
+        $browserDataWithoutGoal = $this->getBrowserDataWithoutGoal($plausibleSiteId, $timeFrame, $filtersWithoutGoal);
+
+        $result = [];
+        $result['data'] = $this->calcConversionRateOnData($browserDataWithoutGoal['columns'][0]['name'], $browserDataWithoutGoal['data'], $browserDataWithGoal['data']);
+        $result['columns'] = [
+            // Take over the data name column, so the correct label (browser, version) does not have to be determined.
+            $browserDataWithoutGoal['columns'][0],
+            [
+                'name' => 'visitors',
+                'label' => $this->getLanguageService()->getLL('barChart.labels.conversions'),
+            ],
+            [
+                'name' => 'cr',
+                'label' => $this->getLanguageService()->getLL('barChart.labels.cr'),
+            ],
+        ];
+
+        return $result;
     }
 
-    public function getBrowserData(string $plausibleSiteId, string $timeFrame, array $filters = []): array
+    /**
+     * Note: The goal filter must already have been removed from $filters before the call.
+     *       Within the method there is no check whether the goal filter is activated. The
+     *       real difference to getBrowserDataWithGoal are the returned columns and their
+     *       corresponding data.
+     *
+     * @param string $plausibleSiteId
+     * @param string $timeFrame
+     * @param array $filters
+     * @return array
+     */
+    public function getBrowserDataWithoutGoal(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
     {
-        $browserFilterActivated = $this->plausibleService->isFilterActivated('visit:browser', $filters);
-        $browserVersionFilterActivated = $this->plausibleService->isFilterActivated('visit:browser_version', $filters);
+        $browserFilterActivated = $filters->isFilterActivated(FilterRepository::FILTERVISITBROWSER);
+        $browserVersionFilterActivated = $filters->isFilterActivated(FilterRepository::FILTERVISITBROWSERVERSION);
         $property = $browserFilterActivated ? 'visit:browser_version' : 'visit:browser';
         $dataColumnName = $browserFilterActivated ? 'browser_version' : 'browser';
         $filterLabel = $browserFilterActivated ? 'filter.deviceData.browserVersionIs' : 'filter.deviceData.browserIs';
@@ -56,17 +84,52 @@ class DeviceDataProvider
         }
         array_unshift($responseData['columns'], $browserColumn);
 
-        $map = $this->plausibleService->dataCleanUp([$dataColumnName, 'visitors'], $responseData['data']);
-        $map = $this->plausibleService->calcPercentage($map);
+        $map = $this->dataCleanUp([$dataColumnName, 'visitors'], $responseData['data']);
+        $map = $this->calcPercentage($map);
         $responseData['data'] = $map;
 
         return $responseData;
     }
 
-    public function getOSData(string $plausibleSiteId, string $timeFrame, array $filters = []): array
+    public function getBrowserData(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
     {
-        $osFilterActivated = $this->plausibleService->isFilterActivated('visit:os', $filters);
-        $osVersionFilterActivated = $this->plausibleService->isFilterActivated('visit:os_version', $filters);
+        $goalFilterActivated = $filters->isFilterActivated(FilterRepository::FILTEREVENTGOAL);
+
+        if (!$goalFilterActivated) {
+            return $this->getBrowserDataWithoutGoal($plausibleSiteId, $timeFrame, $filters);
+        } else {
+            return $this->getBrowserDataWithGoal($plausibleSiteId, $timeFrame, $filters);
+        }
+    }
+
+    public function getOSDataWithGoal(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
+    {
+        $osDataWithGoal = $this->getOSDataWithoutGoal($plausibleSiteId, $timeFrame, $filters);
+        $filtersWithoutGoal = $filters->getRepository()->removeFilter(FilterRepository::FILTEREVENTGOAL);
+        $osDataWithoutGoal = $this->getOSDataWithoutGoal($plausibleSiteId, $timeFrame, $filtersWithoutGoal);
+
+        $result = [];
+        $result['data'] = $this->calcConversionRateOnData($osDataWithoutGoal['columns'][0]['name'], $osDataWithoutGoal['data'], $osDataWithGoal['data']);
+        $result['columns'] = [
+            // Take over the data name column, so the correct label (os, version) does not have to be determined.
+            $osDataWithoutGoal['columns'][0],
+            [
+                'name' => 'visitors',
+                'label' => $this->getLanguageService()->getLL('barChart.labels.conversions'),
+            ],
+            [
+                'name' => 'cr',
+                'label' => $this->getLanguageService()->getLL('barChart.labels.cr'),
+            ],
+        ];
+
+        return $result;
+    }
+
+    public function getOSDataWithoutGoal(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
+    {
+        $osFilterActivated = $filters->isFilterActivated(FilterRepository::FILTERVISITOS);
+        $osVersionFilterActivated = $filters->isFilterActivated(FilterRepository::FILTERVISITOSVERSION);
         $property = $osFilterActivated ? 'visit:os_version' : 'visit:os';
         $dataColumnName = $osFilterActivated ? 'os_version' : 'os';
         $filterLabel = $osFilterActivated ? 'filter.deviceData.osVersionIs' : 'filter.deviceData.osIs';
@@ -89,20 +152,55 @@ class DeviceDataProvider
         }
         array_unshift($responseData['columns'], $osColumn);
 
-        $map = $this->plausibleService->dataCleanUp([$dataColumnName, 'visitors'], $responseData['data']);
-        $map = $this->plausibleService->calcPercentage($map);
+        $map = $this->dataCleanUp([$dataColumnName, 'visitors'], $responseData['data']);
+        $map = $this->calcPercentage($map);
         $responseData['data'] = $map;
 
         return $responseData;
     }
 
-    public function getDeviceData(string $plausibleSiteId, string $timeFrame, array $filters = []): array
+    public function getOSData(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
     {
-        $deviceFilterActivated = $this->plausibleService->isFilterActivated('visit:device', $filters);
+        $goalFilterActivated = $filters->isFilterActivated(FilterRepository::FILTEREVENTGOAL);
+
+        if (!$goalFilterActivated) {
+            return $this->getOSDataWithoutGoal($plausibleSiteId, $timeFrame, $filters);
+        } else {
+            return $this->getOSDataWithGoal($plausibleSiteId, $timeFrame, $filters);
+        }
+    }
+
+    public function getDeviceDataWithGoal(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
+    {
+        $deviceDataWithGoal = $this->getDeviceDataWithoutGoal($plausibleSiteId, $timeFrame, $filters);
+        $filtersWithoutGoal = $filters->getRepository()->removeFilter(FilterRepository::FILTEREVENTGOAL);
+        $deviceDataWithoutGoal = $this->getDeviceDataWithoutGoal($plausibleSiteId, $timeFrame, $filtersWithoutGoal);
+
+        $result = [];
+        $result['data'] = $this->calcConversionRateOnData($deviceDataWithoutGoal['columns'][0]['name'], $deviceDataWithoutGoal['data'], $deviceDataWithGoal['data']);
+        $result['columns'] = [
+            // Take over the data name column, so the correct label (Desktop) does not have to be determined.
+            $deviceDataWithoutGoal['columns'][0],
+            [
+                'name' => 'visitors',
+                'label' => $this->getLanguageService()->getLL('barChart.labels.conversions'),
+            ],
+            [
+                'name' => 'cr',
+                'label' => $this->getLanguageService()->getLL('barChart.labels.cr'),
+            ],
+        ];
+
+        return $result;
+    }
+
+    public function getDeviceDataWithoutGoal(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
+    {
+        $deviceFilterActivated = $filters->isFilterActivated(FilterRepository::FILTERVISITDEVICE);
         $responseData = $this->getData($plausibleSiteId, $timeFrame, 'visit:device', $filters);
 
-        $map = $this->plausibleService->dataCleanUp(['device', 'visitors'], $responseData['data']);
-        $map = $this->plausibleService->calcPercentage($map);
+        $map = $this->dataCleanUp(['device', 'visitors'], $responseData['data']);
+        $map = $this->calcPercentage($map);
         $responseData['data'] = $map;
 
         $deviceColumn = [
@@ -121,7 +219,18 @@ class DeviceDataProvider
         return $responseData;
     }
 
-    private function getData(string $plausibleSiteId, string $timeFrame, string $property, array $filters = []): array
+    public function getDeviceData(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
+    {
+        $goalFilterActivated = $filters->isFilterActivated(FilterRepository::FILTEREVENTGOAL);
+
+        if (!$goalFilterActivated) {
+            return $this->getDeviceDataWithoutGoal($plausibleSiteId, $timeFrame, $filters);
+        } else {
+            return $this->getDeviceDataWithGoal($plausibleSiteId, $timeFrame, $filters);
+        }
+    }
+
+    private function getData(string $plausibleSiteId, string $timeFrame, string $property, FilterRepository $filters): array
     {
         $endpoint = 'api/v1/stats/breakdown?';
         $params = [
@@ -130,7 +239,7 @@ class DeviceDataProvider
             'property' => $property,
             'metrics' => 'visitors',
         ];
-        $filterStr = $this->plausibleService->filtersToPlausibleFilterString($filters);
+        $filterStr = $filters->toPlausibleFilterString();
         if ($filterStr) {
             $params['filters'] = $filterStr;
         }

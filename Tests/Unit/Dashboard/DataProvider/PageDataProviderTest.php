@@ -18,14 +18,12 @@ declare(strict_types=1);
 
 namespace Waldhacker\Plausibleio\Tests\Unit\Dashboard\DataProvider;
 
-use GuzzleHttp\Client;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
-use TYPO3\CMS\Core\Http\RequestFactory;
 use TYPO3\CMS\Core\Localization\LanguageService;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
+use Waldhacker\Plausibleio\FilterRepository;
 use Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider;
-use Waldhacker\Plausibleio\Services\ConfigurationService;
 use Waldhacker\Plausibleio\Services\PlausibleService;
 
 class PageDataProviderTest extends UnitTestCase
@@ -173,11 +171,17 @@ class PageDataProviderTest extends UnitTestCase
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::getTopPageData
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::getData
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::getLanguageService
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::__construct
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::isFilterActivated
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::filtersToPlausibleFilterString
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::calcPercentage
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::dataCleanUp
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::__construct
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::calcPercentage
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::dataCleanUp
+     * @covers \Waldhacker\Plausibleio\Filter::__construct
+     * @covers \Waldhacker\Plausibleio\FilterRepository::addFilter
+     * @covers \Waldhacker\Plausibleio\FilterRepository::checkFilter
+     * @covers \Waldhacker\Plausibleio\FilterRepository::count
+     * @covers \Waldhacker\Plausibleio\FilterRepository::empty
+     * @covers \Waldhacker\Plausibleio\FilterRepository::isFilterActivated
+     * @covers \Waldhacker\Plausibleio\FilterRepository::setFiltersFromArray
+     * @covers \Waldhacker\Plausibleio\FilterRepository::toPlausibleFilterString
      */
     public function getTopPageDataReturnsProperValues(
         string $plausibleSiteId,
@@ -186,19 +190,14 @@ class PageDataProviderTest extends UnitTestCase
         ?array $endpointData,
         array $expected
     ): void {
-        $configurationServiceProphecy = $this->prophesize(ConfigurationService::class);
-        $plausibleServiceMock = $this->getMockBuilder(PlausibleService::class)
-            ->onlyMethods(['sendAuthorizedRequest'])
-            ->setConstructorArgs([
-                new RequestFactory(),
-                new Client(),
-                $configurationServiceProphecy->reveal(),
-            ])
-            ->getMock();
+        $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
 
         $this->languageServiceProphecy->getLL('barChart.labels.pageUrl')->willReturn('Page url');
         $this->languageServiceProphecy->getLL('barChart.labels.visitors')->willReturn('Visitors');
         $this->languageServiceProphecy->getLL('filter.pageData.pageIs')->willReturn('Page is');
+
+        $filterRepo = new FilterRepository();
+        $filterRepo->setFiltersFromArray($filters);
 
         $authorizedRequestParams = [
             'site_id' => $plausibleSiteId,
@@ -206,21 +205,14 @@ class PageDataProviderTest extends UnitTestCase
             'property' => 'event:page',
             'metrics' => 'visitors',
         ];
-        if (!empty($filters)) {
-            $authorizedRequestParams['filters'] = $filters[0]['name'] . '==' . $filters[0]['value'];
+        if (!$filterRepo->empty()) {
+            $authorizedRequestParams['filters'] = $filterRepo->toPlausibleFilterString();
         }
 
-        $plausibleServiceMock->expects($this->exactly(1))
-            ->method('sendAuthorizedRequest')
-            ->with(
-                $plausibleSiteId,
-                'api/v1/stats/breakdown?',
-                $authorizedRequestParams,
-            )
-            ->willReturn($endpointData);
+        $plausibleServiceProphecy->sendAuthorizedRequest($plausibleSiteId, 'api/v1/stats/breakdown?', $authorizedRequestParams,)->willReturn($endpointData);
 
-        $subject = new PageDataProvider($plausibleServiceMock);
-        self::assertSame($expected, $subject->getTopPageData($plausibleSiteId, $timeFrame, $filters));
+        $subject = new PageDataProvider($plausibleServiceProphecy->reveal());
+        self::assertSame($expected, $subject->getTopPageData($plausibleSiteId, $timeFrame, $filterRepo));
 
     }
 
@@ -351,11 +343,17 @@ class PageDataProviderTest extends UnitTestCase
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::getEntryPageData
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::getData
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::getLanguageService
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::__construct
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::isFilterActivated
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::filtersToPlausibleFilterString
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::calcPercentage
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::dataCleanUp
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::__construct
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::calcPercentage
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::dataCleanUp
+     * @covers \Waldhacker\Plausibleio\Filter::__construct
+     * @covers \Waldhacker\Plausibleio\FilterRepository::addFilter
+     * @covers \Waldhacker\Plausibleio\FilterRepository::checkFilter
+     * @covers \Waldhacker\Plausibleio\FilterRepository::count
+     * @covers \Waldhacker\Plausibleio\FilterRepository::empty
+     * @covers \Waldhacker\Plausibleio\FilterRepository::isFilterActivated
+     * @covers \Waldhacker\Plausibleio\FilterRepository::setFiltersFromArray
+     * @covers \Waldhacker\Plausibleio\FilterRepository::toPlausibleFilterString
      */
     public function getEntryPageDataReturnsProperValues(
         string $plausibleSiteId,
@@ -364,19 +362,14 @@ class PageDataProviderTest extends UnitTestCase
         ?array $endpointData,
         array $expected
     ): void {
-        $configurationServiceProphecy = $this->prophesize(ConfigurationService::class);
-        $plausibleServiceMock = $this->getMockBuilder(PlausibleService::class)
-            ->onlyMethods(['sendAuthorizedRequest'])
-            ->setConstructorArgs([
-                new RequestFactory(),
-                new Client(),
-                $configurationServiceProphecy->reveal(),
-            ])
-            ->getMock();
+        $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
 
         $this->languageServiceProphecy->getLL('barChart.labels.pageUrl')->willReturn('Page url');
         $this->languageServiceProphecy->getLL('barChart.labels.uniqueEntrances')->willReturn('Unique Entrances');
         $this->languageServiceProphecy->getLL('filter.pageData.entryPageIs')->willReturn('Entry page is');
+
+        $filterRepo = new FilterRepository();
+        $filterRepo->setFiltersFromArray($filters);
 
         $authorizedRequestParams = [
             'site_id' => $plausibleSiteId,
@@ -384,21 +377,14 @@ class PageDataProviderTest extends UnitTestCase
             'property' => 'visit:entry_page',
             'metrics' => 'visitors',
         ];
-        if (!empty($filters)) {
-            $authorizedRequestParams['filters'] = $filters[0]['name'] . '==' . $filters[0]['value'];
+        if (!$filterRepo->empty()) {
+            $authorizedRequestParams['filters'] = $filterRepo->toPlausibleFilterString();
         }
 
-        $plausibleServiceMock->expects($this->exactly(1))
-            ->method('sendAuthorizedRequest')
-            ->with(
-                $plausibleSiteId,
-                'api/v1/stats/breakdown?',
-                $authorizedRequestParams,
-            )
-            ->willReturn($endpointData);
+        $plausibleServiceProphecy->sendAuthorizedRequest($plausibleSiteId, 'api/v1/stats/breakdown?', $authorizedRequestParams,)->willReturn($endpointData);
 
-        $subject = new PageDataProvider($plausibleServiceMock);
-        self::assertSame($expected, $subject->getEntryPageData($plausibleSiteId, $timeFrame, $filters));
+        $subject = new PageDataProvider($plausibleServiceProphecy->reveal());
+        self::assertSame($expected, $subject->getEntryPageData($plausibleSiteId, $timeFrame, $filterRepo));
     }
 
     public function getExitPageDataReturnsProperValuesDataProvider(): \Generator
@@ -529,11 +515,17 @@ class PageDataProviderTest extends UnitTestCase
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::getData
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::__construct
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::getLanguageService
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::__construct
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::isFilterActivated
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::filtersToPlausibleFilterString
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::calcPercentage
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::dataCleanUp
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::__construct
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::calcPercentage
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::dataCleanUp
+     * @covers \Waldhacker\Plausibleio\Filter::__construct
+     * @covers \Waldhacker\Plausibleio\FilterRepository::addFilter
+     * @covers \Waldhacker\Plausibleio\FilterRepository::checkFilter
+     * @covers \Waldhacker\Plausibleio\FilterRepository::count
+     * @covers \Waldhacker\Plausibleio\FilterRepository::empty
+     * @covers \Waldhacker\Plausibleio\FilterRepository::isFilterActivated
+     * @covers \Waldhacker\Plausibleio\FilterRepository::setFiltersFromArray
+     * @covers \Waldhacker\Plausibleio\FilterRepository::toPlausibleFilterString
  */
     public function getExitPageDataReturnsProperValues(
         string $plausibleSiteId,
@@ -542,19 +534,14 @@ class PageDataProviderTest extends UnitTestCase
         ?array $endpointData,
         array $expected
     ): void {
-        $configurationServiceProphecy = $this->prophesize(ConfigurationService::class);
-        $plausibleServiceMock = $this->getMockBuilder(PlausibleService::class)
-            ->onlyMethods(['sendAuthorizedRequest'])
-            ->setConstructorArgs([
-                new RequestFactory(),
-                new Client(),
-                $configurationServiceProphecy->reveal(),
-            ])
-            ->getMock();
+        $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
 
         $this->languageServiceProphecy->getLL('barChart.labels.pageUrl')->willReturn('Page url');
         $this->languageServiceProphecy->getLL('barChart.labels.uniqueExits')->willReturn('Unique Exits');
         $this->languageServiceProphecy->getLL('filter.pageData.exitPageIs')->willReturn('Exit page is');
+
+        $filterRepo = new FilterRepository();
+        $filterRepo->setFiltersFromArray($filters);
 
         $authorizedRequestParams = [
             'site_id' => $plausibleSiteId,
@@ -562,20 +549,13 @@ class PageDataProviderTest extends UnitTestCase
             'property' => 'visit:exit_page',
             'metrics' => 'visitors',
         ];
-        if (!empty($filters)) {
-            $authorizedRequestParams['filters'] = $filters[0]['name'] . '==' . $filters[0]['value'];
+        if (!$filterRepo->empty()) {
+            $authorizedRequestParams['filters'] = $filterRepo->toPlausibleFilterString();
         }
 
-        $plausibleServiceMock->expects($this->exactly(1))
-            ->method('sendAuthorizedRequest')
-            ->with(
-                $plausibleSiteId,
-                'api/v1/stats/breakdown?',
-                $authorizedRequestParams,
-            )
-            ->willReturn($endpointData);
+        $plausibleServiceProphecy->sendAuthorizedRequest($plausibleSiteId, 'api/v1/stats/breakdown?', $authorizedRequestParams,)->willReturn($endpointData);
 
-        $subject = new PageDataProvider($plausibleServiceMock);
-        self::assertSame($expected, $subject->getExitPageData($plausibleSiteId, $timeFrame, $filters));
+        $subject = new PageDataProvider($plausibleServiceProphecy->reveal());
+        self::assertSame($expected, $subject->getExitPageData($plausibleSiteId, $timeFrame, $filterRepo));
     }
 }

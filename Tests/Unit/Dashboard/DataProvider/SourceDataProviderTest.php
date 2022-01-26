@@ -18,14 +18,12 @@ declare(strict_types=1);
 
 namespace Waldhacker\Plausibleio\Tests\Unit\Dashboard\DataProvider;
 
-use GuzzleHttp\Client;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
-use TYPO3\CMS\Core\Http\RequestFactory;
 use TYPO3\CMS\Core\Localization\LanguageService;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
+use Waldhacker\Plausibleio\FilterRepository;
 use Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider;
-use Waldhacker\Plausibleio\Services\ConfigurationService;
 use Waldhacker\Plausibleio\Services\PlausibleService;
 
 class SourceDataProviderTest extends UnitTestCase
@@ -165,15 +163,21 @@ class SourceDataProviderTest extends UnitTestCase
     /**
      * @test
      * @dataProvider getAllSourcesDataReturnsProperValuesDataProvider
-     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider::__construct
-     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider::getAllSourcesData
-     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider::getData
-     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider::getLanguageService
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::__construct
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::isFilterActivated
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::filtersToPlausibleFilterString
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::calcPercentage
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::dataCleanUp
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider::__construct
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider::getAllSourcesData
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider::getData
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider::getLanguageService
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::__construct
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::calcPercentage
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::dataCleanUp
+     * @covers       \Waldhacker\Plausibleio\Filter::__construct
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::addFilter
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::checkFilter
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::count
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::empty
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::isFilterActivated
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::setFiltersFromArray
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::toPlausibleFilterString
      */
     public function getAllSourcesDataReturnsProperValues(
         string $plausibleSiteId,
@@ -182,19 +186,14 @@ class SourceDataProviderTest extends UnitTestCase
         ?array $endpointData,
         array $expected
     ): void {
-        $configurationServiceProphecy = $this->prophesize(ConfigurationService::class);
-        $plausibleServiceMock = $this->getMockBuilder(PlausibleService::class)
-            ->onlyMethods(['sendAuthorizedRequest'])
-            ->setConstructorArgs([
-                new RequestFactory(),
-                new Client(),
-                $configurationServiceProphecy->reveal(),
-            ])
-            ->getMock();
+        $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
 
         $this->languageServiceProphecy->getLL('barChart.labels.visitors')->willReturn('Visitors');
         $this->languageServiceProphecy->getLL('barChart.labels.source')->willReturn('Source');
         $this->languageServiceProphecy->getLL('filter.sourceData.sourceIs')->willReturn('Source is');
+
+        $filterRepo = new FilterRepository();
+        $filterRepo->setFiltersFromArray($filters);
 
         $authorizedRequestParams = [
             'site_id' => $plausibleSiteId,
@@ -202,21 +201,14 @@ class SourceDataProviderTest extends UnitTestCase
             'property' => 'visit:source',
             'metrics' => 'visitors',
         ];
-        if (!empty($filters)) {
-            $authorizedRequestParams['filters'] = $filters[0]['name'] . '==' . $filters[0]['value'];
+        if (!$filterRepo->empty()) {
+            $authorizedRequestParams['filters'] = $filterRepo->toPlausibleFilterString();
         }
 
-        $plausibleServiceMock->expects($this->exactly(1))
-            ->method('sendAuthorizedRequest')
-            ->with(
-                $plausibleSiteId,
-                'api/v1/stats/breakdown?',
-                $authorizedRequestParams,
-            )
-            ->willReturn($endpointData);
+        $plausibleServiceProphecy->sendAuthorizedRequest($plausibleSiteId, 'api/v1/stats/breakdown?', $authorizedRequestParams,)->willReturn($endpointData);
 
-        $subject = new SourceDataProvider($plausibleServiceMock);
-        self::assertSame($expected, $subject->getAllSourcesData($plausibleSiteId, $timeFrame, $filters));
+        $subject = new SourceDataProvider($plausibleServiceProphecy->reveal());
+        self::assertSame($expected, $subject->getAllSourcesData($plausibleSiteId, $timeFrame, $filterRepo));
     }
 
     public function getMediumDataReturnsProperValuesDataProvider(): \Generator
@@ -342,15 +334,21 @@ class SourceDataProviderTest extends UnitTestCase
     /**
      * @test
      * @dataProvider getMediumDataReturnsProperValuesDataProvider
-     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider::__construct
-     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider::getMediumData
-     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider::getData
-     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider::getLanguageService
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::__construct
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::isFilterActivated
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::filtersToPlausibleFilterString
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::calcPercentage
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::dataCleanUp
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider::__construct
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider::getMediumData
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider::getData
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider::getLanguageService
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::__construct
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::calcPercentage
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::dataCleanUp
+     * @covers       \Waldhacker\Plausibleio\Filter::__construct
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::addFilter
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::checkFilter
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::count
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::empty
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::isFilterActivated
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::setFiltersFromArray
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::toPlausibleFilterString
      */
     public function getMediumDataReturnsProperValues(
         string $plausibleSiteId,
@@ -359,19 +357,14 @@ class SourceDataProviderTest extends UnitTestCase
         ?array $endpointData,
         array $expected
     ): void {
-        $configurationServiceProphecy = $this->prophesize(ConfigurationService::class);
-        $plausibleServiceMock = $this->getMockBuilder(PlausibleService::class)
-            ->onlyMethods(['sendAuthorizedRequest'])
-            ->setConstructorArgs([
-                new RequestFactory(),
-                new Client(),
-                $configurationServiceProphecy->reveal(),
-            ])
-            ->getMock();
+        $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
 
         $this->languageServiceProphecy->getLL('barChart.labels.visitors')->willReturn('Visitors');
         $this->languageServiceProphecy->getLL('barChart.labels.UTMMedium')->willReturn('UTM Medium');
         $this->languageServiceProphecy->getLL('filter.sourceData.UTMMediumIs')->willReturn('UTM Medium is');
+
+        $filterRepo = new FilterRepository();
+        $filterRepo->setFiltersFromArray($filters);
 
         $authorizedRequestParams = [
             'site_id' => $plausibleSiteId,
@@ -379,21 +372,14 @@ class SourceDataProviderTest extends UnitTestCase
             'property' => 'visit:utm_medium',
             'metrics' => 'visitors',
         ];
-        if (!empty($filters)) {
-            $authorizedRequestParams['filters'] = $filters[0]['name'] . '==' . $filters[0]['value'];
+        if (!$filterRepo->empty()) {
+            $authorizedRequestParams['filters'] = $filterRepo->toPlausibleFilterString();
         }
 
-        $plausibleServiceMock->expects($this->exactly(1))
-            ->method('sendAuthorizedRequest')
-            ->with(
-                $plausibleSiteId,
-                'api/v1/stats/breakdown?',
-                $authorizedRequestParams,
-            )
-            ->willReturn($endpointData);
+        $plausibleServiceProphecy->sendAuthorizedRequest($plausibleSiteId, 'api/v1/stats/breakdown?', $authorizedRequestParams,)->willReturn($endpointData);
 
-        $subject = new SourceDataProvider($plausibleServiceMock);
-        self::assertSame($expected, $subject->getMediumData($plausibleSiteId, $timeFrame, $filters));
+        $subject = new SourceDataProvider($plausibleServiceProphecy->reveal());
+        self::assertSame($expected, $subject->getMediumData($plausibleSiteId, $timeFrame, $filterRepo));
     }
 
     public function getSourceDataReturnsProperValuesDataProvider(): \Generator
@@ -519,15 +505,21 @@ class SourceDataProviderTest extends UnitTestCase
     /**
      * @test
      * @dataProvider getSourceDataReturnsProperValuesDataProvider
-     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider::__construct
-     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider::getSourceData
-     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider::getData
-     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider::getLanguageService
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::__construct
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::isFilterActivated
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::filtersToPlausibleFilterString
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::calcPercentage
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::dataCleanUp
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider::__construct
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider::getSourceData
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider::getData
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider::getLanguageService
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::__construct
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::calcPercentage
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::dataCleanUp
+     * @covers       \Waldhacker\Plausibleio\Filter::__construct
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::addFilter
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::checkFilter
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::count
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::empty
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::isFilterActivated
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::setFiltersFromArray
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::toPlausibleFilterString
      */
     public function getSourceDataReturnsProperValues(
         string $plausibleSiteId,
@@ -536,19 +528,14 @@ class SourceDataProviderTest extends UnitTestCase
         ?array $endpointData,
         array $expected
     ): void {
-        $configurationServiceProphecy = $this->prophesize(ConfigurationService::class);
-        $plausibleServiceMock = $this->getMockBuilder(PlausibleService::class)
-            ->onlyMethods(['sendAuthorizedRequest'])
-            ->setConstructorArgs([
-                new RequestFactory(),
-                new Client(),
-                $configurationServiceProphecy->reveal(),
-            ])
-            ->getMock();
+        $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
 
         $this->languageServiceProphecy->getLL('barChart.labels.visitors')->willReturn('Visitors');
         $this->languageServiceProphecy->getLL('barChart.labels.UTMSource')->willReturn('UTM Source');
         $this->languageServiceProphecy->getLL('filter.sourceData.UTMSourceIs')->willReturn('UTM Source is');
+
+        $filterRepo = new FilterRepository();
+        $filterRepo->setFiltersFromArray($filters);
 
         $authorizedRequestParams = [
             'site_id' => $plausibleSiteId,
@@ -556,21 +543,14 @@ class SourceDataProviderTest extends UnitTestCase
             'property' => 'visit:utm_source',
             'metrics' => 'visitors',
         ];
-        if (!empty($filters)) {
-            $authorizedRequestParams['filters'] = $filters[0]['name'] . '==' . $filters[0]['value'];
+        if (!$filterRepo->empty()) {
+            $authorizedRequestParams['filters'] = $filterRepo->toPlausibleFilterString();
         }
 
-        $plausibleServiceMock->expects($this->exactly(1))
-            ->method('sendAuthorizedRequest')
-            ->with(
-                $plausibleSiteId,
-                'api/v1/stats/breakdown?',
-                $authorizedRequestParams,
-            )
-            ->willReturn($endpointData);
+        $plausibleServiceProphecy->sendAuthorizedRequest($plausibleSiteId, 'api/v1/stats/breakdown?', $authorizedRequestParams,)->willReturn($endpointData);
 
-        $subject = new SourceDataProvider($plausibleServiceMock);
-        self::assertSame($expected, $subject->getSourceData($plausibleSiteId, $timeFrame, $filters));
+        $subject = new SourceDataProvider($plausibleServiceProphecy->reveal());
+        self::assertSame($expected, $subject->getSourceData($plausibleSiteId, $timeFrame, $filterRepo));
     }
 
     public function getCampaignDataReturnsProperValuesDataProvider(): \Generator
@@ -700,11 +680,17 @@ class SourceDataProviderTest extends UnitTestCase
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider::getCampaignData
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider::getData
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider::getLanguageService
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::__construct
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::isFilterActivated
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::filtersToPlausibleFilterString
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::calcPercentage
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::dataCleanUp
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::__construct
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::calcPercentage
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::dataCleanUp
+     * @covers       \Waldhacker\Plausibleio\Filter::__construct
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::addFilter
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::checkFilter
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::count
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::empty
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::isFilterActivated
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::setFiltersFromArray
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::toPlausibleFilterString
      */
     public function getCampaignDataReturnsProperValues(
         string $plausibleSiteId,
@@ -713,19 +699,14 @@ class SourceDataProviderTest extends UnitTestCase
         ?array $endpointData,
         array $expected
     ): void {
-        $configurationServiceProphecy = $this->prophesize(ConfigurationService::class);
-        $plausibleServiceMock = $this->getMockBuilder(PlausibleService::class)
-            ->onlyMethods(['sendAuthorizedRequest'])
-            ->setConstructorArgs([
-                new RequestFactory(),
-                new Client(),
-                $configurationServiceProphecy->reveal(),
-            ])
-            ->getMock();
+        $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
 
         $this->languageServiceProphecy->getLL('barChart.labels.visitors')->willReturn('Visitors');
         $this->languageServiceProphecy->getLL('barChart.labels.UTMCampaign')->willReturn('UTM Campaign');
         $this->languageServiceProphecy->getLL('filter.sourceData.UTMCampaignIs')->willReturn('UTM Campaign is');
+
+        $filterRepo = new FilterRepository();
+        $filterRepo->setFiltersFromArray($filters);
 
         $authorizedRequestParams = [
             'site_id' => $plausibleSiteId,
@@ -733,21 +714,14 @@ class SourceDataProviderTest extends UnitTestCase
             'property' => 'visit:utm_campaign',
             'metrics' => 'visitors',
         ];
-        if (!empty($filters)) {
-            $authorizedRequestParams['filters'] = $filters[0]['name'] . '==' . $filters[0]['value'];
+        if (!$filterRepo->empty()) {
+            $authorizedRequestParams['filters'] = $filterRepo->toPlausibleFilterString();
         }
 
-        $plausibleServiceMock->expects($this->exactly(1))
-            ->method('sendAuthorizedRequest')
-            ->with(
-                $plausibleSiteId,
-                'api/v1/stats/breakdown?',
-                $authorizedRequestParams,
-            )
-            ->willReturn($endpointData);
+        $plausibleServiceProphecy->sendAuthorizedRequest($plausibleSiteId, 'api/v1/stats/breakdown?', $authorizedRequestParams,)->willReturn($endpointData);
 
-        $subject = new SourceDataProvider($plausibleServiceMock);
-        self::assertSame($expected, $subject->getCampaignData($plausibleSiteId, $timeFrame, $filters));
+        $subject = new SourceDataProvider($plausibleServiceProphecy->reveal());
+        self::assertSame($expected, $subject->getCampaignData($plausibleSiteId, $timeFrame, $filterRepo));
     }
 
     public function getTermDataReturnsProperValuesDataProvider(): \Generator
@@ -877,11 +851,17 @@ class SourceDataProviderTest extends UnitTestCase
      * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider::getTermData
      * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider::getData
      * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider::getLanguageService
-     * @covers       \Waldhacker\Plausibleio\Services\PlausibleService::__construct
-     * @covers       \Waldhacker\Plausibleio\Services\PlausibleService::isFilterActivated
-     * @covers       \Waldhacker\Plausibleio\Services\PlausibleService::filtersToPlausibleFilterString
-     * @covers       \Waldhacker\Plausibleio\Services\PlausibleService::calcPercentage
-     * @covers       \Waldhacker\Plausibleio\Services\PlausibleService::dataCleanUp
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::__construct
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::calcPercentage
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::dataCleanUp
+     * @covers       \Waldhacker\Plausibleio\Filter::__construct
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::addFilter
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::checkFilter
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::count
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::empty
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::isFilterActivated
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::setFiltersFromArray
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::toPlausibleFilterString
      */
     public function getTermDataReturnsProperValues(
         string $plausibleSiteId,
@@ -890,19 +870,14 @@ class SourceDataProviderTest extends UnitTestCase
         ?array $endpointData,
         array $expected
     ): void {
-        $configurationServiceProphecy = $this->prophesize(ConfigurationService::class);
-        $plausibleServiceMock = $this->getMockBuilder(PlausibleService::class)
-            ->onlyMethods(['sendAuthorizedRequest'])
-            ->setConstructorArgs([
-                new RequestFactory(),
-                new Client(),
-                $configurationServiceProphecy->reveal(),
-            ])
-            ->getMock();
+        $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
 
         $this->languageServiceProphecy->getLL('barChart.labels.visitors')->willReturn('Visitors');
         $this->languageServiceProphecy->getLL('barChart.labels.UTMTerm')->willReturn('UTM Term');
         $this->languageServiceProphecy->getLL('filter.sourceData.UTMTermIs')->willReturn('UTM Term is');
+
+        $filterRepo = new FilterRepository();
+        $filterRepo->setFiltersFromArray($filters);
 
         $authorizedRequestParams = [
             'site_id' => $plausibleSiteId,
@@ -910,21 +885,14 @@ class SourceDataProviderTest extends UnitTestCase
             'property' => 'visit:utm_term',
             'metrics' => 'visitors',
         ];
-        if (!empty($filters)) {
-            $authorizedRequestParams['filters'] = $filters[0]['name'] . '==' . $filters[0]['value'];
+        if (!$filterRepo->empty()) {
+            $authorizedRequestParams['filters'] = $filterRepo->toPlausibleFilterString();
         }
 
-        $plausibleServiceMock->expects($this->exactly(1))
-            ->method('sendAuthorizedRequest')
-            ->with(
-                $plausibleSiteId,
-                'api/v1/stats/breakdown?',
-                $authorizedRequestParams,
-            )
-            ->willReturn($endpointData);
+        $plausibleServiceProphecy->sendAuthorizedRequest($plausibleSiteId, 'api/v1/stats/breakdown?', $authorizedRequestParams,)->willReturn($endpointData);
 
-        $subject = new SourceDataProvider($plausibleServiceMock);
-        self::assertSame($expected, $subject->getTermData($plausibleSiteId, $timeFrame, $filters));
+        $subject = new SourceDataProvider($plausibleServiceProphecy->reveal());
+        self::assertSame($expected, $subject->getTermData($plausibleSiteId, $timeFrame, $filterRepo));
     }
 
     public function getContentDataReturnsProperValuesDataProvider(): \Generator
@@ -1054,12 +1022,18 @@ class SourceDataProviderTest extends UnitTestCase
      * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider::getContentData
      * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider::getData
      * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider::getLanguageService
-     * @covers       \Waldhacker\Plausibleio\Services\PlausibleService::__construct
-     * @covers       \Waldhacker\Plausibleio\Services\PlausibleService::isFilterActivated
-     * @covers       \Waldhacker\Plausibleio\Services\PlausibleService::filtersToPlausibleFilterString
-     * @covers       \Waldhacker\Plausibleio\Services\PlausibleService::calcPercentage
-     * @covers       \Waldhacker\Plausibleio\Services\PlausibleService::dataCleanUp
-     */
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::__construct
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::calcPercentage
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::dataCleanUp
+     * @covers       \Waldhacker\Plausibleio\Filter::__construct
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::addFilter
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::checkFilter
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::count
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::empty
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::isFilterActivated
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::setFiltersFromArray
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::toPlausibleFilterString
+ */
     public function getContentDataReturnsProperValues(
         string $plausibleSiteId,
         string $timeFrame,
@@ -1067,19 +1041,14 @@ class SourceDataProviderTest extends UnitTestCase
         ?array $endpointData,
         array $expected
     ): void {
-        $configurationServiceProphecy = $this->prophesize(ConfigurationService::class);
-        $plausibleServiceMock = $this->getMockBuilder(PlausibleService::class)
-            ->onlyMethods(['sendAuthorizedRequest'])
-            ->setConstructorArgs([
-                new RequestFactory(),
-                new Client(),
-                $configurationServiceProphecy->reveal(),
-            ])
-            ->getMock();
+        $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
 
         $this->languageServiceProphecy->getLL('barChart.labels.visitors')->willReturn('Visitors');
         $this->languageServiceProphecy->getLL('barChart.labels.UTMContent')->willReturn('UTM Content');
         $this->languageServiceProphecy->getLL('filter.sourceData.UTMContentIs')->willReturn('UTM Content is');
+
+        $filterRepo = new FilterRepository();
+        $filterRepo->setFiltersFromArray($filters);
 
         $authorizedRequestParams = [
             'site_id' => $plausibleSiteId,
@@ -1087,20 +1056,13 @@ class SourceDataProviderTest extends UnitTestCase
             'property' => 'visit:utm_content',
             'metrics' => 'visitors',
         ];
-        if (!empty($filters)) {
-            $authorizedRequestParams['filters'] = $filters[0]['name'] . '==' . $filters[0]['value'];
+        if (!$filterRepo->empty()) {
+            $authorizedRequestParams['filters'] = $filterRepo->toPlausibleFilterString();
         }
 
-        $plausibleServiceMock->expects($this->exactly(1))
-            ->method('sendAuthorizedRequest')
-            ->with(
-                $plausibleSiteId,
-                'api/v1/stats/breakdown?',
-                $authorizedRequestParams,
-            )
-            ->willReturn($endpointData);
+        $plausibleServiceProphecy->sendAuthorizedRequest($plausibleSiteId, 'api/v1/stats/breakdown?', $authorizedRequestParams,)->willReturn($endpointData);
 
-        $subject = new SourceDataProvider($plausibleServiceMock);
-        self::assertSame($expected, $subject->getContentData($plausibleSiteId, $timeFrame, $filters));
+        $subject = new SourceDataProvider($plausibleServiceProphecy->reveal());
+        self::assertSame($expected, $subject->getContentData($plausibleSiteId, $timeFrame, $filterRepo));
     }
 }

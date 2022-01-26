@@ -23,54 +23,26 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Waldhacker\Plausibleio\Dashboard\DataProvider\VisitorsOverTimeDataProvider;
 use Waldhacker\Plausibleio\Services\ConfigurationService;
-use Waldhacker\Plausibleio\Services\PlausibleService;
 
-class VisitorsOverTimeWidgetController
+class VisitorsOverTimeWidgetController extends AbstractWidgetController
 {
-    private ResponseFactoryInterface $responseFactory;
     private VisitorsOverTimeDataProvider $visitorsOverTimeDataProvider;
-    private ConfigurationService $configurationService;
-    private PlausibleService $plausibleService;
 
     public function __construct(
         VisitorsOverTimeDataProvider $visitorsOverTimeDataProvider,
         ConfigurationService $configurationService,
-        PlausibleService $plausibleService,
         ResponseFactoryInterface $responseFactory
     ) {
-        $this->responseFactory = $responseFactory;
+        parent::__construct($configurationService, $responseFactory);
         $this->visitorsOverTimeDataProvider = $visitorsOverTimeDataProvider;
-        $this->configurationService = $configurationService;
-        $this->plausibleService = $plausibleService;
     }
 
     public function __invoke(ServerRequestInterface $request): ResponseInterface
     {
-        $dashBoardId = $request->getQueryParams()['dashboard'] ?? ConfigurationService::DASHBOARD_DEFAULT_ID;
+        parent::__invoke($request);
 
-        $plausibleSiteId = $request->getQueryParams()['siteId'] ?? null;
-        if ($plausibleSiteId === null || !in_array($plausibleSiteId, $this->configurationService->getAvailablePlausibleSiteIds(), true)) {
-            $plausibleSiteId = $this->configurationService->getPlausibleSiteIdFromUserConfiguration($dashBoardId);
-        }
-
-        $timeFrame = $request->getQueryParams()['timeFrame'] ?? null;
-        if ($timeFrame === null || !in_array($timeFrame, $this->configurationService->getTimeFrameValues(), true)) {
-            $timeFrame = $this->configurationService->getTimeFrameValueFromUserConfiguration($dashBoardId);
-        }
-
-        // request->getQueryParams() already returns a json decoded array
-        $filters = $request->getQueryParams()['filter'] ?? null;
-        if (!is_array($filters)) {
-            $filters = [];
-        }
-        $filters = $this->plausibleService->checkFilters($filters);
-
-        $this->configurationService->persistPlausibleSiteIdInUserConfiguration($plausibleSiteId, $dashBoardId);
-        $this->configurationService->persistTimeFrameValueInUserConfiguration($timeFrame, $dashBoardId);
-        $this->configurationService->persistFiltersInUserConfiguration($filters, $dashBoardId);
-
-        $chartData = $this->visitorsOverTimeDataProvider->getChartData($plausibleSiteId, $timeFrame, $filters);
-        $overviewData = $this->visitorsOverTimeDataProvider->getOverview($plausibleSiteId, $timeFrame, $filters);
+        $chartData = $this->visitorsOverTimeDataProvider->getChartData($this->plausibleSiteId, $this->timeFrame, $this->filterRepo);
+        $overviewData = $this->visitorsOverTimeDataProvider->getOverview($this->plausibleSiteId, $this->timeFrame, $this->filterRepo);
 
         $data = [
             'chartData' => $chartData,

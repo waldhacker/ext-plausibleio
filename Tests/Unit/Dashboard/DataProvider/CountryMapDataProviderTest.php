@@ -18,18 +18,14 @@ declare(strict_types=1);
 
 namespace Waldhacker\Plausibleio\Tests\Unit\Dashboard\DataProvider;
 
-use GuzzleHttp\Client;
 use Prophecy\PhpUnit\ProphecyTrait;
-use Psr\Http\Client\ClientInterface;
-use Psr\Http\Message\RequestFactoryInterface;
 use TYPO3\CMS\Core\Localization\LanguageService;
-use TYPO3\CMS\Core\Http\RequestFactory;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 use Waldhacker\Plausibleio\Dashboard\DataProvider\CountryMapDataProvider;
+use Waldhacker\Plausibleio\FilterRepository;
 use Waldhacker\Plausibleio\Services\ISO3166Service;
 use Waldhacker\Plausibleio\Services\ISO3166_2_Service;
 use Waldhacker\Plausibleio\Services\LocationCodeService;
-use Waldhacker\Plausibleio\Services\ConfigurationService;
 use Waldhacker\Plausibleio\Services\PlausibleService;
 
 class CountryMapDataProviderTest extends UnitTestCase
@@ -208,14 +204,20 @@ class CountryMapDataProviderTest extends UnitTestCase
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\CountryMapDataProvider::plausibleCountriesToDataMap
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\CountryMapDataProvider::plausibleRegionsToDataMap
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\CountryMapDataProvider::getLanguageService
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::__construct
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::isFilterActivated
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::filtersToPlausibleFilterString
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::calcPercentage
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::dataCleanUp
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::__construct
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::calcPercentage
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::dataCleanUp
      * @covers \Waldhacker\Plausibleio\Services\ISO3166Service::alpha2
      * @covers \Waldhacker\Plausibleio\Services\ISO3166Service::search
      * @covers \Waldhacker\Plausibleio\Services\ISO3166_2_Service::region
+     * @covers \Waldhacker\Plausibleio\Filter::__construct
+     * @covers \Waldhacker\Plausibleio\FilterRepository::addFilter
+     * @covers \Waldhacker\Plausibleio\FilterRepository::checkFilter
+     * @covers \Waldhacker\Plausibleio\FilterRepository::count
+     * @covers \Waldhacker\Plausibleio\FilterRepository::empty
+     * @covers \Waldhacker\Plausibleio\FilterRepository::isFilterActivated
+     * @covers \Waldhacker\Plausibleio\FilterRepository::setFiltersFromArray
+     * @covers \Waldhacker\Plausibleio\FilterRepository::toPlausibleFilterString
      */
     public function getCountryDataForDataMapReturnsProperValues(
         string $plausibleSiteId,
@@ -224,15 +226,7 @@ class CountryMapDataProviderTest extends UnitTestCase
         ?array $endpointData,
         array $expected
     ): void {
-        $configurationServiceProphecy = $this->prophesize(ConfigurationService::class);
-        $plausibleServiceMock = $this->getMockBuilder(PlausibleService::class)
-            ->onlyMethods(['sendAuthorizedRequest'])
-            ->setConstructorArgs([
-                new RequestFactory(),
-                new Client(),
-                $configurationServiceProphecy->reveal(),
-            ])
-            ->getMock();
+        $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
 
         $this->languageServiceProphecy->getLL('barChart.labels.visitors')->willReturn('Visitors');
         $this->languageServiceProphecy->getLL('barChart.labels.country')->willReturn('Country');
@@ -242,26 +236,22 @@ class CountryMapDataProviderTest extends UnitTestCase
         $this->languageServiceProphecy->getLL('filter.locationData.regionIs')->willReturn('Region is');
         $this->languageServiceProphecy->getLL('filter.locationData.cityIs')->willReturn('City is');
 
+        $filterRepo = new FilterRepository();
+        $filterRepo->setFiltersFromArray($filters);
+
         $authorizedRequestParams = [
             'site_id' => $plausibleSiteId,
             'period' => $timeFrame,
             'property' => $filters ? 'visit:region' : 'visit:country',
         ];
-        if (!empty($filters)) {
-            $authorizedRequestParams['filters'] = $filters[0]['name'] . '==' . $filters[0]['value'];
+        if (!$filterRepo->empty()) {
+            $authorizedRequestParams['filters'] = $filterRepo->toPlausibleFilterString();
         }
 
-        $plausibleServiceMock->expects($this->exactly(1))
-            ->method('sendAuthorizedRequest')
-            ->with(
-                $plausibleSiteId,
-                'api/v1/stats/breakdown?',
-                $authorizedRequestParams,
-            )
-            ->willReturn($endpointData);
+        $plausibleServiceProphecy->sendAuthorizedRequest($plausibleSiteId, 'api/v1/stats/breakdown?', $authorizedRequestParams,)->willReturn($endpointData);
 
-        $subject = new CountryMapDataProvider($plausibleServiceMock, new ISO3166Service(), new ISO3166_2_Service(), new LocationCodeService());
-        self::assertSame($expected, $subject->getCountryDataForDataMap($plausibleSiteId, $timeFrame, $filters));
+        $subject = new CountryMapDataProvider($plausibleServiceProphecy->reveal(), new ISO3166Service(), new ISO3166_2_Service(), new LocationCodeService());
+        self::assertSame($expected, $subject->getCountryDataForDataMap($plausibleSiteId, $timeFrame, $filterRepo));
     }
 
     public function getCountryDataOnlyForDataMapReturnsProperValuesDataProvider(): \Generator
@@ -426,15 +416,20 @@ class CountryMapDataProviderTest extends UnitTestCase
      * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\CountryMapDataProvider::getCountryDataOnlyForDataMap
      * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\CountryMapDataProvider::plausibleCountriesToDataMap
      * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\CountryMapDataProvider::getLanguageService
-     * @covers       \Waldhacker\Plausibleio\Services\PlausibleService::__construct
-     * @covers       \Waldhacker\Plausibleio\Services\PlausibleService::isFilterActivated
-     * @covers       \Waldhacker\Plausibleio\Services\PlausibleService::filtersToPlausibleFilterString
-     * @covers       \Waldhacker\Plausibleio\Services\PlausibleService::removeFilter
-     * @covers       \Waldhacker\Plausibleio\Services\PlausibleService::calcPercentage
-     * @covers       \Waldhacker\Plausibleio\Services\PlausibleService::dataCleanUp
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::__construct
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::calcPercentage
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::dataCleanUp
      * @covers       \Waldhacker\Plausibleio\Services\ISO3166Service::alpha2
      * @covers       \Waldhacker\Plausibleio\Services\ISO3166Service::search
-     */
+     * @covers       \Waldhacker\Plausibleio\Filter::__construct
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::addFilter
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::checkFilter
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::count
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::empty
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::isFilterActivated
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::setFiltersFromArray
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::toPlausibleFilterString
+ */
     public function getCountryDataOnlyForDataMapReturnsProperValues(
         string $plausibleSiteId,
         string $timeFrame,
@@ -443,39 +438,27 @@ class CountryMapDataProviderTest extends UnitTestCase
         array $expected
     ): void
     {
-        $configurationServiceProphecy = $this->prophesize(ConfigurationService::class);
-        $plausibleServiceMock = $this->getMockBuilder(PlausibleService::class)
-            ->onlyMethods(['sendAuthorizedRequest'])
-            ->setConstructorArgs([
-                new RequestFactory(),
-                new Client(),
-                $configurationServiceProphecy->reveal(),
-            ])
-            ->getMock();
+        $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
 
         $this->languageServiceProphecy->getLL('barChart.labels.visitors')->willReturn('Visitors');
         $this->languageServiceProphecy->getLL('barChart.labels.country')->willReturn('Country');
         $this->languageServiceProphecy->getLL('filter.locationData.countryIs')->willReturn('Country is');
+
+        $filterRepo = new FilterRepository();
+        $filterRepo->setFiltersFromArray($filters);
 
         $authorizedRequestParams = [
             'site_id' => $plausibleSiteId,
             'period' => $timeFrame,
             'property' => 'visit:country',
         ];
-        if (!empty($filters)) {
-            $authorizedRequestParams['filters'] = $filters[0]['name'] . '==' . $filters[0]['value'];
+        if (!$filterRepo->empty()) {
+            $authorizedRequestParams['filters'] = $filterRepo->toPlausibleFilterString();
         }
 
-        $plausibleServiceMock->expects($this->exactly(1))
-            ->method('sendAuthorizedRequest')
-            ->with(
-                $plausibleSiteId,
-                'api/v1/stats/breakdown?',
-                $authorizedRequestParams,
-            )
-            ->willReturn($endpointData);
+        $plausibleServiceProphecy->sendAuthorizedRequest($plausibleSiteId, 'api/v1/stats/breakdown?', $authorizedRequestParams,)->willReturn($endpointData);
 
-        $subject = new CountryMapDataProvider($plausibleServiceMock, new ISO3166Service(), new ISO3166_2_Service(), new LocationCodeService());
-        self::assertSame($expected, $subject->getCountryDataOnlyForDataMap($plausibleSiteId, $timeFrame, $filters));
+        $subject = new CountryMapDataProvider($plausibleServiceProphecy->reveal(), new ISO3166Service(), new ISO3166_2_Service(), new LocationCodeService());
+        self::assertSame($expected, $subject->getCountryDataOnlyForDataMap($plausibleSiteId, $timeFrame, $filterRepo));
     }
 }

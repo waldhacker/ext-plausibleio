@@ -194,6 +194,9 @@
 			<trans-unit id="barChart.labels.conversionRate">
 				<source>Conversion rate</source>
 			</trans-unit>
+			<trans-unit id="barChart.labels.conversions">
+				<source>Conversions</source>
+			</trans-unit>
 
 			<trans-unit id="filter.pageData.pageIs">
 				<source>Page is</source>

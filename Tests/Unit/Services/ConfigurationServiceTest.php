@@ -28,6 +28,8 @@ use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
+use Waldhacker\Plausibleio\Filter;
+use Waldhacker\Plausibleio\FilterRepository;
 use Waldhacker\Plausibleio\Services\ConfigurationService;
 use Waldhacker\Plausibleio\Services\Exception\InvalidConfigurationException;
 
@@ -376,7 +378,7 @@ class ConfigurationServiceTest extends UnitTestCase
         $GLOBALS['BE_USER'] = $backendUserProphecy->reveal();
 
         $backendUserProphecy->writeUC()->shouldNotBeCalled();
-        self::assertNull($this->subject->persistFiltersInUserConfiguration([], ConfigurationService::DASHBOARD_DEFAULT_ID));
+        self::assertNull($this->subject->persistFiltersInUserConfiguration(new FilterRepository(), ConfigurationService::DASHBOARD_DEFAULT_ID));
     }
 
     /**
@@ -385,33 +387,54 @@ class ConfigurationServiceTest extends UnitTestCase
      * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::persistFiltersInUserConfiguration
      * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::getLanguageService
      * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::getBackendUser
-     */
+     * @covers \Waldhacker\Plausibleio\Filter::__construct
+     * @covers \Waldhacker\Plausibleio\FilterRepository::addFilter
+     * @covers \Waldhacker\Plausibleio\FilterRepository::checkFilter
+     * @covers \Waldhacker\Plausibleio\FilterRepository::clearFilters
+     * @covers \Waldhacker\Plausibleio\FilterRepository::getFiltersAsArray
+     * @covers \Waldhacker\Plausibleio\FilterRepository::isFilterActivated
+ */
     public function persistFiltersInUserConfigurationPersistValue(): void
     {
         $backendUserProphecy = $this->prophesize(BackendUserAuthentication::class);
         $GLOBALS['BE_USER'] = $backendUserProphecy->reveal();
         $GLOBALS['BE_USER']->uc = [];
 
+        $filterRepo = new FilterRepository();
+        $filterRepo->addFilter(new Filter(FilterRepository::FILTERVISITOS, 'Mac'));
+
         $backendUserProphecy->writeUC()->shouldBeCalled();
-        self::assertNull($this->subject->persistFiltersInUserConfiguration(['name' => 'visit:os==Mac'], 'dashBoardId_98321'));
+        self::assertNull($this->subject->persistFiltersInUserConfiguration($filterRepo, 'dashBoardId_98321'));
         self::assertSame([
             'plausible' => [
                 'dashBoardId_98321' => [
                     'filters' => [
-                        'name' => 'visit:os==Mac',
+                        [
+                            'name' => FilterRepository::FILTERVISITOS,
+                            'value' => 'Mac',
+                            'label' => '',
+                            'labelValue' => '',
+                        ]
                     ],
                 ],
             ],
         ], $backendUserProphecy->uc);
 
         // empty dashBoardId -> dashBoardId = ConfigurationService::DASHBOARD_DEFAULT_ID
+        $filterRepo->clearFilters();
+        $filterRepo->addFilter(new Filter(FilterRepository::FILTERVISITOS, 'Windows'));
         $GLOBALS['BE_USER']->uc = [];
-        self::assertNull($this->subject->persistFiltersInUserConfiguration(['name' => 'visit:os==Windows'], ''));
+        self::assertNull($this->subject->persistFiltersInUserConfiguration($filterRepo, ''));
         self::assertSame([
             'plausible' => [
                 ConfigurationService::DASHBOARD_DEFAULT_ID => [
                     'filters' => [
-                        'name' => 'visit:os==Windows',
+                        [
+                            'name' => FilterRepository::FILTERVISITOS,
+                            'value' => 'Windows',
+                            'label' => '',
+                            'labelValue' => '',
+                        ]
                     ],
                 ],
             ],
@@ -424,6 +447,16 @@ class ConfigurationServiceTest extends UnitTestCase
      * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::getFiltersFromUserConfiguration
      * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::getLanguageService
      * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::getBackendUser
+     * @covers \Waldhacker\Plausibleio\FilterRepository::getFiltersAsArray
+     * @covers \Waldhacker\Plausibleio\Filter::__construct
+     * @covers \Waldhacker\Plausibleio\Filter::getLabel
+     * @covers \Waldhacker\Plausibleio\Filter::getLabelValue
+     * @covers \Waldhacker\Plausibleio\Filter::getName
+     * @covers \Waldhacker\Plausibleio\Filter::getValue
+     * @covers \Waldhacker\Plausibleio\FilterRepository::addFilter
+     * @covers \Waldhacker\Plausibleio\FilterRepository::checkFilter
+     * @covers \Waldhacker\Plausibleio\FilterRepository::isFilterActivated
+     * @covers \Waldhacker\Plausibleio\FilterRepository::setFiltersFromArray
      */
     public function getFiltersFromUserConfigurationWithDefaultDashboardReturnsValueFromUserConfiguration(): void
     {
@@ -432,23 +465,23 @@ class ConfigurationServiceTest extends UnitTestCase
         $GLOBALS['BE_USER']->uc = [
             'plausible' => [
                 'dashBoardId_98321' => [
-                    'filters' => ['name' => 'visit:os==Mac'],
+                    'filters' => [['name' => 'visit:os', 'value' => 'Mac']],
                 ],
             ],
         ];
 
-        self::assertSame(['name' => 'visit:os==Mac'], $this->subject->getFiltersFromUserConfiguration('dashBoardId_98321'));
+        self::assertSame([['name' => 'visit:os', 'value' => 'Mac', 'label' => '', 'labelValue' => '']], $this->subject->getFiltersFromUserConfiguration('dashBoardId_98321')->getFiltersAsArray());
 
         // dashboardKey could not be found -> ConfigurationService::DASHBOARD_DEFAULT_ID is used as fallback
         $GLOBALS['BE_USER']->uc = [
             'plausible' => [
                 ConfigurationService::DASHBOARD_DEFAULT_ID => [
-                    'filters' => ['name' => 'visit:os==Windows'],
+                    'filters' => [['name' => 'visit:os', 'value' => 'Windows']],
                 ],
             ],
         ];
 
-        self::assertSame(['name' => 'visit:os==Windows'], $this->subject->getFiltersFromUserConfiguration('unavailableKey'));
+        self::assertSame([['name' => 'visit:os', 'value' => 'Windows', 'label' => '', 'labelValue' => '']], $this->subject->getFiltersFromUserConfiguration('unavailableKey')->getFiltersAsArray());
     }
 
     /**
@@ -457,6 +490,16 @@ class ConfigurationServiceTest extends UnitTestCase
      * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::getFiltersFromUserConfiguration
      * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::getLanguageService
      * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::getBackendUser
+     * @covers \Waldhacker\Plausibleio\Filter::__construct
+     * @covers \Waldhacker\Plausibleio\Filter::getLabel
+     * @covers \Waldhacker\Plausibleio\Filter::getLabelValue
+     * @covers \Waldhacker\Plausibleio\Filter::getName
+     * @covers \Waldhacker\Plausibleio\Filter::getValue
+     * @covers \Waldhacker\Plausibleio\FilterRepository::addFilter
+     * @covers \Waldhacker\Plausibleio\FilterRepository::checkFilter
+     * @covers \Waldhacker\Plausibleio\FilterRepository::isFilterActivated
+     * @covers \Waldhacker\Plausibleio\FilterRepository::getFiltersAsArray
+     * @covers \Waldhacker\Plausibleio\FilterRepository::setFiltersFromArray
      */
     public function getFiltersFromUserConfigurationWithConcreteDashboardReturnsValueFromUserConfiguration(): void
     {
@@ -465,15 +508,15 @@ class ConfigurationServiceTest extends UnitTestCase
         $GLOBALS['BE_USER']->uc = [
             'plausible' => [
                 'dashboard_AAA' => [
-                    'filters' => ['name' => 'visit:os==Mac'],
+                    'filters' => [['name' => 'visit:os', 'value' => 'Mac']],
                 ],
                 ConfigurationService::DASHBOARD_DEFAULT_ID => [
-                    'filters' => ['name' => 'visit:os==Windows'],
+                    'filters' => [['name' => 'visit:os', 'value' => 'Windows']],
                 ],
             ],
         ];
 
-        self::assertSame(['name' => 'visit:os==Mac'], $this->subject->getFiltersFromUserConfiguration('dashboard_AAA'));
+        self::assertSame([['name' => 'visit:os', 'value' => 'Mac', 'label' => '', 'labelValue' => '']], $this->subject->getFiltersFromUserConfiguration('dashboard_AAA')->getFiltersAsArray());
     }
 
     public function getFiltersFromUserConfigurationReturnsEmptyArrayOnInvalidBackendUserConfigurationDataProvider(): \Generator
@@ -503,6 +546,8 @@ class ConfigurationServiceTest extends UnitTestCase
      * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::getFiltersFromUserConfiguration
      * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::getLanguageService
      * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::getBackendUser
+     * @covers \Waldhacker\Plausibleio\FilterRepository::getFiltersAsArray
+     * @covers \Waldhacker\Plausibleio\FilterRepository::setFiltersFromArray
      */
     public function getFiltersFromUserConfigurationReturnsEmptyArrayOnInvalidBackendUserConfiguration(
         ?BackendUserAuthentication $beUser,
@@ -513,7 +558,7 @@ class ConfigurationServiceTest extends UnitTestCase
             $GLOBALS['BE_USER']->uc = $uc;
         }
 
-        self::assertSame([], $this->subject->getFiltersFromUserConfiguration(ConfigurationService::DASHBOARD_DEFAULT_ID));
+        self::assertSame([], $this->subject->getFiltersFromUserConfiguration(ConfigurationService::DASHBOARD_DEFAULT_ID)->getFiltersAsArray());
     }
 
     public function getAllFiltersFromUserConfigurationReturnsEmptyArrayOnInvalidBackendUserConfigurationDataProvider(): \Generator

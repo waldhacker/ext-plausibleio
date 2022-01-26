@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 /*
  * This file is part of the plausibleio extension for TYPO3
@@ -18,14 +18,13 @@ declare(strict_types=1);
 
 namespace Waldhacker\Plausibleio\Tests\Unit\Dashboard\DataProvider;
 
-use GuzzleHttp\Client;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
-use TYPO3\CMS\Core\Http\RequestFactory;
 use TYPO3\CMS\Core\Localization\LanguageService;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
+use Waldhacker\Plausibleio\Filter;
+use Waldhacker\Plausibleio\FilterRepository;
 use Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider;
-use Waldhacker\Plausibleio\Services\ConfigurationService;
 use Waldhacker\Plausibleio\Services\PlausibleService;
 
 class DeviceDataProviderTest extends UnitTestCase
@@ -42,7 +41,88 @@ class DeviceDataProviderTest extends UnitTestCase
         $GLOBALS['LANG'] = $this->languageServiceProphecy->reveal();
     }
 
-    public function getBrowserDataReturnsProperValuesDataProvider(): \Generator
+    public function getBrowserDataWithGoalReturnsProperValuesDataProvider(): \Generator
+    {
+        yield 'all items are transformed' => [
+            'browserDataWithGoal' => [
+                'data' => [
+                    ['browser' => 'Firefox', 'visitors' => 12],
+                    ['browser' => 'Chrome', 'visitors' => 8],
+                ],
+            ],
+            'browserDataWithoutGoal' => [
+                'data' => [
+                    ['browser' => 'Firefox', 'visitors' => 48],
+                    ['browser' => 'Chrome', 'visitors' => 16],
+                ],
+                'columns' => [
+                    [
+                        'name' => 'browser',
+                        'label' => 'Browser',
+                        'filter' => [
+                            'name' => 'visit:browser',
+                            'label' => 'Browser is',
+                        ],
+                    ],
+                    ['name' => 'visitors', 'label' => 'Visitors'],
+                ],
+            ],
+            'expected' => [
+                'data' => [
+                    ['browser' => 'Firefox', 'visitors' => 12, 'cr' => '25%'],
+                    ['browser' => 'Chrome', 'visitors' => 8, 'cr' => '50%'],
+                ],
+                'columns' => [
+                    [
+                        'name' => 'browser',
+                        'label' => 'Browser',
+                        'filter' => [
+                            'name' => 'visit:browser',
+                            'label' => 'Browser is',
+                        ],
+                    ],
+                    ['name' => 'visitors', 'label' => 'Conversions'],
+                    ['name' => 'cr', 'label' => 'CR'],
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * @test
+     * @dataProvider getBrowserDataWithGoalReturnsProperValuesDataProvider
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::__construct
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::getBrowserDataWithGoal
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::getLanguageService
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::__construct
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::calcConversionRateOnData
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::roundAdaptivePrecision
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::clearFilters
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::getIterator
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::getRepository
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::removeFilter
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::setFiltersFromFilterRepository
+     */
+    public function getBrowserDataWithGoalReturnsProperValues(
+        ?array $browserDataWithGoal,
+        ?array $browserDataWithoutGoal,
+        array $expected
+    ): void {
+        $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
+
+        $this->languageServiceProphecy->getLL('barChart.labels.conversions')->willReturn('Conversions');
+        $this->languageServiceProphecy->getLL('barChart.labels.cr')->willReturn('CR');
+
+        $subject = $this->getMockBuilder(DeviceDataProvider::class)
+            ->onlyMethods(['getBrowserDataWithoutGoal'])
+            ->setConstructorArgs([$plausibleServiceProphecy->reveal()])
+            ->getMock();
+        $subject->method('getBrowserDataWithoutGoal')
+            ->willReturnOnConsecutiveCalls($browserDataWithGoal, $browserDataWithoutGoal);
+        self::assertSame($expected, $subject->getBrowserDataWithGoal('', '', new FilterRepository()));
+    }
+
+    public function getBrowserDataWithoutGoalReturnsProperValuesDataProvider(): \Generator
     {
         yield 'all items are transformed' => [
             'plausibleSiteId' => 'waldhacker.dev',
@@ -170,33 +250,31 @@ class DeviceDataProviderTest extends UnitTestCase
 
     /**
      * @test
-     * @dataProvider getBrowserDataReturnsProperValuesDataProvider
-     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::__construct
-     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::getBrowserData
-     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::getData
-     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::getLanguageService
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::__construct
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::isFilterActivated
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::filtersToPlausibleFilterString
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::calcPercentage
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::dataCleanUp
+     * @dataProvider getBrowserDataWithoutGoalReturnsProperValuesDataProvider
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::__construct
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::getBrowserDataWithoutGoal
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::getData
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::getLanguageService
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::__construct
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::calcPercentage
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::dataCleanUp
+     * @covers       \Waldhacker\Plausibleio\Filter::__construct
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::addFilter
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::checkFilter
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::count
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::empty
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::isFilterActivated
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::setFiltersFromArray
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::toPlausibleFilterString
      */
-    public function getBrowserDataReturnsProperValues(
+    public function getBrowserDataWithoutGoalReturnsProperValues(
         string $plausibleSiteId,
         string $timeFrame,
         array $filters,
         ?array $endpointData,
         array $expected
     ): void {
-        $configurationServiceProphecy = $this->prophesize(ConfigurationService::class);
-        $plausibleServiceMock = $this->getMockBuilder(PlausibleService::class)
-            ->onlyMethods(['sendAuthorizedRequest'])
-            ->setConstructorArgs([
-                new RequestFactory(),
-                new Client(),
-                $configurationServiceProphecy->reveal(),
-            ])
-            ->getMock();
+        $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
 
         $this->languageServiceProphecy->getLL('barChart.labels.visitors')->willReturn('Visitors');
         $this->languageServiceProphecy->getLL('barChart.labels.browser')->willReturn('Browser');
@@ -204,30 +282,140 @@ class DeviceDataProviderTest extends UnitTestCase
         $this->languageServiceProphecy->getLL('filter.deviceData.browserIs')->willReturn('Browser is');
         $this->languageServiceProphecy->getLL('filter.deviceData.browserVersionIs')->willReturn('${browser} version is');
 
+        $filterRepo = new FilterRepository();
+        $filterRepo->setFiltersFromArray($filters);
+
         $authorizedRequestParams = [
             'site_id' => $plausibleSiteId,
             'period' => $timeFrame,
-            'property' => $filters ? 'visit:browser_version' : 'visit:browser',
+            'property' => $filterRepo->isFilterActivated(FilterRepository::FILTERVISITBROWSER) ? 'visit:browser_version' : 'visit:browser',
             'metrics' => 'visitors',
         ];
-        if (!empty($filters)) {
-            $authorizedRequestParams['filters'] = $filters[0]['name'] . '==' . $filters[0]['value'];
+        if (!$filterRepo->empty()) {
+            $authorizedRequestParams['filters'] = $filterRepo->toPlausibleFilterString();
         }
 
-        $plausibleServiceMock->expects($this->exactly(1))
-            ->method('sendAuthorizedRequest')
-            ->with(
-                $plausibleSiteId,
-                'api/v1/stats/breakdown?',
-                $authorizedRequestParams,
-            )
-            ->willReturn($endpointData);
+        $plausibleServiceProphecy->sendAuthorizedRequest($plausibleSiteId, 'api/v1/stats/breakdown?', $authorizedRequestParams,)->willReturn($endpointData);
 
-        $subject = new DeviceDataProvider($plausibleServiceMock);
-        self::assertSame($expected, $subject->getBrowserData($plausibleSiteId, $timeFrame, $filters));
+        $subject = new DeviceDataProvider($plausibleServiceProphecy->reveal());
+        self::assertSame($expected, $subject->getBrowserDataWithoutGoal($plausibleSiteId, $timeFrame, $filterRepo));
     }
 
-    public function getOSDataReturnsProperValuesDataProvider(): \Generator
+    /**
+     * @test
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::__construct
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::getBrowserData
+     * @covers \Waldhacker\Plausibleio\Filter::__construct
+     * @covers \Waldhacker\Plausibleio\FilterRepository::addFilter
+     * @covers \Waldhacker\Plausibleio\FilterRepository::checkFilter
+     * @covers \Waldhacker\Plausibleio\FilterRepository::isFilterActivated
+     */
+    public function getBrowserDataCallsMethodsCorrect(): void {
+        $languageServiceProphecy = $this->prophesize(LanguageService::class);
+
+        $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
+
+        $GLOBALS['LANG'] = $languageServiceProphecy->reveal();
+
+        $DeviceDataProviderMock = $this->getMockBuilder(DeviceDataProvider::class)
+            ->onlyMethods(['getBrowserDataWithoutGoal', 'getBrowserDataWithGoal'])
+            ->setConstructorArgs([
+                $plausibleServiceProphecy->reveal(),
+            ])
+            ->getMock();
+
+        $filterRepo = new FilterRepository();
+        $filterRepo->addFilter(new Filter(FilterRepository::FILTEREVENTGOAL, 'path'));
+
+        $DeviceDataProviderMock->expects($this->once())->method('getBrowserDataWithGoal')->willReturn(['overviewWithGoalData']);
+        self::assertSame(['overviewWithGoalData'], $DeviceDataProviderMock->getBrowserData('', '', $filterRepo));
+
+        $DeviceDataProviderMock->expects($this->once())->method('getBrowserDataWithoutGoal')->willReturn(['overviewWithoutGoalData']);
+        self::assertSame(['overviewWithoutGoalData'], $DeviceDataProviderMock->getBrowserData('', '', new FilterRepository()));
+    }
+
+    public function getOSDataWithGoalReturnsProperValuesDataProvider(): \Generator
+    {
+        yield 'all items are transformed' => [
+            'osDataWithGoal' => [
+                'data' => [
+                    ['os' => 'Windows', 'visitors' => 12],
+                    ['os' => 'Ubuntu', 'visitors' => 8],
+                ],
+            ],
+            'osDataWithoutGoal' => [
+                'data' => [
+                    ['os' => 'Windows', 'visitors' => 48],
+                    ['os' => 'Ubuntu', 'visitors' => 16],
+                ],
+                'columns' => [
+                    [
+                        'name' => 'os',
+                        'label' => 'Operating system',
+                        'filter' => [
+                            'name' => 'visit:os',
+                            'label' => 'Operating system is',
+                        ],
+                    ],
+                    ['name' => 'visitors', 'label' => 'Visitors'],
+                ],
+            ],
+            'expected' => [
+                'data' => [
+                    ['os' => 'Windows', 'visitors' => 12, 'cr' => '25%'],
+                    ['os' => 'Ubuntu', 'visitors' => 8, 'cr' => '50%'],
+                ],
+                'columns' => [
+                    [
+                        'name' => 'os',
+                        'label' => 'Operating system',
+                        'filter' => [
+                            'name' => 'visit:os',
+                            'label' => 'Operating system is',
+                        ],
+                    ],
+                    ['name' => 'visitors', 'label' => 'Conversions'],
+                    ['name' => 'cr', 'label' => 'CR'],
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * @test
+     * @dataProvider getOSDataWithGoalReturnsProperValuesDataProvider
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::__construct
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::getOSDataWithGoal
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::getLanguageService
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::__construct
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::calcConversionRateOnData
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::roundAdaptivePrecision
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::clearFilters
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::getIterator
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::getRepository
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::removeFilter
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::setFiltersFromFilterRepository
+     */
+    public function getOSDataWithGoalReturnsProperValues(
+        ?array $osDataWithGoal,
+        ?array $osDataWithoutGoal,
+        array $expected
+    ): void {
+        $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
+
+        $this->languageServiceProphecy->getLL('barChart.labels.conversions')->willReturn('Conversions');
+        $this->languageServiceProphecy->getLL('barChart.labels.cr')->willReturn('CR');
+
+        $subject = $this->getMockBuilder(DeviceDataProvider::class)
+            ->onlyMethods(['getOSDataWithoutGoal'])
+            ->setConstructorArgs([$plausibleServiceProphecy->reveal()])
+            ->getMock();
+        $subject->method('getOSDataWithoutGoal')
+            ->willReturnOnConsecutiveCalls($osDataWithGoal, $osDataWithoutGoal);
+        self::assertSame($expected, $subject->getOSDataWithGoal('', '', new FilterRepository()));
+    }
+
+    public function getOSDataWithoutGoalReturnsProperValuesDataProvider(): \Generator
     {
         yield 'all items are transformed' => [
             'plausibleSiteId' => 'waldhacker.dev',
@@ -355,33 +543,31 @@ class DeviceDataProviderTest extends UnitTestCase
 
     /**
      * @test
-     * @dataProvider getOSDataReturnsProperValuesDataProvider
-     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::__construct
-     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::getOSData
-     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::getData
-     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::getLanguageService
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::__construct
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::isFilterActivated
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::filtersToPlausibleFilterString
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::calcPercentage
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::dataCleanUp
+     * @dataProvider getOSDataWithoutGoalReturnsProperValuesDataProvider
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::__construct
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::getOSDataWithoutGoal
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::getData
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::getLanguageService
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::__construct
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::calcPercentage
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::dataCleanUp
+     * @covers       \Waldhacker\Plausibleio\Filter::__construct
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::addFilter
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::checkFilter
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::count
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::empty
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::isFilterActivated
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::setFiltersFromArray
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::toPlausibleFilterString
      */
-    public function getOSDataReturnsProperValues(
+    public function getOSDataWithoutGoalReturnsProperValues(
         string $plausibleSiteId,
         string $timeFrame,
         array $filters,
         ?array $endpointData,
         array $expected
     ): void {
-        $configurationServiceProphecy = $this->prophesize(ConfigurationService::class);
-        $plausibleServiceMock = $this->getMockBuilder(PlausibleService::class)
-            ->onlyMethods(['sendAuthorizedRequest'])
-            ->setConstructorArgs([
-                new RequestFactory(),
-                new Client(),
-                $configurationServiceProphecy->reveal(),
-            ])
-            ->getMock();
+        $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
 
         $this->languageServiceProphecy->getLL('barChart.labels.visitors')->willReturn('Visitors');
         $this->languageServiceProphecy->getLL('barChart.labels.os')->willReturn('Operating system');
@@ -389,30 +575,142 @@ class DeviceDataProviderTest extends UnitTestCase
         $this->languageServiceProphecy->getLL('filter.deviceData.osIs')->willReturn('Operating system is');
         $this->languageServiceProphecy->getLL('filter.deviceData.osVersionIs')->willReturn('${os} version is');
 
+        $filterRepo = new FilterRepository();
+        $filterRepo->setFiltersFromArray($filters);
+
         $authorizedRequestParams = [
             'site_id' => $plausibleSiteId,
             'period' => $timeFrame,
-            'property' => $filters ? 'visit:os_version' : 'visit:os',
+            'property' => !$filterRepo->empty() ? 'visit:os_version' : 'visit:os',
             'metrics' => 'visitors',
         ];
-        if (!empty($filters)) {
+        if (!$filterRepo->empty()) {
             $authorizedRequestParams['filters'] = $filters[0]['name'] . '==' . $filters[0]['value'];
         }
 
-        $plausibleServiceMock->expects($this->exactly(1))
-            ->method('sendAuthorizedRequest')
-            ->with(
-                $plausibleSiteId,
-                'api/v1/stats/breakdown?',
-                $authorizedRequestParams,
-            )
-            ->willReturn($endpointData);
+        $plausibleServiceProphecy->sendAuthorizedRequest($plausibleSiteId, 'api/v1/stats/breakdown?', $authorizedRequestParams,)->willReturn($endpointData);
 
-        $subject = new DeviceDataProvider($plausibleServiceMock);
-        self::assertSame($expected, $subject->getOSData($plausibleSiteId, $timeFrame, $filters));
+        $subject = new DeviceDataProvider($plausibleServiceProphecy->reveal());
+        self::assertSame($expected, $subject->getOSDataWithoutGoal($plausibleSiteId, $timeFrame, $filterRepo));
     }
 
-    public function getDeviceDataReturnsProperValuesDataProvider(): \Generator
+    /**
+     * @test
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::__construct
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::getOSData
+     * @covers \Waldhacker\Plausibleio\Filter::__construct
+     * @covers \Waldhacker\Plausibleio\FilterRepository::addFilter
+     * @covers \Waldhacker\Plausibleio\FilterRepository::checkFilter
+     * @covers \Waldhacker\Plausibleio\FilterRepository::isFilterActivated
+    */
+    public function getOSDataCallsMethodsCorrect(): void
+    {
+        $languageServiceProphecy = $this->prophesize(LanguageService::class);
+
+        $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
+
+        $GLOBALS['LANG'] = $languageServiceProphecy->reveal();
+
+        $DeviceDataProviderMock = $this->getMockBuilder(DeviceDataProvider::class)
+            ->onlyMethods(['getOSDataWithoutGoal', 'getOSDataWithGoal'])
+            ->setConstructorArgs([
+                $plausibleServiceProphecy->reveal(),
+            ])
+            ->getMock();
+
+        $filterRepo = new FilterRepository();
+        $filterRepo->addFilter(new Filter(FilterRepository::FILTEREVENTGOAL, 'path'));
+
+        $DeviceDataProviderMock->expects($this->once())->method('getOSDataWithGoal')->willReturn(['overviewWithGoalData']);
+        self::assertSame(['overviewWithGoalData'], $DeviceDataProviderMock->getOSDataWithGoal('', '', $filterRepo));
+
+        $DeviceDataProviderMock->expects($this->once())->method('getOSDataWithoutGoal')->willReturn(['overviewWithoutGoalData']);
+        self::assertSame(['overviewWithoutGoalData'], $DeviceDataProviderMock->getOSDataWithoutGoal('', '', new FilterRepository()));
+    }
+
+    public function getDeviceDataWithGoalReturnsProperValuesDataProvider(): \Generator
+    {
+        yield 'all items are transformed' => [
+            'browserDataWithGoal' => [
+                'data' => [
+                    ['device' => 'Tablet', 'visitors' => 12],
+                    ['device' => 'Desktop', 'visitors' => 8],
+                ],
+            ],
+            'browserDataWithoutGoal' => [
+                'data' => [
+                    ['device' => 'Tablet', 'visitors' => 48],
+                    ['device' => 'Desktop', 'visitors' => 16],
+                ],
+                'columns' => [
+                    [
+                        'name' => 'device',
+                        'label' => 'Screen Size',
+                        'filter' => [
+                            'name' => 'visit:device',
+                            'label' => 'Screen Size is',
+                        ],
+                    ],
+                    ['name' => 'visitors', 'label' => 'Visitors'],
+                ],
+            ],
+            'expected' => [
+                'data' => [
+                    ['device' => 'Tablet', 'visitors' => 12, 'cr' => '25%'],
+                    ['device' => 'Desktop', 'visitors' => 8, 'cr' => '50%'],
+                ],
+                'columns' => [
+                    [
+                        'name' => 'device',
+                        'label' => 'Screen Size',
+                        'filter' => [
+                            'name' => 'visit:device',
+                            'label' => 'Screen Size is',
+                        ],
+                    ],
+                    ['name' => 'visitors', 'label' => 'Conversions'],
+                    ['name' => 'cr', 'label' => 'CR'],
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * @test
+     * @dataProvider getDeviceDataWithGoalReturnsProperValuesDataProvider
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::__construct
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::getDeviceDataWithGoal
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::getLanguageService
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::__construct
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::calcConversionRateOnData
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::roundAdaptivePrecision
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::clearFilters
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::getIterator
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::getRepository
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::removeFilter
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::setFiltersFromFilterRepository
+     */
+    public function getDeviceDataWithGoalReturnsProperValues(
+        ?array $deviceDataWithGoal,
+        ?array $deviceDataWithoutGoal,
+        array $expected
+    ): void {
+        $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
+
+        $this->languageServiceProphecy->getLL('barChart.labels.conversions')->willReturn('Conversions');
+        $this->languageServiceProphecy->getLL('barChart.labels.cr')->willReturn('CR');
+
+        $subject = $this->getMockBuilder(DeviceDataProvider::class)
+            ->onlyMethods(['getDeviceDataWithoutGoal'])
+            ->setConstructorArgs([$plausibleServiceProphecy->reveal()])
+            ->getMock();
+        $subject->method('getDeviceDataWithoutGoal')
+            ->willReturnOnConsecutiveCalls($deviceDataWithGoal, $deviceDataWithoutGoal);
+
+        self::assertSame($expected, $subject->getDeviceDataWithGoal('', '', new FilterRepository()));
+    }
+
+    public function getDeviceDataWithoutGoalReturnsProperValuesDataProvider(): \Generator
     {
         yield 'all items are transformed' => [
             'plausibleSiteId' => 'waldhacker.dev',
@@ -534,37 +832,38 @@ class DeviceDataProviderTest extends UnitTestCase
 
     /**
      * @test
-     * @dataProvider getDeviceDataReturnsProperValuesDataProvider
-     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::__construct
-     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::getDeviceData
-     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::getData
-     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::getLanguageService
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::__construct
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::isFilterActivated
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::filtersToPlausibleFilterString
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::calcPercentage
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::dataCleanUp
-     */
-    public function getDeviceDataReturnsProperValues(
+     * @dataProvider getDeviceDataWithoutGoalReturnsProperValuesDataProvider
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::__construct
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::getDeviceDataWithoutGoal
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::getData
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::getLanguageService
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::__construct
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::calcPercentage
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::dataCleanUp
+     * @covers       \Waldhacker\Plausibleio\Filter::__construct
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::addFilter
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::checkFilter
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::count
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::empty
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::isFilterActivated
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::setFiltersFromArray
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::toPlausibleFilterString
+    */
+    public function getDeviceDataWithoutGoalReturnsProperValues(
         string $plausibleSiteId,
         string $timeFrame,
         array $filters,
         ?array $endpointData,
         array $expected
     ): void {
-        $configurationServiceProphecy = $this->prophesize(ConfigurationService::class);
-        $plausibleServiceMock = $this->getMockBuilder(PlausibleService::class)
-            ->onlyMethods(['sendAuthorizedRequest'])
-            ->setConstructorArgs([
-                new RequestFactory(),
-                new Client(),
-                $configurationServiceProphecy->reveal(),
-            ])
-            ->getMock();
+        $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
 
         $this->languageServiceProphecy->getLL('barChart.labels.visitors')->willReturn('Visitors');
         $this->languageServiceProphecy->getLL('barChart.labels.screenSize')->willReturn('Screen Size');
         $this->languageServiceProphecy->getLL('filter.deviceData.screenSizeIs')->willReturn('Screen size is');
+
+        $filterRepo = new FilterRepository();
+        $filterRepo->setFiltersFromArray($filters);
 
         $authorizedRequestParams = [
             'site_id' => $plausibleSiteId,
@@ -572,20 +871,47 @@ class DeviceDataProviderTest extends UnitTestCase
             'property' => 'visit:device',
             'metrics' => 'visitors',
         ];
-        if (!empty($filters)) {
-            $authorizedRequestParams['filters'] = $filters[0]['name'] . '==' . $filters[0]['value'];
+        if (!$filterRepo->empty()) {
+            $authorizedRequestParams['filters'] = $filterRepo->toPlausibleFilterString();
         }
 
-        $plausibleServiceMock->expects($this->exactly(1))
-            ->method('sendAuthorizedRequest')
-            ->with(
-                $plausibleSiteId,
-                'api/v1/stats/breakdown?',
-                $authorizedRequestParams,
-            )
-            ->willReturn($endpointData);
+        $plausibleServiceProphecy->sendAuthorizedRequest($plausibleSiteId, 'api/v1/stats/breakdown?', $authorizedRequestParams,)->willReturn($endpointData);
 
-        $subject = new DeviceDataProvider($plausibleServiceMock);
-        self::assertSame($expected, $subject->getDeviceData($plausibleSiteId, $timeFrame, $filters));
+        $subject = new DeviceDataProvider($plausibleServiceProphecy->reveal());
+        self::assertSame($expected, $subject->getDeviceDataWithoutGoal($plausibleSiteId, $timeFrame, $filterRepo));
+    }
+
+    /**
+     * @test
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::__construct
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider::getDeviceData
+     * @covers \Waldhacker\Plausibleio\Filter::__construct
+     * @covers \Waldhacker\Plausibleio\FilterRepository::addFilter
+     * @covers \Waldhacker\Plausibleio\FilterRepository::checkFilter
+     * @covers \Waldhacker\Plausibleio\FilterRepository::isFilterActivated
+     */
+    public function getDeviceDataCallsMethodsCorrect(): void
+    {
+        $languageServiceProphecy = $this->prophesize(LanguageService::class);
+
+        $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
+
+        $GLOBALS['LANG'] = $languageServiceProphecy->reveal();
+
+        $DeviceDataProviderMock = $this->getMockBuilder(DeviceDataProvider::class)
+            ->onlyMethods(['getDeviceDataWithoutGoal', 'getDeviceDataWithGoal'])
+            ->setConstructorArgs([
+                $plausibleServiceProphecy->reveal(),
+            ])
+            ->getMock();
+
+        $filterRepo = new FilterRepository();
+        $filterRepo->addFilter(new Filter(FilterRepository::FILTEREVENTGOAL, 'path'));
+
+        $DeviceDataProviderMock->expects($this->once())->method('getDeviceDataWithGoal')->willReturn(['overviewWithGoalData']);
+        self::assertSame(['overviewWithGoalData'], $DeviceDataProviderMock->getDeviceDataWithGoal('', '', $filterRepo));
+
+        $DeviceDataProviderMock->expects($this->once())->method('getDeviceDataWithoutGoal')->willReturn(['overviewWithoutGoalData']);
+        self::assertSame(['overviewWithoutGoalData'], $DeviceDataProviderMock->getDeviceDataWithoutGoal('', '', new FilterRepository()));
     }
 }

@@ -24,10 +24,10 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamInterface;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
+use Waldhacker\Plausibleio\FilterRepository;
 use Waldhacker\Plausibleio\Controller\CountryMapDataWidgetController;
 use Waldhacker\Plausibleio\Dashboard\DataProvider\CountryMapDataProvider;
 use Waldhacker\Plausibleio\Services\ConfigurationService;
-use Waldhacker\Plausibleio\Services\PlausibleService;
 
 class CountryMapDataWidgetControllerTest extends UnitTestCase
 {
@@ -96,7 +96,10 @@ class CountryMapDataWidgetControllerTest extends UnitTestCase
      * @dataProvider controllerProcessesValidAndInvalidUserInputCorrectlyDataProvider
      * @covers \Waldhacker\Plausibleio\Controller\CountryMapDataWidgetController::__construct
      * @covers \Waldhacker\Plausibleio\Controller\CountryMapDataWidgetController::__invoke
-     */
+     * @covers \Waldhacker\Plausibleio\FilterRepository::setFiltersFromArray
+     * @covers \Waldhacker\Plausibleio\Controller\AbstractWidgetController::__construct
+     * @covers \Waldhacker\Plausibleio\Controller\AbstractWidgetController::__invoke
+ */
     public function controllerProcessesValidAndInvalidUserInputCorrectly(
         array $queryParameters,
         array $availablePlausibleSiteIds,
@@ -110,7 +113,6 @@ class CountryMapDataWidgetControllerTest extends UnitTestCase
         $serverRequestProphecy = $this->prophesize(ServerRequestInterface::class);
         $configurationServiceProphecy = $this->prophesize(ConfigurationService::class);
         $countryMapDataProviderProphecy = $this->prophesize(CountryMapDataProvider::class);
-        $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
         $responseFactoryProphecy = $this->prophesize(ResponseFactoryInterface::class);
         $responseProphecy = $this->prophesize(ResponseInterface::class);
         $streamProphecy = $this->prophesize(StreamInterface::class);
@@ -119,28 +121,27 @@ class CountryMapDataWidgetControllerTest extends UnitTestCase
         $responseProphecy->withHeader('Content-Type', 'application/json')->willReturn($responseProphecy->reveal());
         $responseProphecy->getBody()->willReturn($streamProphecy->reveal());
 
+        $filterRepo = new FilterRepository();
+        $filterRepo->setFiltersFromArray($expectedFilters);
+
         $serverRequestProphecy->getQueryParams()->willReturn($queryParameters);
         $configurationServiceProphecy->getAvailablePlausibleSiteIds()->willReturn($availablePlausibleSiteIds);
         $configurationServiceProphecy->getTimeFrameValues()->willReturn($timeFrameValues);
         $configurationServiceProphecy->getPlausibleSiteIdFromUserConfiguration(ConfigurationService::DASHBOARD_DEFAULT_ID)->willReturn($siteIdFromConfiguration);
         $configurationServiceProphecy->getTimeFrameValueFromUserConfiguration(ConfigurationService::DASHBOARD_DEFAULT_ID)->willReturn($timeFrameFromConfiguration);
-        $countryMapDataProviderProphecy->getCountryDataForDataMap($expectedSiteId, $expectedTimeFrame, $expectedFilters)->willReturn(['data' => 'countries']);
-        $countryMapDataProviderProphecy->getCountryDataOnlyForDataMap($expectedSiteId, $expectedTimeFrame, $expectedFilters)->willReturn(['data' => 'map']);
+        $countryMapDataProviderProphecy->getCountryDataForDataMap($expectedSiteId, $expectedTimeFrame, $filterRepo)->willReturn(['data' => 'countries']);
+        $countryMapDataProviderProphecy->getCountryDataOnlyForDataMap($expectedSiteId, $expectedTimeFrame, $filterRepo)->willReturn(['data' => 'map']);
 
         $configurationServiceProphecy->persistPlausibleSiteIdInUserConfiguration($expectedSiteId, ConfigurationService::DASHBOARD_DEFAULT_ID)->shouldBeCalled();
         $configurationServiceProphecy->persistTimeFrameValueInUserConfiguration($expectedTimeFrame, ConfigurationService::DASHBOARD_DEFAULT_ID)->shouldBeCalled();
-        $configurationServiceProphecy->persistFiltersInUserConfiguration($expectedFilters, ConfigurationService::DASHBOARD_DEFAULT_ID)->shouldBeCalled();
-        $countryMapDataProviderProphecy->getCountryDataForDataMap($expectedSiteId, $expectedTimeFrame, $expectedFilters)->shouldBeCalled();
-
-        $plausibleServiceProphecy->checkFilters($expectedFilters)->willReturn([]);
-        $plausibleServiceProphecy->checkFilters($expectedFilters)->shouldBeCalled();
+        $configurationServiceProphecy->persistFiltersInUserConfiguration($filterRepo, ConfigurationService::DASHBOARD_DEFAULT_ID)->shouldBeCalled();
+        $countryMapDataProviderProphecy->getCountryDataForDataMap($expectedSiteId, $expectedTimeFrame, $filterRepo)->shouldBeCalled();
 
         $streamProphecy->write('[{"tab":"map","data":"map"},{"tab":"countries","data":{"data":"countries"}}]')->shouldBeCalled();
 
         $subject = new CountryMapDataWidgetController(
             $countryMapDataProviderProphecy->reveal(),
             $configurationServiceProphecy->reveal(),
-            $plausibleServiceProphecy->reveal(),
             $responseFactoryProphecy->reveal()
         );
 

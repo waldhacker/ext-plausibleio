@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 /*
  * This file is part of the plausibleio extension for TYPO3
@@ -18,10 +18,11 @@ declare(strict_types=1);
 
 namespace Waldhacker\Plausibleio\Tests\Unit\Dashboard\DataProvider;
 
-use GuzzleHttp\Client;
 use Prophecy\PhpUnit\ProphecyTrait;
 use TYPO3\CMS\Core\Localization\LanguageService;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
+use Waldhacker\Plausibleio\Filter;
+use Waldhacker\Plausibleio\FilterRepository;
 use Waldhacker\Plausibleio\Dashboard\DataProvider\GoalDataProvider;
 use Waldhacker\Plausibleio\Dashboard\DataProvider\VisitorsOverTimeDataProvider;
 use Waldhacker\Plausibleio\Services\PlausibleService;
@@ -87,148 +88,7 @@ class VisitorsOverTimeDataProviderTest extends UnitTestCase
             ],
         ];
 
-        yield 'items without bounce_rate are ignored' => [
-            'plausibleSiteId' => 'waldhacker.dev',
-            'timeFrame' => '7d',
-            'filters' => [],
-            'endpointOverviewWithoutGoalData' => [
-                'pageviews' => ['value' => 2],
-                'visit_duration' => ['value' => 3],
-                'visitors' => ['value' => 40],
-            ],
-            'endpointCurrentVisitorsData' => 12,
-            'endpointGetGoalsData' => [
-                'data' => [
-                    0 => [
-                        'visitors' => 20,
-                        'events' => 32,
-                        'cr' => 0.5,
-                    ],
-                ],
-            ],
-            'expected' => [
-                'columns' => [
-                    [
-                        'name' => 'visitors',
-                        'label' => 'Unique visitors',
-                    ],
-                    [
-                        'name' => 'uniques_conversions',
-                        'label' => 'Unique conversions',
-                    ],
-                    [
-                        'name' => 'total_conversions',
-                        'label' => 'Total conversions',
-                    ],
-                    [
-                        'name' => 'cr',
-                        'label' => 'Conversion rate',
-                    ],
-                ],
-                'data' => [
-                    'visitors' => 0,
-                    'uniques_conversions' => 20,
-                    'total_conversions' => 32,
-                    'cr' => 0.5,
-                ],
-            ],
-        ];
-
-        yield 'items without pageviews are ignored' => [
-            'plausibleSiteId' => 'waldhacker.dev',
-            'timeFrame' => '7d',
-            'filters' => [],
-            'endpointOverviewWithoutGoalData' => [
-                'bounce_rate' => ['value' => 1],
-                'visit_duration' => ['value' => 3],
-                'visitors' => ['value' => 40],
-            ],
-            'endpointCurrentVisitorsData' => 12,
-            'endpointGetGoalsData' => [
-                'data' => [
-                    0 => [
-                        'visitors' => 20,
-                        'events' => 32,
-                        'cr' => 0.5,
-                    ],
-                ],
-            ],
-            'expected' => [
-                'columns' => [
-                    [
-                        'name' => 'visitors',
-                        'label' => 'Unique visitors',
-                    ],
-                    [
-                        'name' => 'uniques_conversions',
-                        'label' => 'Unique conversions',
-                    ],
-                    [
-                        'name' => 'total_conversions',
-                        'label' => 'Total conversions',
-                    ],
-                    [
-                        'name' => 'cr',
-                        'label' => 'Conversion rate',
-                    ],
-                ],
-                'data' => [
-                    'visitors' => 0,
-                    'uniques_conversions' => 20,
-                    'total_conversions' => 32,
-                    'cr' => 0.5,
-                ],
-            ],
-        ];
-
-        yield 'items without visit_duration are ignored' => [
-            'plausibleSiteId' => 'waldhacker.dev',
-            'timeFrame' => '7d',
-            'filters' => [],
-            'endpointOverviewWithoutGoalData' => [
-                'bounce_rate' => ['value' => 1],
-                'pageviews' => ['value' => 2],
-                'visitors' => ['value' => 40],
-            ],
-            'endpointCurrentVisitorsData' => 12,
-            'endpointGetGoalsData' => [
-                'data' => [
-                    0 => [
-                        'visitors' => 20,
-                        'events' => 32,
-                        'cr' => 0.5,
-                    ],
-                ],
-            ],
-            'expected' => [
-                'columns' => [
-                    [
-                        'name' => 'visitors',
-                        'label' => 'Unique visitors',
-                    ],
-                    [
-                        'name' => 'uniques_conversions',
-                        'label' => 'Unique conversions',
-                    ],
-                    [
-                        'name' => 'total_conversions',
-                        'label' => 'Total conversions',
-                    ],
-                    [
-                        'name' => 'cr',
-                        'label' => 'Conversion rate',
-                    ],
-                ],
-                'data' => [
-                    'visitors' => 0,
-                    'uniques_conversions' => 20,
-                    'total_conversions' => 32,
-                    'cr' => 0.5,
-                ],
-            ],
-        ];
-
-        yield 'items without visitors are ignored' => [
+        yield 'items without visitors set to visitors 0' => [
             'plausibleSiteId' => 'waldhacker.dev',
             'timeFrame' => '7d',
             'filters' => [],
@@ -271,6 +131,150 @@ class VisitorsOverTimeDataProviderTest extends UnitTestCase
                     'uniques_conversions' => 20,
                     'total_conversions' => 32,
                     'cr' => 0.5,
+                ],
+            ],
+        ];
+
+        yield 'items without uniques_conversions set to uniques_conversions 0' => [
+            'plausibleSiteId' => 'waldhacker.dev',
+            'timeFrame' => '7d',
+            'filters' => [],
+            'endpointOverviewWithoutGoalData' => [
+                'bounce_rate' => ['value' => 1],
+                'pageviews' => ['value' => 2],
+                'visit_duration' => ['value' => 3],
+                'visitors' => ['value' => 40],
+            ],
+            'endpointCurrentVisitorsData' => 12,
+            'endpointGetGoalsData' => [
+                'data' => [
+                    0 => [
+                        //'visitors' => 20, // unique conversions
+                        'events' => 32,
+                        'cr' => 0.5,
+                    ],
+                ],
+            ],
+            'expected' => [
+                'columns' => [
+                    [
+                        'name' => 'visitors',
+                        'label' => 'Unique visitors',
+                    ],
+                    [
+                        'name' => 'uniques_conversions',
+                        'label' => 'Unique conversions',
+                    ],
+                    [
+                        'name' => 'total_conversions',
+                        'label' => 'Total conversions',
+                    ],
+                    [
+                        'name' => 'cr',
+                        'label' => 'Conversion rate',
+                    ],
+                ],
+                'data' => [
+                    'visitors' => 40,
+                    'uniques_conversions' => 0,
+                    'total_conversions' => 32,
+                    'cr' => 0.5,
+                ],
+            ],
+        ];
+
+        yield 'items without total_conversions set to total_conversions 0' => [
+            'plausibleSiteId' => 'waldhacker.dev',
+            'timeFrame' => '7d',
+            'filters' => [],
+            'endpointOverviewWithoutGoalData' => [
+                'bounce_rate' => ['value' => 1],
+                'pageviews' => ['value' => 2],
+                'visit_duration' => ['value' => 3],
+                'visitors' => ['value' => 40],
+            ],
+            'endpointCurrentVisitorsData' => 12,
+            'endpointGetGoalsData' => [
+                'data' => [
+                    0 => [
+                        'visitors' => 20,
+                        //'events' => 32, // total conversions
+                        'cr' => 0.5,
+                    ],
+                ],
+            ],
+            'expected' => [
+                'columns' => [
+                    [
+                        'name' => 'visitors',
+                        'label' => 'Unique visitors',
+                    ],
+                    [
+                        'name' => 'uniques_conversions',
+                        'label' => 'Unique conversions',
+                    ],
+                    [
+                        'name' => 'total_conversions',
+                        'label' => 'Total conversions',
+                    ],
+                    [
+                        'name' => 'cr',
+                        'label' => 'Conversion rate',
+                    ],
+                ],
+                'data' => [
+                    'visitors' => 40,
+                    'uniques_conversions' => 20,
+                    'total_conversions' => 0,
+                    'cr' => 0.5,
+                ],
+            ],
+        ];
+
+        yield 'items without cr set to cr 0' => [
+            'plausibleSiteId' => 'waldhacker.dev',
+            'timeFrame' => '7d',
+            'filters' => [],
+            'endpointOverviewWithoutGoalData' => [
+                'bounce_rate' => ['value' => 1],
+                'pageviews' => ['value' => 2],
+                'visit_duration' => ['value' => 3],
+                'visitors' => ['value' => 40],
+            ],
+            'endpointCurrentVisitorsData' => 12,
+            'endpointGetGoalsData' => [
+                'data' => [
+                    0 => [
+                        'visitors' => 20,
+                        'events' => 32,
+                        //'cr' => 0.5,
+                    ],
+                ],
+            ],
+            'expected' => [
+                'columns' => [
+                    [
+                        'name' => 'visitors',
+                        'label' => 'Unique visitors',
+                    ],
+                    [
+                        'name' => 'uniques_conversions',
+                        'label' => 'Unique conversions',
+                    ],
+                    [
+                        'name' => 'total_conversions',
+                        'label' => 'Total conversions',
+                    ],
+                    [
+                        'name' => 'cr',
+                        'label' => 'Conversion rate',
+                    ],
+                ],
+                'data' => [
+                    'visitors' => 40,
+                    'uniques_conversions' => 20,
+                    'total_conversions' => 32,
+                    'cr' => 0,
                 ],
             ],
         ];
@@ -285,6 +289,12 @@ class VisitorsOverTimeDataProviderTest extends UnitTestCase
      * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\VisitorsOverTimeDataProvider::getOverviewWithGoal
      * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\VisitorsOverTimeDataProvider::getOverviewWithoutGoal
      * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\VisitorsOverTimeDataProvider::getLanguageService
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::__construct
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::count
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::empty
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::removeFilter
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::setFiltersFromArray
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::toPlausibleFilterString
      */
     public function getOverviewWithGoalReturnsProperValues(
         string $plausibleSiteId,
@@ -300,7 +310,6 @@ class VisitorsOverTimeDataProviderTest extends UnitTestCase
         $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
 
         $GLOBALS['LANG'] = $languageServiceProphecy->reveal();
-        $languageServiceProphecy->includeLLFile('EXT:plausibleio/Resources/Private/Language/locallang.xlf')->shouldBeCalled();
         $languageServiceProphecy->getLL('widget.visitorsOverTime.overview.uniqueVisitors')->willReturn('Unique visitors');
         $languageServiceProphecy->getLL('barChart.labels.uniqueConversions')->willReturn('Unique conversions');
         $languageServiceProphecy->getLL('barChart.labels.totalConversions')->willReturn('Total conversions');
@@ -310,43 +319,33 @@ class VisitorsOverTimeDataProviderTest extends UnitTestCase
         $languageServiceProphecy->getLL('widget.visitorsOverTime.overview.visitDuration')->willReturn('Visit duration');
         $languageServiceProphecy->getLL('widget.visitorsOverTime.overview.currentVisitors')->willReturn('Current visitors');
 
-        $plausibleServiceProphecy->removeFilter(['event:goal'], $filters)->willReturn([]);
+        $filterRepo = new FilterRepository();
+        $filterRepo->setFiltersFromArray($filters);
 
-        if ($filters) {
-            $plausibleServiceProphecy->filtersToPlausibleFilterString($filters)->willReturn($filters[0]['name']);
-        }
-        $plausibleServiceProphecy->filtersToPlausibleFilterString([])->willReturn('');
-
-        $goalDataProviderProphecy->getGoalsData($plausibleSiteId, $timeFrame, $filters)->willReturn($endpointGetGoalsData)->shouldBeCalled();
+        $goalDataProviderProphecy->getGoalsData($plausibleSiteId, $timeFrame, $filterRepo)->willReturn($endpointGetGoalsData)->shouldBeCalled();
 
         $authorizedRequestParams = [
             'site_id' => $plausibleSiteId,
             'period' => $timeFrame,
             'metrics' => 'visitors,visit_duration,pageviews,bounce_rate',
         ];
-        if ($filters) {
-            $authorizedRequestParams['filters'] = $filters[0]['name'];
+        if (!$filterRepo->empty()) {
+            $authorizedRequestParams['filters'] = $filterRepo->toPlausibleFilterString();
         }
 
-        $plausibleServiceProphecy->sendAuthorizedRequest(
-            $plausibleSiteId,
-            '/api/v1/stats/aggregate?',
-            $authorizedRequestParams
-        )
-        ->willReturn($endpointOverviewWithoutGoalData)
-        ->shouldBeCalled();
+        $authorizedRequestParamsGetCurrentVisitors = $authorizedRequestParams;
+        unset($authorizedRequestParamsGetCurrentVisitors['period']);
+        unset($authorizedRequestParamsGetCurrentVisitors['metrics']);
 
-        unset($authorizedRequestParams['period']);
-        unset($authorizedRequestParams['metrics']);
-        $plausibleServiceProphecy->sendAuthorizedRequest(
-            $plausibleSiteId,
-            '/api/v1/stats/realtime/visitors?',
-            $authorizedRequestParams
-        )
+        $plausibleServiceProphecy
+            ->sendAuthorizedRequest($plausibleSiteId, '/api/v1/stats/aggregate?', $authorizedRequestParams)
+            ->willReturn($endpointOverviewWithoutGoalData);
+        $plausibleServiceProphecy
+            ->sendAuthorizedRequest($plausibleSiteId, '/api/v1/stats/realtime/visitors?', $authorizedRequestParamsGetCurrentVisitors)
             ->willReturn($endpointCurrentVisitorsData);
 
         $subject = new VisitorsOverTimeDataProvider($goalDataProviderProphecy->reveal(), $plausibleServiceProphecy->reveal());
-        self::assertSame($expected, $subject->getOverviewWithGoal($plausibleSiteId, $timeFrame, $filters));
+        self::assertSame($expected, $subject->getOverviewWithGoal($plausibleSiteId, $timeFrame, $filterRepo));
     }
 
     public function getOverviewWithoutGoalReturnsProperValuesDataProvider(): \Generator
@@ -452,6 +451,11 @@ class VisitorsOverTimeDataProviderTest extends UnitTestCase
      * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\VisitorsOverTimeDataProvider::getCurrentVisitors
      * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\VisitorsOverTimeDataProvider::getOverviewWithoutGoal
      * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\VisitorsOverTimeDataProvider::getLanguageService
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::__construct
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::count
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::empty
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::setFiltersFromArray
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::toPlausibleFilterString
      */
     public function getOverviewWithoutGoalReturnsProperValues(
         string $plausibleSiteId,
@@ -466,82 +470,57 @@ class VisitorsOverTimeDataProviderTest extends UnitTestCase
         $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
 
         $GLOBALS['LANG'] = $languageServiceProphecy->reveal();
-        $languageServiceProphecy->includeLLFile('EXT:plausibleio/Resources/Private/Language/locallang.xlf')->shouldBeCalled();
         $languageServiceProphecy->getLL('widget.visitorsOverTime.overview.uniqueVisitors')->willReturn('Unique visitors');
         $languageServiceProphecy->getLL('widget.visitorsOverTime.overview.totalPageviews')->willReturn('Total pageviews');
         $languageServiceProphecy->getLL('widget.visitorsOverTime.overview.visitDuration')->willReturn('Visit duration');
         $languageServiceProphecy->getLL('widget.visitorsOverTime.overview.currentVisitors')->willReturn('Current visitors');
 
-        if ($filters) {
-            $plausibleServiceProphecy->filtersToPlausibleFilterString($filters)->willReturn($filters[0]['name']);
-        }
-        $plausibleServiceProphecy->filtersToPlausibleFilterString([])->willReturn('');
+        $filterRepo = new FilterRepository();
+        $filterRepo->setFiltersFromArray($filters);
 
         $authorizedRequestParams = [
             'site_id' => $plausibleSiteId,
             'period' => $timeFrame,
             'metrics' => 'visitors,visit_duration,pageviews,bounce_rate',
         ];
-        if ($filters) {
-            $authorizedRequestParams['filters'] = $filters[0]['name'];
+        if (!$filterRepo->empty()) {
+            $authorizedRequestParams['filters'] = $filterRepo->toPlausibleFilterString();
         }
+        $authorizedRequestParamsGetCurrentVisitors = $authorizedRequestParams;
+        unset($authorizedRequestParamsGetCurrentVisitors['period']);
+        unset($authorizedRequestParamsGetCurrentVisitors['metrics']);
 
-        $plausibleServiceProphecy->sendAuthorizedRequest(
-            $plausibleSiteId,
-            '/api/v1/stats/aggregate?',
-            $authorizedRequestParams
-        )
-            ->willReturn($endpointData)
-            ->shouldBeCalled();
-
-        unset($authorizedRequestParams['period']);
-        unset($authorizedRequestParams['metrics']);
-        $plausibleServiceProphecy->sendAuthorizedRequest(
-            $plausibleSiteId,
-            '/api/v1/stats/realtime/visitors?',
-            $authorizedRequestParams
-        )
+        $plausibleServiceProphecy
+            ->sendAuthorizedRequest($plausibleSiteId, '/api/v1/stats/aggregate?', $authorizedRequestParams)
+            ->willReturn($endpointData);
+        $plausibleServiceProphecy
+            ->sendAuthorizedRequest($plausibleSiteId, '/api/v1/stats/realtime/visitors?', $authorizedRequestParamsGetCurrentVisitors)
             ->willReturn($endpointCurrentVisitorsData);
 
         $subject = new VisitorsOverTimeDataProvider($goalDataProviderProphecy->reveal(), $plausibleServiceProphecy->reveal());
-        self::assertSame($expected, $subject->getOverviewWithoutGoal($plausibleSiteId, $timeFrame, $filters));
-    }
-
-    public function getOverviewReturnsProperValuesDataProvider(): \Generator
-    {
-        yield 'without goal filter' => [
-            'filters' => [],
-        ];
-
-        yield 'with goal filter' => [
-            'filters' => ['name' => 'event:goal'],
-        ];
+        self::assertSame($expected, $subject->getOverviewWithoutGoal($plausibleSiteId, $timeFrame, $filterRepo));
     }
 
     /**
      * @test
-     * @dataProvider getOverviewReturnsProperValuesDataProvider
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\VisitorsOverTimeDataProvider::__construct
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\VisitorsOverTimeDataProvider::getOverview
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\VisitorsOverTimeDataProvider::getOverviewWithGoal
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\VisitorsOverTimeDataProvider::getOverviewWithoutGoal
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\VisitorsOverTimeDataProvider::getLanguageService
-     * @covers \Waldhacker\Plausibleio\Services\PlausibleService::isFilterActivated
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::__construct
+     * @covers \Waldhacker\Plausibleio\Filter::__construct
+     * @covers \Waldhacker\Plausibleio\FilterRepository::addFilter
+     * @covers \Waldhacker\Plausibleio\FilterRepository::checkFilter
+     * @covers \Waldhacker\Plausibleio\FilterRepository::isFilterActivated
      */
-    public function getOverviewCallsMethodsCorrect(
-        array $filters
-    ): void {
+    public function getOverviewCallsMethodsCorrect(): void
+    {
         $languageServiceProphecy = $this->prophesize(LanguageService::class);
         $goalDataProviderProphecy = $this->prophesize(GoalDataProvider::class);
         $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
 
         $GLOBALS['LANG'] = $languageServiceProphecy->reveal();
-
-        if (count($filters)) {
-            $plausibleServiceProphecy->isFilterActivated('event:goal', $filters)->willReturn(['name' => 'event:goal']);
-        } else {
-            $plausibleServiceProphecy->isFilterActivated('event:goal', $filters)->willReturn(null);
-        }
 
         $VisitorsOverTimeDataProviderMock = $this->getMockBuilder(VisitorsOverTimeDataProvider::class)
             ->onlyMethods(['getOverviewWithoutGoal', 'getOverviewWithGoal'])
@@ -551,13 +530,14 @@ class VisitorsOverTimeDataProviderTest extends UnitTestCase
             ])
             ->getMock();
 
-        if (count($filters)) {
-            $VisitorsOverTimeDataProviderMock->expects($this->exactly(1))->method('getOverviewWithGoal');
-        } else {
-            $VisitorsOverTimeDataProviderMock->expects($this->exactly(1))->method('getOverviewWithoutGoal');
-        }
+        $filterRepo = new FilterRepository();
+        $filterRepo->addFilter(new Filter(FilterRepository::FILTEREVENTGOAL, 'path'));
 
-        $VisitorsOverTimeDataProviderMock->getOverview('', '', $filters);
+        $VisitorsOverTimeDataProviderMock->expects($this->once())->method('getOverviewWithGoal')->willReturn(['overviewWithGoalData']);
+        self::assertSame(['overviewWithGoalData'], $VisitorsOverTimeDataProviderMock->getOverview('', '', $filterRepo));
+
+        $VisitorsOverTimeDataProviderMock->expects($this->once())->method('getOverviewWithoutGoal')->willReturn(['overviewWithoutGoalData']);
+        self::assertSame(['overviewWithoutGoalData'], $VisitorsOverTimeDataProviderMock->getOverview('', '', new FilterRepository()));
     }
 
     public function getCurrentVisitorsReturnsVisitorsDataProvider(): \Generator
@@ -589,10 +569,15 @@ class VisitorsOverTimeDataProviderTest extends UnitTestCase
     /**
      * @test
      * @dataProvider getCurrentVisitorsReturnsVisitorsDataProvider
-     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\VisitorsOverTimeDataProvider::__construct
-     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\VisitorsOverTimeDataProvider::getCurrentVisitors
-     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\VisitorsOverTimeDataProvider::getLanguageService
-     */
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\VisitorsOverTimeDataProvider::__construct
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\VisitorsOverTimeDataProvider::getCurrentVisitors
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\VisitorsOverTimeDataProvider::getLanguageService
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::__construct
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::count
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::empty
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::setFiltersFromArray
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::toPlausibleFilterString
+ */
     public function getCurrentVisitorsReturnsVisitors(
         string $plausibleSiteId,
         array $filters,
@@ -604,18 +589,15 @@ class VisitorsOverTimeDataProviderTest extends UnitTestCase
         $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
 
         $GLOBALS['LANG'] = $languageServiceProphecy->reveal();
-        $languageServiceProphecy->includeLLFile('EXT:plausibleio/Resources/Private/Language/locallang.xlf')->shouldBeCalled();
 
-        if ($filters) {
-            $plausibleServiceProphecy->filtersToPlausibleFilterString($filters)->willReturn($filters[0]['name']);
-        }
-        $plausibleServiceProphecy->filtersToPlausibleFilterString([])->willReturn('');
+        $filterRepo = new FilterRepository();
+        $filterRepo->setFiltersFromArray($filters);
 
         $authorizedRequestParams = [
             'site_id' => $plausibleSiteId,
         ];
-        if ($filters) {
-            $authorizedRequestParams['filters'] = $filters[0]['name'];
+        if (!$filterRepo->empty()) {
+            $authorizedRequestParams['filters'] = $filterRepo->toPlausibleFilterString();
         }
 
         $plausibleServiceProphecy->sendAuthorizedRequest(
@@ -623,11 +605,11 @@ class VisitorsOverTimeDataProviderTest extends UnitTestCase
             '/api/v1/stats/realtime/visitors?',
             $authorizedRequestParams
         )
-        ->willReturn($endpointData)
-        ->shouldBeCalled();
+            ->willReturn($endpointData)
+            ->shouldBeCalled();
 
         $subject = new VisitorsOverTimeDataProvider($goalDataProviderProphecy->reveal(), $plausibleServiceProphecy->reveal());
-        self::assertSame($expected, $subject->getCurrentVisitors($plausibleSiteId, $filters));
+        self::assertSame($expected, $subject->getCurrentVisitors($plausibleSiteId, $filterRepo));
     }
 
     public function getChartDataReturnsProperValuesDataProvider(): \Generator
@@ -696,7 +678,7 @@ class VisitorsOverTimeDataProviderTest extends UnitTestCase
             'expected' => [
                 'labels' => [
                     '2021-04-16',
-                    ''
+                    '',
                 ],
                 'datasets' => [
                     [
@@ -739,11 +721,17 @@ class VisitorsOverTimeDataProviderTest extends UnitTestCase
     /**
      * @test
      * @dataProvider getChartDataReturnsProperValuesDataProvider
-     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\VisitorsOverTimeDataProvider::__construct
-     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\VisitorsOverTimeDataProvider::getChartData
-     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\VisitorsOverTimeDataProvider::getVisitors
-     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\VisitorsOverTimeDataProvider::getLanguageService
-     */
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\VisitorsOverTimeDataProvider::__construct
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\VisitorsOverTimeDataProvider::getChartData
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\VisitorsOverTimeDataProvider::getVisitors
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\VisitorsOverTimeDataProvider::getLanguageService
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::__construct
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::count
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::empty
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::isFilterActivated
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::setFiltersFromArray
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::toPlausibleFilterString
+ */
     public function getChartDataReturnsProperValues(
         string $plausibleSiteId,
         string $timeFrame,
@@ -756,27 +744,17 @@ class VisitorsOverTimeDataProviderTest extends UnitTestCase
         $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
 
         $GLOBALS['LANG'] = $languageServiceProphecy->reveal();
-        $languageServiceProphecy->includeLLFile('EXT:plausibleio/Resources/Private/Language/locallang.xlf')->shouldBeCalled();
         $languageServiceProphecy->getLL('visitors')->willReturn('Visitors');
 
-        $plausibleServiceProphecy->isFilterActivated('event:goal', [])->willReturn(null);
-        if ($filters && $filters[0]['name'] == 'event:goal') {
-            $plausibleServiceProphecy->isFilterActivated('event:goal', $filters)->willReturn($filters[0]);
-        } else {
-            $plausibleServiceProphecy->isFilterActivated('event:goal', $filters)->willReturn(null);
-        }
-
-        if ($filters) {
-            $plausibleServiceProphecy->filtersToPlausibleFilterString($filters)->willReturn($filters[0]['name']);
-        }
-        $plausibleServiceProphecy->filtersToPlausibleFilterString([])->willReturn('');
+        $filterRepo = new FilterRepository();
+        $filterRepo->setFiltersFromArray($filters);
 
         $authorizedRequestParams = [
             'site_id' => $plausibleSiteId,
             'period' => $timeFrame,
         ];
-        if ($filters) {
-            $authorizedRequestParams['filters'] = $filters[0]['name'];
+        if (!$filterRepo->empty()) {
+            $authorizedRequestParams['filters'] = $filterRepo->toPlausibleFilterString();
         }
 
         $plausibleServiceProphecy->sendAuthorizedRequest(
@@ -784,10 +762,10 @@ class VisitorsOverTimeDataProviderTest extends UnitTestCase
             'api/v1/stats/timeseries?',
             $authorizedRequestParams
         )
-        ->willReturn($endpointData)
-        ->shouldBeCalled();
+            ->willReturn($endpointData)
+            ->shouldBeCalled();
 
         $subject = new VisitorsOverTimeDataProvider($goalDataProviderProphecy->reveal(), $plausibleServiceProphecy->reveal());
-        self::assertSame($expected, $subject->getChartData($plausibleSiteId, $timeFrame, $filters));
+        self::assertSame($expected, $subject->getChartData($plausibleSiteId, $timeFrame, $filterRepo));
     }
 }

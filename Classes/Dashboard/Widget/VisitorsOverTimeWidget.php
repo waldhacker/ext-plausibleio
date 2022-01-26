@@ -91,7 +91,7 @@ class VisitorsOverTimeWidget implements WidgetInterface, EventDataInterface, Add
                     'maintainAspectRatio' => false,
                 ],
             ],
-            'filters' => $this->configurationService->getFiltersFromUserConfiguration($dashBoardId),
+            'filters' => $this->configurationService->getFiltersFromUserConfiguration($dashBoardId)->getFiltersAsArray(),
         ];
     }
 

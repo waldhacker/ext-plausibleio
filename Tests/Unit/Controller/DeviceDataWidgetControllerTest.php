@@ -24,10 +24,10 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamInterface;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
+use Waldhacker\Plausibleio\FilterRepository;
 use Waldhacker\Plausibleio\Controller\DeviceDataWidgetController;
 use Waldhacker\Plausibleio\Dashboard\DataProvider\DeviceDataProvider;
 use Waldhacker\Plausibleio\Services\ConfigurationService;
-use Waldhacker\Plausibleio\Services\PlausibleService;
 
 class DeviceDataWidgetControllerTest extends UnitTestCase
 {
@@ -96,6 +96,9 @@ class DeviceDataWidgetControllerTest extends UnitTestCase
      * @dataProvider controllerProcessesValidAndInvalidUserInputCorrectlyDataProvider
      * @covers \Waldhacker\Plausibleio\Controller\DeviceDataWidgetController::__construct
      * @covers \Waldhacker\Plausibleio\Controller\DeviceDataWidgetController::__invoke
+     * @covers \Waldhacker\Plausibleio\Controller\AbstractWidgetController::__construct
+     * @covers \Waldhacker\Plausibleio\Controller\AbstractWidgetController::__invoke
+     * @covers \Waldhacker\Plausibleio\FilterRepository::setFiltersFromArray
      */
     public function controllerProcessesValidAndInvalidUserInputCorrectly(
         array $queryParameters,
@@ -110,7 +113,6 @@ class DeviceDataWidgetControllerTest extends UnitTestCase
         $serverRequestProphecy = $this->prophesize(ServerRequestInterface::class);
         $configurationServiceProphecy = $this->prophesize(ConfigurationService::class);
         $deviceDataProviderProphecy = $this->prophesize(DeviceDataProvider::class);
-        $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
         $responseFactoryProphecy = $this->prophesize(ResponseFactoryInterface::class);
         $responseProphecy = $this->prophesize(ResponseInterface::class);
         $streamProphecy = $this->prophesize(StreamInterface::class);
@@ -119,32 +121,31 @@ class DeviceDataWidgetControllerTest extends UnitTestCase
         $responseProphecy->withHeader('Content-Type', 'application/json')->willReturn($responseProphecy->reveal());
         $responseProphecy->getBody()->willReturn($streamProphecy->reveal());
 
+        $filterRepo = new FilterRepository();
+        $filterRepo->setFiltersFromArray($expectedFilters);
+
         $serverRequestProphecy->getQueryParams()->willReturn($queryParameters);
         $configurationServiceProphecy->getAvailablePlausibleSiteIds()->willReturn($availablePlausibleSiteIds);
         $configurationServiceProphecy->getTimeFrameValues()->willReturn($timeFrameValues);
         $configurationServiceProphecy->getPlausibleSiteIdFromUserConfiguration(ConfigurationService::DASHBOARD_DEFAULT_ID)->willReturn($siteIdFromConfiguration);
         $configurationServiceProphecy->getTimeFrameValueFromUserConfiguration(ConfigurationService::DASHBOARD_DEFAULT_ID)->willReturn($timeFrameFromConfiguration);
 
-        $deviceDataProviderProphecy->getBrowserData($expectedSiteId, $expectedTimeFrame, $expectedFilters)->willReturn(['browser' => 'data']);
-        $deviceDataProviderProphecy->getDeviceData($expectedSiteId, $expectedTimeFrame, $expectedFilters)->willReturn(['device' => 'data']);
-        $deviceDataProviderProphecy->getOSData($expectedSiteId, $expectedTimeFrame, $expectedFilters)->willReturn(['os' => 'data']);
+        $deviceDataProviderProphecy->getBrowserData($expectedSiteId, $expectedTimeFrame, $filterRepo)->willReturn(['browser' => 'data']);
+        $deviceDataProviderProphecy->getDeviceData($expectedSiteId, $expectedTimeFrame, $filterRepo)->willReturn(['device' => 'data']);
+        $deviceDataProviderProphecy->getOSData($expectedSiteId, $expectedTimeFrame, $filterRepo)->willReturn(['os' => 'data']);
 
         $configurationServiceProphecy->persistPlausibleSiteIdInUserConfiguration($expectedSiteId, ConfigurationService::DASHBOARD_DEFAULT_ID)->shouldBeCalled();
         $configurationServiceProphecy->persistTimeFrameValueInUserConfiguration($expectedTimeFrame, ConfigurationService::DASHBOARD_DEFAULT_ID)->shouldBeCalled();
-        $configurationServiceProphecy->persistFiltersInUserConfiguration($expectedFilters, ConfigurationService::DASHBOARD_DEFAULT_ID)->shouldBeCalled();
-        $deviceDataProviderProphecy->getBrowserData($expectedSiteId, $expectedTimeFrame, $expectedFilters)->shouldBeCalled();
-        $deviceDataProviderProphecy->getDeviceData($expectedSiteId, $expectedTimeFrame, $expectedFilters)->shouldBeCalled();
-        $deviceDataProviderProphecy->getOSData($expectedSiteId, $expectedTimeFrame, $expectedFilters)->shouldBeCalled();
-
-        $plausibleServiceProphecy->checkFilters($expectedFilters)->willReturn([]);
-        $plausibleServiceProphecy->checkFilters($expectedFilters)->shouldBeCalled();
+        $configurationServiceProphecy->persistFiltersInUserConfiguration($filterRepo, ConfigurationService::DASHBOARD_DEFAULT_ID)->shouldBeCalled();
+        $deviceDataProviderProphecy->getBrowserData($expectedSiteId, $expectedTimeFrame, $filterRepo)->shouldBeCalled();
+        $deviceDataProviderProphecy->getDeviceData($expectedSiteId, $expectedTimeFrame, $filterRepo)->shouldBeCalled();
+        $deviceDataProviderProphecy->getOSData($expectedSiteId, $expectedTimeFrame, $filterRepo)->shouldBeCalled();
 
         $streamProphecy->write('[{"tab":"browser","data":{"browser":"data"}},{"tab":"device","data":{"device":"data"}},{"tab":"operatingsystem","data":{"os":"data"}}]')->shouldBeCalled();
 
         $subject = new DeviceDataWidgetController(
             $deviceDataProviderProphecy->reveal(),
             $configurationServiceProphecy->reveal(),
-            $plausibleServiceProphecy->reveal(),
             $responseFactoryProphecy->reveal()
         );
 

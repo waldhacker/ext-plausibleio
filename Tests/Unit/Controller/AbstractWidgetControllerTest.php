@@ -1,35 +1,21 @@
 <?php
 
-declare(strict_types=1);
-
-/*
- * This file is part of the plausibleio extension for TYPO3
- * - (c) 2021 waldhacker UG (haftungsbeschränkt)
- *
- * It is free software; you can redistribute it and/or modify it under
- * the terms of the GNU General Public License, either version 2
- * of the License, or any later version.
- *
- * For the full copyright and license information, please read the
- * LICENSE file that was distributed with this source code.
- *
- * The TYPO3 project - inspiring people to share!
- */
+declare(strict_types = 1);
 
 namespace Waldhacker\Plausibleio\Tests\Unit\Controller;
 
-use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Message\StreamInterface;
-use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 use Waldhacker\Plausibleio\FilterRepository;
-use Waldhacker\Plausibleio\Controller\PageDataWidgetController;
-use Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider;
+use Waldhacker\Plausibleio\Controller\AbstractWidgetController;
 use Waldhacker\Plausibleio\Services\ConfigurationService;
 
-class PageDataWidgetControllerTest extends UnitTestCase
+use Prophecy\PhpUnit\ProphecyTrait;
+use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
+
+
+class AbstractWidgetControllerTest extends UnitTestCase
 {
     use ProphecyTrait;
 
@@ -94,11 +80,11 @@ class PageDataWidgetControllerTest extends UnitTestCase
     /**
      * @test
      * @dataProvider controllerProcessesValidAndInvalidUserInputCorrectlyDataProvider
-     * @covers \Waldhacker\Plausibleio\Controller\PageDataWidgetController::__construct
-     * @covers \Waldhacker\Plausibleio\Controller\PageDataWidgetController::__invoke
-     * @covers \Waldhacker\Plausibleio\FilterRepository::setFiltersFromArray
-     * @covers \Waldhacker\Plausibleio\Controller\AbstractWidgetController::__construct
-     * @covers \Waldhacker\Plausibleio\Controller\AbstractWidgetController::__invoke
+     * @covers       \Waldhacker\Plausibleio\Controller\DeviceDataWidgetController::__construct
+     * @covers       \Waldhacker\Plausibleio\Controller\DeviceDataWidgetController::__invoke
+     * @covers       \Waldhacker\Plausibleio\Controller\AbstractWidgetController::__construct
+     * @covers       \Waldhacker\Plausibleio\Controller\AbstractWidgetController::__invoke
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::setFiltersFromArray
      */
     public function controllerProcessesValidAndInvalidUserInputCorrectly(
         array $queryParameters,
@@ -112,43 +98,28 @@ class PageDataWidgetControllerTest extends UnitTestCase
     ): void {
         $serverRequestProphecy = $this->prophesize(ServerRequestInterface::class);
         $configurationServiceProphecy = $this->prophesize(ConfigurationService::class);
-        $pageDataProviderProphecy = $this->prophesize(PageDataProvider::class);
         $responseFactoryProphecy = $this->prophesize(ResponseFactoryInterface::class);
         $responseProphecy = $this->prophesize(ResponseInterface::class);
-        $streamProphecy = $this->prophesize(StreamInterface::class);
 
         $responseFactoryProphecy->createResponse(200)->willReturn($responseProphecy->reveal());
-        $responseProphecy->withHeader('Content-Type', 'application/json')->willReturn($responseProphecy->reveal());
-        $responseProphecy->getBody()->willReturn($streamProphecy->reveal());
 
         $filterRepo = new FilterRepository();
         $filterRepo->setFiltersFromArray($expectedFilters);
 
         $serverRequestProphecy->getQueryParams()->willReturn($queryParameters);
+
         $configurationServiceProphecy->getAvailablePlausibleSiteIds()->willReturn($availablePlausibleSiteIds);
         $configurationServiceProphecy->getTimeFrameValues()->willReturn($timeFrameValues);
         $configurationServiceProphecy->getPlausibleSiteIdFromUserConfiguration(ConfigurationService::DASHBOARD_DEFAULT_ID)->willReturn($siteIdFromConfiguration);
         $configurationServiceProphecy->getTimeFrameValueFromUserConfiguration(ConfigurationService::DASHBOARD_DEFAULT_ID)->willReturn($timeFrameFromConfiguration);
 
-        $pageDataProviderProphecy->getTopPageData($expectedSiteId, $expectedTimeFrame, $filterRepo)->willReturn(['toppage' => 'data']);
-        $pageDataProviderProphecy->getEntryPageData($expectedSiteId, $expectedTimeFrame, $filterRepo)->willReturn(['entrypage' => 'data']);
-        $pageDataProviderProphecy->getExitPageData($expectedSiteId, $expectedTimeFrame, $filterRepo)->willReturn(['exitpage' => 'data']);
-
         $configurationServiceProphecy->persistPlausibleSiteIdInUserConfiguration($expectedSiteId, ConfigurationService::DASHBOARD_DEFAULT_ID)->shouldBeCalled();
         $configurationServiceProphecy->persistTimeFrameValueInUserConfiguration($expectedTimeFrame, ConfigurationService::DASHBOARD_DEFAULT_ID)->shouldBeCalled();
         $configurationServiceProphecy->persistFiltersInUserConfiguration($filterRepo, ConfigurationService::DASHBOARD_DEFAULT_ID)->shouldBeCalled();
-        $pageDataProviderProphecy->getTopPageData($expectedSiteId, $expectedTimeFrame, $filterRepo)->shouldBeCalled();
-        $pageDataProviderProphecy->getEntryPageData($expectedSiteId, $expectedTimeFrame, $filterRepo)->shouldBeCalled();
-        $pageDataProviderProphecy->getExitPageData($expectedSiteId, $expectedTimeFrame, $filterRepo)->shouldBeCalled();
 
-        $streamProphecy->write('[{"tab":"toppage","data":{"toppage":"data"}},{"tab":"entrypage","data":{"entrypage":"data"}},{"tab":"exitpage","data":{"exitpage":"data"}}]')->shouldBeCalled();
-
-        $subject = new PageDataWidgetController(
-            $pageDataProviderProphecy->reveal(),
-            $configurationServiceProphecy->reveal(),
-            $responseFactoryProphecy->reveal()
-        );
+        $subject = $this->getMockForAbstractClass(AbstractWidgetController::class, [$configurationServiceProphecy->reveal(), $responseFactoryProphecy->reveal()]);
 
         $subject->__invoke($serverRequestProphecy->reveal());
     }
+
 }

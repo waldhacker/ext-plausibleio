@@ -113,7 +113,7 @@ class SourceDataWidget implements WidgetInterface, EventDataInterface, Additiona
         $dashBoardId = $this->plausibleService->getCurrentDashboardId();
 
         return [
-            'filters' => $this->configurationService->getFiltersFromUserConfiguration($dashBoardId),
+            'filters' => $this->configurationService->getFiltersFromUserConfiguration($dashBoardId)->getFiltersAsArray(),
         ];
     }
 

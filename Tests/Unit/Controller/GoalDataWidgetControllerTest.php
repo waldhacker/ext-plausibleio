@@ -24,10 +24,10 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamInterface;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
+use Waldhacker\Plausibleio\FilterRepository;
 use Waldhacker\Plausibleio\Controller\GoalDataWidgetController;
 use Waldhacker\Plausibleio\Dashboard\DataProvider\GoalDataProvider;
 use Waldhacker\Plausibleio\Services\ConfigurationService;
-use Waldhacker\Plausibleio\Services\PlausibleService;
 
 class GoalDataWidgetControllerTest extends UnitTestCase
 {
@@ -96,6 +96,9 @@ class GoalDataWidgetControllerTest extends UnitTestCase
      * @dataProvider controllerProcessesValidAndInvalidUserInputCorrectlyDataProvider
      * @covers \Waldhacker\Plausibleio\Controller\GoalDataWidgetController::__construct
      * @covers \Waldhacker\Plausibleio\Controller\GoalDataWidgetController::__invoke
+     * @covers \Waldhacker\Plausibleio\FilterRepository::setFiltersFromArray
+     * @covers \Waldhacker\Plausibleio\Controller\AbstractWidgetController::__construct
+     * @covers \Waldhacker\Plausibleio\Controller\AbstractWidgetController::__invoke
      */
     public function controllerProcessesValidAndInvalidUserInputCorrectly(
         array $queryParameters,
@@ -110,7 +113,6 @@ class GoalDataWidgetControllerTest extends UnitTestCase
         $serverRequestProphecy = $this->prophesize(ServerRequestInterface::class);
         $configurationServiceProphecy = $this->prophesize(ConfigurationService::class);
         $goalDataProviderProphecy = $this->prophesize(GoalDataProvider::class);
-        $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
         $responseFactoryProphecy = $this->prophesize(ResponseFactoryInterface::class);
         $responseProphecy = $this->prophesize(ResponseInterface::class);
         $streamProphecy = $this->prophesize(StreamInterface::class);
@@ -119,30 +121,27 @@ class GoalDataWidgetControllerTest extends UnitTestCase
         $responseProphecy->withHeader('Content-Type', 'application/json')->willReturn($responseProphecy->reveal());
         $responseProphecy->getBody()->willReturn($streamProphecy->reveal());
 
+        $filterRepo = new FilterRepository();
+        $filterRepo->setFiltersFromArray($expectedFilters);
+
         $serverRequestProphecy->getQueryParams()->willReturn($queryParameters);
         $configurationServiceProphecy->getAvailablePlausibleSiteIds()->willReturn($availablePlausibleSiteIds);
         $configurationServiceProphecy->getTimeFrameValues()->willReturn($timeFrameValues);
         $configurationServiceProphecy->getPlausibleSiteIdFromUserConfiguration(ConfigurationService::DASHBOARD_DEFAULT_ID)->willReturn($siteIdFromConfiguration);
         $configurationServiceProphecy->getTimeFrameValueFromUserConfiguration(ConfigurationService::DASHBOARD_DEFAULT_ID)->willReturn($timeFrameFromConfiguration);
 
-        //$goalDataProviderProphecy->getGoalsData($expectedSiteId, $expectedTimeFrame)->willReturn(['goal' => 'data']);
-        $goalDataProviderProphecy->getGoalsData($expectedSiteId, $expectedTimeFrame, $expectedFilters)->willReturn(['goal' => 'data']);
+        $goalDataProviderProphecy->getGoalsData($expectedSiteId, $expectedTimeFrame, $filterRepo)->willReturn(['goal' => 'data']);
 
         $configurationServiceProphecy->persistPlausibleSiteIdInUserConfiguration($expectedSiteId, ConfigurationService::DASHBOARD_DEFAULT_ID)->shouldBeCalled();
         $configurationServiceProphecy->persistTimeFrameValueInUserConfiguration($expectedTimeFrame, ConfigurationService::DASHBOARD_DEFAULT_ID)->shouldBeCalled();
-        $configurationServiceProphecy->persistFiltersInUserConfiguration($expectedFilters, ConfigurationService::DASHBOARD_DEFAULT_ID)->shouldBeCalled();
-        //$goalDataProviderProphecy->getGoalsData($expectedSiteId, $expectedTimeFrame)->shouldBeCalled();
-        $goalDataProviderProphecy->getGoalsData($expectedSiteId, $expectedTimeFrame, $expectedFilters)->shouldBeCalled();
-
-        $plausibleServiceProphecy->checkFilters($expectedFilters)->willReturn([]);
-        $plausibleServiceProphecy->checkFilters($expectedFilters)->shouldBeCalled();
+        $configurationServiceProphecy->persistFiltersInUserConfiguration($filterRepo, ConfigurationService::DASHBOARD_DEFAULT_ID)->shouldBeCalled();
+        $goalDataProviderProphecy->getGoalsData($expectedSiteId, $expectedTimeFrame, $filterRepo)->shouldBeCalled();
 
         $streamProphecy->write('[{"tab":"goal","data":{"goal":"data"}}]')->shouldBeCalled();
 
         $subject = new GoalDataWidgetController(
             $goalDataProviderProphecy->reveal(),
             $configurationServiceProphecy->reveal(),
-            $plausibleServiceProphecy->reveal(),
             $responseFactoryProphecy->reveal()
         );
 

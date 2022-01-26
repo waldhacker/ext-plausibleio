@@ -20,25 +20,23 @@ namespace Waldhacker\Plausibleio\Dashboard\DataProvider;
 
 use TYPO3\CMS\Core\Localization\LanguageService;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
-use Waldhacker\Plausibleio\Dashboard\DataProvider\GoalDataProvider;
+use Waldhacker\Plausibleio\FilterRepository;
 use Waldhacker\Plausibleio\Services\PlausibleService;
 
-class VisitorsOverTimeDataProvider
+class VisitorsOverTimeDataProvider extends AbstractDataProvider
 {
-    private const EXT_KEY = 'plausibleio';
-    private PlausibleService $plausibleService;
     private GoalDataProvider $goalDataProvider;
 
     public function __construct(GoalDataProvider $goalDataProvider, PlausibleService $plausibleService)
     {
+        parent::__construct($plausibleService);
         $this->goalDataProvider = $goalDataProvider;
         $this->plausibleService = $plausibleService;
-        $this->getLanguageService()->includeLLFile('EXT:' . self::EXT_KEY . '/Resources/Private/Language/locallang.xlf');
     }
 
-    public function getOverviewWithGoal(string $plausibleSiteId, string $timeFrame, array $filters = []): array
+    public function getOverviewWithGoal(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
     {
-        $filtersWithoutGoal = $this->plausibleService->removeFilter(['event:goal'], $filters);
+        $filtersWithoutGoal = $filters->removeFilter(FilterRepository::FILTEREVENTGOAL);
 
         $dataWithoutGoal = $this->getOverviewWithoutGoal($plausibleSiteId, $timeFrame, $filtersWithoutGoal);
         $dataWithoutGoal = $dataWithoutGoal['data'] ?? [];
@@ -82,7 +80,7 @@ class VisitorsOverTimeDataProvider
         return $result;
     }
 
-    public function getOverviewWithoutGoal(string $plausibleSiteId, string $timeFrame, array $filters = []): array
+    public function getOverviewWithoutGoal(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
     {
         $endpoint = '/api/v1/stats/aggregate?';
         $params = [
@@ -90,7 +88,7 @@ class VisitorsOverTimeDataProvider
             'period' => $timeFrame,
             'metrics' => 'visitors,visit_duration,pageviews,bounce_rate',
         ];
-        $filterStr = $this->plausibleService->filtersToPlausibleFilterString($filters);
+        $filterStr = $filters->toPlausibleFilterString();
         if ($filterStr) {
             $params['filters'] = $filterStr;
         }
@@ -152,9 +150,9 @@ class VisitorsOverTimeDataProvider
         return $result;
     }
 
-    public function getOverview(string $plausibleSiteId, string $timeFrame, array $filters = []): array
+    public function getOverview(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
     {
-        $goalFilterActivated = $this->plausibleService->isFilterActivated('event:goal', $filters);
+        $goalFilterActivated = $filters->isFilterActivated(FilterRepository::FILTEREVENTGOAL);
 
         if (!$goalFilterActivated) {
             return $this->getOverviewWithoutGoal($plausibleSiteId, $timeFrame, $filters);
@@ -163,13 +161,13 @@ class VisitorsOverTimeDataProvider
         }
     }
 
-    public function getCurrentVisitors(string $plausibleSiteId, array $filter = []): int
+    public function getCurrentVisitors(string $plausibleSiteId, FilterRepository $filters): int
     {
         $endpoint = '/api/v1/stats/realtime/visitors?';
         $params = [
             'site_id' => $plausibleSiteId,
         ];
-        $filterStr = $this->plausibleService->filtersToPlausibleFilterString($filter);
+        $filterStr = $filters->toPlausibleFilterString();
         if ($filterStr) {
             $params['filters'] = $filterStr;
         }
@@ -179,9 +177,9 @@ class VisitorsOverTimeDataProvider
         return is_int($responseData) ? $responseData : 0;
     }
 
-    public function getChartData(string $plausibleSiteId, string $timeFrame, array $filters = []): array
+    public function getChartData(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
     {
-        $goalFilterActivated = $this->plausibleService->isFilterActivated('event:goal', $filters);
+        $goalFilterActivated = $filters->isFilterActivated(FilterRepository::FILTEREVENTGOAL);
         $chartLabel = $goalFilterActivated ? $this->getLanguageService()->getLL('barChart.labels.convertedVisitors') : $this->getLanguageService()->getLL('visitors');
 
         $results = $this->getVisitors($plausibleSiteId, $timeFrame, $filters);
@@ -211,14 +209,14 @@ class VisitorsOverTimeDataProvider
         ];
     }
 
-    private function getVisitors(string $plausibleSiteId, string $timeFrame, array $filter = []): array
+    private function getVisitors(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
     {
         $endpoint = 'api/v1/stats/timeseries?';
         $params = [
             'site_id' => $plausibleSiteId,
             'period' => $timeFrame,
         ];
-        $filterStr = $this->plausibleService->filtersToPlausibleFilterString($filter);
+        $filterStr = $filters->toPlausibleFilterString();
         if ($filterStr) {
             $params['filters'] = $filterStr;
         }

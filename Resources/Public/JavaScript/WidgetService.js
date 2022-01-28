@@ -420,13 +420,16 @@ define([
       let valueUnknown = this.getLL('barChart.labels.unknown', 'Unknown');
       let cell = '';
 
-      if (dataValue != undefined && dataValue !== '')
-        cell = lit.html`<span>${Number.isInteger(dataValue) ? D3Format.format('.2~s')(dataValue) : dataValue}</span>`;
-      else
+      if (dataValue != undefined && dataValue !== '') {
+        cell = lit.html`<span>${Number.isInteger(dataValue) ? this.formatSIPrefix(dataValue) : dataValue}</span>`;
+      }
+      else {
         cell = lit.html`<span>${valueUnknown}</span>`;
+      }
 
-      if (colData.filter && colData.filter.name !== '' && dataValue !== '')
+      if (colData.filter && colData.filter.name !== '' && dataValue !== '') {
         cell = lit.html`<span><a href="#" @click=${(event) => this.chartBarOnClick(event)} data-widget-plausible-filter="${colData.filter.name}" data-widget-plausible-filter-value="${filterValue}"  data-widget-plausible-filter-label="${colData.filter.label}" data-widget-plausible-filter-label-value="${dataValue}">${dataValue}</a></span>`;
+      }
 
       return cell;
     }
@@ -652,6 +655,16 @@ define([
       } else {
         return true;
       }
+    }
+
+    formatSIPrefix(n) {
+      if (Number.isInteger(n)) {
+        // 2400 -> 2.4k
+        // If the number is less than 1000, it is not formatted because this
+        // also involves rounding the last digit.
+        n = n >= 1000 ? D3Format.format('.2~s')(n) : n;
+      }
+      return n;
     }
   }
 

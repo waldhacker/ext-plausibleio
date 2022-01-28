@@ -114,7 +114,6 @@ class CountryMapDataWidget implements WidgetInterface, EventDataInterface, Requi
             'TYPO3/CMS/Plausibleio/CountryMapDataWidget',
             'TYPO3/CMS/Plausibleio/Contrib/topojson-client.min',
             'TYPO3/CMS/Plausibleio/Contrib/datamaps.world.min',
-            'TYPO3/CMS/Plausibleio/Contrib/d3-format',
             'TYPO3/CMS/Plausibleio/WidgetService',
         ];
     }

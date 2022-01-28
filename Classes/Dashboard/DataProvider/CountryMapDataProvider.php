@@ -18,7 +18,6 @@ declare(strict_types=1);
 
 namespace Waldhacker\Plausibleio\Dashboard\DataProvider;
 
-use TYPO3\CMS\Core\Localization\LanguageService;
 use Waldhacker\Plausibleio\FilterRepository;
 use Waldhacker\Plausibleio\Services\ISO3166Service;
 use Waldhacker\Plausibleio\Services\ISO3166_2_Service;
@@ -43,11 +42,33 @@ class CountryMapDataProvider extends AbstractDataProvider
         $this->locationCodeService = $locationCodeService;
     }
 
-    public function getCountryDataForDataMap(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
+    public function getCountryDataForDataMapWithGoal(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
     {
-        //$countryFilterActivated = $this->plausibleService->isFilterActivated('visit:country', $filters);
+        $countryDataWithGoal = $this->getCountryDataForDataMapWithoutGoal($plausibleSiteId, $timeFrame, $filters);
+        $filtersWithoutGoal = $filters->getRepository()->removeFilter(FilterRepository::FILTEREVENTGOAL);
+        $countryDataWithoutGoal = $this->getCountryDataForDataMapWithoutGoal($plausibleSiteId, $timeFrame, $filtersWithoutGoal);
+
+        $result = [];
+        $result['data'] = $this->calcConversionRateOnData($countryDataWithoutGoal['columns'][0]['name'], $countryDataWithoutGoal['data'], $countryDataWithGoal['data']);
+        $result['columns'] = [
+            // Take over the data name column, so the correct label (browser, version) does not have to be determined.
+            $countryDataWithoutGoal['columns'][0],
+            [
+                'name' => 'visitors',
+                'label' => $this->getLanguageService()->getLL('barChart.labels.conversions'),
+            ],
+            [
+                'name' => 'cr',
+                'label' => $this->getLanguageService()->getLL('barChart.labels.cr'),
+            ],
+        ];
+
+        return $result;
+    }
+
+    public function getCountryDataForDataMapWithoutGoal(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
+    {
         $countryFilterActivated = $filters->isFilterActivated(FilterRepository::FILTERVISITCOUNTRY);
-        //$regionFilterActivated = $this->plausibleService->isFilterActivated('visit:region', $filters);
         $regionFilterActivated = $filters->isFilterActivated(FilterRepository::FILTERVISITREGION);
 
         $data = $this->getCountryData($plausibleSiteId, $timeFrame, $filters);
@@ -72,11 +93,30 @@ class CountryMapDataProvider extends AbstractDataProvider
     }
 
     /**
-     * Only the country data, filtered but not with regions or cities.
      * @param string $plausibleSiteId
      * @param string $timeFrame
-     * @param array $filters
-     * @return array
+     * @param FilterRepository $filters
+     * @return array Returns a list of countries without a filter. If filtered by country, returns a list of the associated
+     *               regions. If filtered by region, returns a list of the associated cities.
+     */
+    public function getCountryDataForDataMap(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
+    {
+        $goalFilterActivated = $filters->isFilterActivated(FilterRepository::FILTEREVENTGOAL);
+
+        if (!$goalFilterActivated) {
+            return $this->getCountryDataForDataMapWithoutGoal($plausibleSiteId, $timeFrame, $filters);
+        } else {
+            return $this->getCountryDataForDataMapWithGoal($plausibleSiteId, $timeFrame, $filters);
+        }
+    }
+
+    /**
+     * Only the country data, filtered but not subdivided in regions or cities.
+     *
+     * @param string $plausibleSiteId
+     * @param string $timeFrame
+     * @param FilterRepository $filters
+     * @return array Always returns a list of countries, even when filtered by country or region.
      */
     public function getCountryDataOnlyForDataMap(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
     {
@@ -127,11 +167,8 @@ class CountryMapDataProvider extends AbstractDataProvider
 
     private function getCountryData(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
     {
-        //$countryFilterActivated = $this->plausibleService->isFilterActivated('visit:country', $filters);
         $countryFilterActivated = $filters->isFilterActivated(FilterRepository::FILTERVISITCOUNTRY);
-        //$regionFilterActivated = $this->plausibleService->isFilterActivated('visit:region', $filters);
         $regionFilterActivated = $filters->isFilterActivated(FilterRepository::FILTERVISITREGION);
-        //$cityFilterActivated = $this->plausibleService->isFilterActivated('visit:city', $filters);
         $cityFilterActivated= $filters->isFilterActivated(FilterRepository::FILTERVISITCITY);
         $property = $countryFilterActivated ? 'visit:region' : 'visit:country';
         $property = $regionFilterActivated ? 'visit:city' : $property;
@@ -253,10 +290,5 @@ class CountryMapDataProvider extends AbstractDataProvider
         }
 
         return $result;
-    }
-
-    private function getLanguageService(): LanguageService
-    {
-        return $GLOBALS['LANG'];
     }
 }

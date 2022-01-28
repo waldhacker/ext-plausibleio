@@ -18,7 +18,6 @@ declare(strict_types=1);
 
 namespace Waldhacker\Plausibleio\Dashboard\DataProvider;
 
-use TYPO3\CMS\Core\Localization\LanguageService;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
 use Waldhacker\Plausibleio\FilterRepository;
 use Waldhacker\Plausibleio\Services\PlausibleService;
@@ -223,10 +222,5 @@ class VisitorsOverTimeDataProvider extends AbstractDataProvider
 
         $responseData = $this->plausibleService->sendAuthorizedRequest($plausibleSiteId, $endpoint, $params);
         return is_array($responseData) ? $responseData : [];
-    }
-
-    private function getLanguageService(): LanguageService
-    {
-        return $GLOBALS['LANG'];
     }
 }

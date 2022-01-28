@@ -17,7 +17,6 @@ abstract class AbstractWidgetController
     protected $dashBoardId = ConfigurationService::DASHBOARD_DEFAULT_ID;
     protected string $plausibleSiteId = '';
     protected string $timeFrame = '';
-    protected array $filters = [];
     protected FilterRepository $filterRepo;
 
     public function __construct(
@@ -43,12 +42,12 @@ abstract class AbstractWidgetController
         }
 
         // request->getQueryParams() already returns a json decoded array
-        $this->filters = $request->getQueryParams()['filter'] ?? [];
-        if (!is_array($this->filters)) {
-            $this->filters = [];
+        $filters = $request->getQueryParams()['filter'] ?? [];
+        if (!is_array($filters)) {
+            $filters = [];
         }
         $this->filterRepo = new FilterRepository();
-        $this->filterRepo->setFiltersFromArray($this->filters);
+        $this->filterRepo->setFiltersFromArray($filters);
 
         $this->configurationService->persistPlausibleSiteIdInUserConfiguration($this->plausibleSiteId, $this->dashBoardId);
         $this->configurationService->persistTimeFrameValueInUserConfiguration($this->timeFrame, $this->dashBoardId);

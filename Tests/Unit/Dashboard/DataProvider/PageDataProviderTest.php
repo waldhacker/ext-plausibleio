@@ -22,6 +22,7 @@ use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
 use TYPO3\CMS\Core\Localization\LanguageService;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
+use Waldhacker\Plausibleio\Filter;
 use Waldhacker\Plausibleio\FilterRepository;
 use Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider;
 use Waldhacker\Plausibleio\Services\PlausibleService;
@@ -40,7 +41,89 @@ class PageDataProviderTest extends UnitTestCase
         $GLOBALS['LANG'] = $this->languageServiceProphecy->reveal();
     }
 
-    public function getTopPageDataReturnsProperValuesDataProvider(): \Generator
+    public function getTopPageDataWithGoalReturnsProperValuesDataProvider(): \Generator
+    {
+        yield 'all items are transformed' => [
+            'topPageDataWithGoal' => [
+                'data' => [
+                    ['page' => '/start/end', 'visitors' => 12],
+                    ['page' => '/into/darkness', 'visitors' => 8],
+                ],
+            ],
+            'topPageDataWithoutGoal' => [
+                'data' => [
+                    ['page' => '/start/end', 'visitors' => 48],
+                    ['page' => '/into/darkness', 'visitors' => 16],
+                ],
+                'columns' => [
+                    [
+                        'name' => 'page',
+                        'label' => 'Page url',
+                        'filter' => [
+                            'name' => 'event:page',
+                            'label' => 'Page is',
+                        ],
+                    ],
+                    ['name' => 'visitors', 'label' => 'Visitors'],
+                ],
+            ],
+            'expected' => [
+                'data' => [
+                    ['page' => '/start/end', 'visitors' => 12, 'cr' => '25%'],
+                    ['page' => '/into/darkness', 'visitors' => 8, 'cr' => '50%'],
+                ],
+                'columns' => [
+                    [
+                        'name' => 'page',
+                        'label' => 'Page url',
+                        'filter' => [
+                            'name' => 'event:page',
+                            'label' => 'Page is',
+                        ],
+                    ],
+                    ['name' => 'visitors', 'label' => 'Conversions'],
+                    ['name' => 'cr', 'label' => 'CR'],
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * @test
+     * @dataProvider getTopPageDataWithGoalReturnsProperValuesDataProvider
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::__construct
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::getTopPageDataWithGoal
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::getLanguageService
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::__construct
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::calcConversionRateOnData
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::roundAdaptivePrecision
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::clearFilters
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::getIterator
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::getRepository
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::removeFilter
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::setFiltersFromFilterRepository
+     */
+    public function getTopPageDataWithGoalReturnsProperValues(
+        ?array $topPageDataWithGoal,
+        ?array $topPageDataWithoutGoal,
+        array $expected
+    ): void {
+        $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
+
+        $this->languageServiceProphecy->getLL('barChart.labels.conversions')->willReturn('Conversions');
+        $this->languageServiceProphecy->getLL('barChart.labels.cr')->willReturn('CR');
+
+        $subject = $this->getMockBuilder(PageDataProvider::class)
+            ->onlyMethods(['getTopPageDataWithoutGoal'])
+            ->setConstructorArgs([$plausibleServiceProphecy->reveal()])
+            ->getMock();
+        $subject->method('getTopPageDataWithoutGoal')
+            ->willReturnOnConsecutiveCalls($topPageDataWithGoal, $topPageDataWithoutGoal);
+
+        self::assertSame($expected, $subject->getTopPageDataWithGoal('', '', new FilterRepository()));
+    }
+
+    public function getTopPageDataWithoutGoalReturnsProperValuesDataProvider(): \Generator
     {
         yield 'all items are transformed' => [
             'plausibleSiteId' => 'waldhacker.dev',
@@ -75,7 +158,7 @@ class PageDataProviderTest extends UnitTestCase
         yield 'all items are transformed with filter' => [
             'plausibleSiteId' => 'waldhacker.dev',
             'timeFrame' => '7d',
-            'filters' => [['name' => 'visit:entry_page', 'value' => '/startpage/subpage']],
+            'filters' => [['name' => FilterRepository::FILTEREVENTPAGE, 'value' => '/startpage/subpage']],
             'endpointData' => [
                 ['page' => '/de', 'visitors' => 12],
                 ['page' => '/en', 'visitors' => 4],
@@ -89,10 +172,6 @@ class PageDataProviderTest extends UnitTestCase
                     [
                         'name' => 'page',
                         'label' => 'Page url',
-                        'filter' => [
-                            'name' => 'event:page',
-                            'label' => 'Page is',
-                        ],
                     ],
                     [
                         'name' => 'visitors',
@@ -166,11 +245,11 @@ class PageDataProviderTest extends UnitTestCase
 
     /**
      * @test
-     * @dataProvider getTopPageDataReturnsProperValuesDataProvider
+     * @dataProvider getTopPageDataWithoutGoalReturnsProperValuesDataProvider
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::__construct
-     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::getTopPageData
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::getTopPageDataWithoutGoal
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::getData
-     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::getLanguageService
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::getLanguageService
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::__construct
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::calcPercentage
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::dataCleanUp
@@ -183,7 +262,7 @@ class PageDataProviderTest extends UnitTestCase
      * @covers \Waldhacker\Plausibleio\FilterRepository::setFiltersFromArray
      * @covers \Waldhacker\Plausibleio\FilterRepository::toPlausibleFilterString
      */
-    public function getTopPageDataReturnsProperValues(
+    public function getTopPageDataWithoutGoalReturnsProperValues(
         string $plausibleSiteId,
         string $timeFrame,
         array $filters,
@@ -212,11 +291,126 @@ class PageDataProviderTest extends UnitTestCase
         $plausibleServiceProphecy->sendAuthorizedRequest($plausibleSiteId, 'api/v1/stats/breakdown?', $authorizedRequestParams,)->willReturn($endpointData);
 
         $subject = new PageDataProvider($plausibleServiceProphecy->reveal());
-        self::assertSame($expected, $subject->getTopPageData($plausibleSiteId, $timeFrame, $filterRepo));
-
+        self::assertSame($expected, $subject->getTopPageDataWithoutGoal($plausibleSiteId, $timeFrame, $filterRepo));
     }
 
-    public function getEntryPageDataReturnsProperValuesDataProvider(): \Generator
+    /**
+     * @test
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::__construct
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::getTopPageData
+     * @covers \Waldhacker\Plausibleio\Filter::__construct
+     * @covers \Waldhacker\Plausibleio\FilterRepository::addFilter
+     * @covers \Waldhacker\Plausibleio\FilterRepository::checkFilter
+     * @covers \Waldhacker\Plausibleio\FilterRepository::isFilterActivated
+     */
+    public function getTopPageDataCallsMethodsCorrect(): void
+    {
+        $languageServiceProphecy = $this->prophesize(LanguageService::class);
+
+        $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
+
+        $GLOBALS['LANG'] = $languageServiceProphecy->reveal();
+
+        $topPageDataProviderMock = $this->getMockBuilder(PageDataProvider::class)
+            ->onlyMethods(['getTopPageDataWithoutGoal', 'getTopPageDataWithGoal'])
+            ->setConstructorArgs([
+                $plausibleServiceProphecy->reveal(),
+            ])
+            ->getMock();
+
+        $filterRepo = new FilterRepository();
+        $filterRepo->addFilter(new Filter(FilterRepository::FILTEREVENTGOAL, 'path'));
+
+        $topPageDataProviderMock->expects($this->once())->method('getTopPageDataWithGoal')->willReturn(['overviewWithGoalData']);
+        self::assertSame(['overviewWithGoalData'], $topPageDataProviderMock->getTopPageData('', '', $filterRepo));
+
+        $topPageDataProviderMock->expects($this->once())->method('getTopPageDataWithoutGoal')->willReturn(['overviewWithoutGoalData']);
+        self::assertSame(['overviewWithoutGoalData'], $topPageDataProviderMock->getTopPageData('', '', new FilterRepository()));
+    }
+
+    public function getEntryPageDataWithGoalReturnsProperValuesDataProvider(): \Generator
+    {
+        yield 'all items are transformed' => [
+            'entryPageDataWithGoal' => [
+                'data' => [
+                    ['entry_page' => '/start/end', 'visitors' => 12],
+                    ['entry_page' => '/into/darkness', 'visitors' => 8],
+                ],
+            ],
+            'entryPageDataWithoutGoal' => [
+                'data' => [
+                    ['entry_page' => '/start/end', 'visitors' => 48],
+                    ['entry_page' => '/into/darkness', 'visitors' => 16],
+                ],
+                'columns' => [
+                    [
+                        'name' => 'entry_page',
+                        'label' => 'Page url',
+                        'filter' => [
+                            'name' => 'visit:entry_page',
+                            'label' => 'Entry page is',
+                        ],
+                    ],
+                    ['name' => 'visitors', 'label' => 'Visitors'],
+                ],
+            ],
+            'expected' => [
+                'data' => [
+                    ['entry_page' => '/start/end', 'visitors' => 12, 'cr' => '25%'],
+                    ['entry_page' => '/into/darkness', 'visitors' => 8, 'cr' => '50%'],
+                ],
+                'columns' => [
+                    [
+                        'name' => 'entry_page',
+                        'label' => 'Page url',
+                        'filter' => [
+                            'name' => 'visit:entry_page',
+                            'label' => 'Entry page is',
+                        ],
+                    ],
+                    ['name' => 'visitors', 'label' => 'Conversions'],
+                    ['name' => 'cr', 'label' => 'CR'],
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * @test
+     * @dataProvider getEntryPageDataWithGoalReturnsProperValuesDataProvider
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::__construct
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::getEntryPageDataWithGoal
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::getLanguageService
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::__construct
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::calcConversionRateOnData
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::roundAdaptivePrecision
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::clearFilters
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::getIterator
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::getRepository
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::removeFilter
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::setFiltersFromFilterRepository
+     */
+    public function getEntryPageDataWithGoalReturnsProperValues(
+        ?array $entryPageDataWithGoal,
+        ?array $entryPageDataWithoutGoal,
+        array $expected
+    ): void {
+        $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
+
+        $this->languageServiceProphecy->getLL('barChart.labels.conversions')->willReturn('Conversions');
+        $this->languageServiceProphecy->getLL('barChart.labels.cr')->willReturn('CR');
+
+        $subject = $this->getMockBuilder(PageDataProvider::class)
+            ->onlyMethods(['getEntryPageDataWithoutGoal'])
+            ->setConstructorArgs([$plausibleServiceProphecy->reveal()])
+            ->getMock();
+        $subject->method('getEntryPageDataWithoutGoal')
+            ->willReturnOnConsecutiveCalls($entryPageDataWithGoal, $entryPageDataWithoutGoal);
+
+        self::assertSame($expected, $subject->getEntryPageDataWithGoal('', '', new FilterRepository()));
+    }
+
+    public function getEntryPageDataWithoutGoalReturnsProperValuesDataProvider(): \Generator
     {
         yield 'all items are transformed' => [
             'plausibleSiteId' => 'waldhacker.dev',
@@ -251,7 +445,7 @@ class PageDataProviderTest extends UnitTestCase
         yield 'all items are transformed with filter' => [
             'plausibleSiteId' => 'waldhacker.dev',
             'timeFrame' => '7d',
-            'filters' => [['name' => 'visit:entry_page', 'value' => '/startpage/subpage']],
+            'filters' => [['name' => FilterRepository::FILTERVISITENTRYPAGE, 'value' => '/startpage/subpage']],
             'endpointData' => [
                 ['entry_page' => '/de', 'visitors' => 12],
                 ['entry_page' => '/en', 'visitors' => 4],
@@ -338,11 +532,11 @@ class PageDataProviderTest extends UnitTestCase
 
     /**
      * @test
-     * @dataProvider getEntryPageDataReturnsProperValuesDataProvider
+     * @dataProvider getEntryPageDataWithoutGoalReturnsProperValuesDataProvider
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::__construct
-     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::getEntryPageData
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::getEntryPageDataWithoutGoal
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::getData
-     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::getLanguageService
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::getLanguageService
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::__construct
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::calcPercentage
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::dataCleanUp
@@ -355,7 +549,7 @@ class PageDataProviderTest extends UnitTestCase
      * @covers \Waldhacker\Plausibleio\FilterRepository::setFiltersFromArray
      * @covers \Waldhacker\Plausibleio\FilterRepository::toPlausibleFilterString
      */
-    public function getEntryPageDataReturnsProperValues(
+    public function getEntryPageDataWithoutGoalReturnsProperValues(
         string $plausibleSiteId,
         string $timeFrame,
         array $filters,
@@ -384,10 +578,126 @@ class PageDataProviderTest extends UnitTestCase
         $plausibleServiceProphecy->sendAuthorizedRequest($plausibleSiteId, 'api/v1/stats/breakdown?', $authorizedRequestParams,)->willReturn($endpointData);
 
         $subject = new PageDataProvider($plausibleServiceProphecy->reveal());
-        self::assertSame($expected, $subject->getEntryPageData($plausibleSiteId, $timeFrame, $filterRepo));
+        self::assertSame($expected, $subject->getEntryPageDataWithoutGoal($plausibleSiteId, $timeFrame, $filterRepo));
     }
 
-    public function getExitPageDataReturnsProperValuesDataProvider(): \Generator
+    /**
+     * @test
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::__construct
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::getEntryPageData
+     * @covers \Waldhacker\Plausibleio\Filter::__construct
+     * @covers \Waldhacker\Plausibleio\FilterRepository::addFilter
+     * @covers \Waldhacker\Plausibleio\FilterRepository::checkFilter
+     * @covers \Waldhacker\Plausibleio\FilterRepository::isFilterActivated
+     */
+    public function getEntryPageDataCallsMethodsCorrect(): void
+    {
+        $languageServiceProphecy = $this->prophesize(LanguageService::class);
+
+        $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
+
+        $GLOBALS['LANG'] = $languageServiceProphecy->reveal();
+
+        $entryPageDataProviderMock = $this->getMockBuilder(PageDataProvider::class)
+            ->onlyMethods(['getEntryPageDataWithoutGoal', 'getEntryPageDataWithGoal'])
+            ->setConstructorArgs([
+                $plausibleServiceProphecy->reveal(),
+            ])
+            ->getMock();
+
+        $filterRepo = new FilterRepository();
+        $filterRepo->addFilter(new Filter(FilterRepository::FILTEREVENTGOAL, 'path'));
+
+        $entryPageDataProviderMock->expects($this->once())->method('getEntryPageDataWithGoal')->willReturn(['overviewWithGoalData']);
+        self::assertSame(['overviewWithGoalData'], $entryPageDataProviderMock->getEntryPageData('', '', $filterRepo));
+
+        $entryPageDataProviderMock->expects($this->once())->method('getEntryPageDataWithoutGoal')->willReturn(['overviewWithoutGoalData']);
+        self::assertSame(['overviewWithoutGoalData'], $entryPageDataProviderMock->getEntryPageData('', '', new FilterRepository()));
+    }
+
+    public function getExitPageDataWithGoalReturnsProperValuesDataProvider(): \Generator
+    {
+        yield 'all items are transformed' => [
+            'exitPageDataWithGoal' => [
+                'data' => [
+                    ['exit_page' => '/start/end', 'visitors' => 12],
+                    ['exit_page' => '/into/darkness', 'visitors' => 8],
+                ],
+            ],
+            'exitPageDataWithoutGoal' => [
+                'data' => [
+                    ['exit_page' => '/start/end', 'visitors' => 48],
+                    ['exit_page' => '/into/darkness', 'visitors' => 16],
+                ],
+                'columns' => [
+                    [
+                        'name' => 'exit_page',
+                        'label' => 'Page url',
+                        'filter' => [
+                            'name' => 'visit:exit_page',
+                            'label' => 'Exit page is',
+                        ],
+                    ],
+                    ['name' => 'visitors', 'label' => 'Visitors'],
+                ],
+            ],
+            'expected' => [
+                'data' => [
+                    ['exit_page' => '/start/end', 'visitors' => 12, 'cr' => '25%'],
+                    ['exit_page' => '/into/darkness', 'visitors' => 8, 'cr' => '50%'],
+                ],
+                'columns' => [
+                    [
+                        'name' => 'exit_page',
+                        'label' => 'Page url',
+                        'filter' => [
+                            'name' => 'visit:exit_page',
+                            'label' => 'Exit page is',
+                        ],
+                    ],
+                    ['name' => 'visitors', 'label' => 'Conversions'],
+                    ['name' => 'cr', 'label' => 'CR'],
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * @test
+     * @dataProvider getExitPageDataWithGoalReturnsProperValuesDataProvider
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::__construct
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::getExitPageDataWithGoal
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::getLanguageService
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::__construct
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::calcConversionRateOnData
+     * @covers       \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::roundAdaptivePrecision
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::clearFilters
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::getIterator
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::getRepository
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::removeFilter
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::setFiltersFromFilterRepository
+     */
+    public function getExitPageDataWithGoalReturnsProperValues(
+        ?array $exitPageDataWithGoal,
+        ?array $exitPageDataWithoutGoal,
+        array $expected
+    ): void {
+        $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
+
+        $this->languageServiceProphecy->getLL('barChart.labels.conversions')->willReturn('Conversions');
+        $this->languageServiceProphecy->getLL('barChart.labels.cr')->willReturn('CR');
+
+        $subject = $this->getMockBuilder(PageDataProvider::class)
+            ->onlyMethods(['getExitPageDataWithoutGoal'])
+            ->setConstructorArgs([$plausibleServiceProphecy->reveal()])
+            ->getMock();
+        $subject->method('getExitPageDataWithoutGoal')
+            ->willReturnOnConsecutiveCalls($exitPageDataWithGoal, $exitPageDataWithoutGoal);
+
+        self::assertSame($expected, $subject->getExitPageDataWithGoal('', '', new FilterRepository()));
+    }
+
+    public function getExitPageDataWithoutGoalReturnsProperValuesDataProvider(): \Generator
     {
         yield 'all items are transformed' => [
             'plausibleSiteId' => 'waldhacker.dev',
@@ -509,12 +819,12 @@ class PageDataProviderTest extends UnitTestCase
 
     /**
      * @test
-     * @dataProvider getExitPageDataReturnsProperValuesDataProvider
+     * @dataProvider getExitPageDataWithoutGoalReturnsProperValuesDataProvider
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::__construct
-     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::getExitPageData
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::getExitPageDataWithoutGoal
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::getData
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::__construct
-     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::getLanguageService
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::getLanguageService
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::__construct
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::calcPercentage
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::dataCleanUp
@@ -526,8 +836,8 @@ class PageDataProviderTest extends UnitTestCase
      * @covers \Waldhacker\Plausibleio\FilterRepository::isFilterActivated
      * @covers \Waldhacker\Plausibleio\FilterRepository::setFiltersFromArray
      * @covers \Waldhacker\Plausibleio\FilterRepository::toPlausibleFilterString
- */
-    public function getExitPageDataReturnsProperValues(
+    */
+    public function getExitPageDataWithoutGoalReturnsProperValues(
         string $plausibleSiteId,
         string $timeFrame,
         array $filters,
@@ -556,6 +866,40 @@ class PageDataProviderTest extends UnitTestCase
         $plausibleServiceProphecy->sendAuthorizedRequest($plausibleSiteId, 'api/v1/stats/breakdown?', $authorizedRequestParams,)->willReturn($endpointData);
 
         $subject = new PageDataProvider($plausibleServiceProphecy->reveal());
-        self::assertSame($expected, $subject->getExitPageData($plausibleSiteId, $timeFrame, $filterRepo));
+        self::assertSame($expected, $subject->getExitPageDataWithoutGoal($plausibleSiteId, $timeFrame, $filterRepo));
+    }
+
+    /**
+     * @test
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::__construct
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider::getExitPageData
+     * @covers \Waldhacker\Plausibleio\Filter::__construct
+     * @covers \Waldhacker\Plausibleio\FilterRepository::addFilter
+     * @covers \Waldhacker\Plausibleio\FilterRepository::checkFilter
+     * @covers \Waldhacker\Plausibleio\FilterRepository::isFilterActivated
+     */
+    public function getExitPageDataCallsMethodsCorrect(): void
+    {
+        $languageServiceProphecy = $this->prophesize(LanguageService::class);
+
+        $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
+
+        $GLOBALS['LANG'] = $languageServiceProphecy->reveal();
+
+        $exitPageDataProviderMock = $this->getMockBuilder(PageDataProvider::class)
+            ->onlyMethods(['getExitPageDataWithoutGoal', 'getExitPageDataWithGoal'])
+            ->setConstructorArgs([
+                $plausibleServiceProphecy->reveal(),
+            ])
+            ->getMock();
+
+        $filterRepo = new FilterRepository();
+        $filterRepo->addFilter(new Filter(FilterRepository::FILTEREVENTGOAL, 'path'));
+
+        $exitPageDataProviderMock->expects($this->once())->method('getExitPageDataWithGoal')->willReturn(['overviewWithGoalData']);
+        self::assertSame(['overviewWithGoalData'], $exitPageDataProviderMock->getExitPageData('', '', $filterRepo));
+
+        $exitPageDataProviderMock->expects($this->once())->method('getExitPageDataWithoutGoal')->willReturn(['overviewWithoutGoalData']);
+        self::assertSame(['overviewWithoutGoalData'], $exitPageDataProviderMock->getExitPageData('', '', new FilterRepository()));
     }
 }

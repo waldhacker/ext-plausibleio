@@ -297,7 +297,7 @@ class GoalDataProviderTest extends UnitTestCase
      * @dataProvider getGoalsDataReturnsProperValuesDataProvider
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\GoalDataProvider::__construct
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\GoalDataProvider::getGoalsData
-     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\GoalDataProvider::getLanguageService
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::getLanguageService
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::__construct
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::calcPercentage
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::calcConversionRate
@@ -541,7 +541,7 @@ class GoalDataProviderTest extends UnitTestCase
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::calcConversionRate
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::dataCleanUp
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::roundAdaptivePrecision
-     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\GoalDataProvider::getLanguageService
+     * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::getLanguageService
      * @covers \Waldhacker\Plausibleio\FilterRepository::setFiltersFromArray
      * @covers \Waldhacker\Plausibleio\FilterRepository::toPlausibleFilterString
  */

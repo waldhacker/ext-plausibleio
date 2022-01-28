@@ -5,6 +5,7 @@ declare(strict_types = 1);
 namespace Waldhacker\Plausibleio\Dashboard\DataProvider;
 
 use TYPO3\CMS\Core\Utility\Exception\MissingArrayPathException;
+use TYPO3\CMS\Core\Localization\LanguageService;
 use Waldhacker\Plausibleio\Services\PlausibleService;
 
 
@@ -176,5 +177,14 @@ abstract class AbstractDataProvider
         }
 
         return $result;
+    }
+
+    /**
+     * @return LanguageService
+     * @codeCoverageIgnore
+     */
+    protected function getLanguageService(): LanguageService
+    {
+        return $GLOBALS['LANG'];
     }
 }

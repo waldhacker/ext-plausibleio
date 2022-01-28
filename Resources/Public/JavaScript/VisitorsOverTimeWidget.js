@@ -20,9 +20,8 @@ define([
   'TYPO3/CMS/Core/Event/RegularEvent',
   'lit',
   'TYPO3/CMS/Dashboard/Contrib/chartjs',
-  'TYPO3/CMS/Plausibleio/Contrib/d3-format',
   'TYPO3/CMS/Plausibleio/WidgetService',
-], function (AjaxRequest, RegularEvent, lit, chartjs_1, D3Format, WidgetService) {
+], function (AjaxRequest, RegularEvent, lit, chartjs_1, WidgetService) {
   'use strict';
   chartjs_1 = __importDefault(chartjs_1);
 
@@ -125,14 +124,6 @@ define([
       }).delegateTo(document, this.options.dashboardItemSelector);
     }
 
-    formatSIPrefix(n) {
-      if (Number.isInteger(n)) {
-        // 2400 -> 2.4k
-        n = D3Format.format('.2~s')(n);
-      }
-      return n;
-    }
-
     renderOverviewData(widget, data) {
       if (typeof(widget) !== 'undefined' && widget !== null && data) {
         if (data.columns === undefined) {
@@ -143,7 +134,7 @@ define([
           lit.html`
             <div class="chartOverviewItem">
               <div class="chartOverviewItemCaption">${label}</div>
-              <div class="chartOverviewItemValue">${value !== '' && value != null ? this.formatSIPrefix(value) : '0'}</div>
+              <div class="chartOverviewItemValue">${value !== '' && value != null ? WidgetService.formatSIPrefix(value) : '0'}</div>
             </div>
         `;
 

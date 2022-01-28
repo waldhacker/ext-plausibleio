@@ -18,7 +18,6 @@ declare(strict_types=1);
 
 namespace Waldhacker\Plausibleio\Dashboard\DataProvider;
 
-use TYPO3\CMS\Core\Localization\LanguageService;
 use Waldhacker\Plausibleio\FilterRepository;
 
 class GoalDataProvider extends AbstractDataProvider
@@ -140,10 +139,5 @@ class GoalDataProvider extends AbstractDataProvider
             ];
 
         return $responseData;
-    }
-
-    private function getLanguageService(): LanguageService
-    {
-        return $GLOBALS['LANG'];
     }
 }

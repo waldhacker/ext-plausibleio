@@ -154,11 +154,11 @@ class DeviceDataProviderTest extends UnitTestCase
             ],
         ];
 
-        yield 'all items are transformed with filter' => [
+        yield 'all items are transformed with browser filter' => [
             'plausibleSiteId' => 'waldhacker.dev',
             'timeFrame' => '7d',
             'filters' => [
-                ['name' => 'visit:browser', 'value' => 'firefox'],
+                ['name' => FilterRepository::FILTERVISITBROWSER, 'value' => 'firefox'],
             ],
             'endpointData' => [
                 ['browser_version' => '48.0', 'visitors' => 12],
@@ -177,6 +177,35 @@ class DeviceDataProviderTest extends UnitTestCase
                             'name' => 'visit:browser_version',
                             'label' => '${browser} version is',
                         ],
+                    ],
+                    [
+                        'name' => 'visitors',
+                        'label' => 'Visitors',
+                    ],
+                ],
+            ],
+        ];
+
+        yield 'all items are transformed with browser and version filter' => [
+            'plausibleSiteId' => 'waldhacker.dev',
+            'timeFrame' => '7d',
+            'filters' => [
+                ['name' => FilterRepository::FILTERVISITBROWSER, 'value' => 'firefox'],
+                ['name' => FilterRepository::FILTERVISITBROWSERVERSION, 'value' => '96.4'],
+            ],
+            'endpointData' => [
+                ['browser_version' => '48.0', 'visitors' => 12],
+                ['browser_version' => '46.0', 'visitors' => 8],
+            ],
+            'expected' => [
+                'data' => [
+                    ['browser_version' => '48.0', 'visitors' => 12, 'percentage' => 60.0],
+                    ['browser_version' => '46.0', 'visitors' => 8, 'percentage' => 40.0],
+                ],
+                'columns' => [
+                    [
+                        'name' => 'browser_version',
+                        'label' => '${browser} version',
                     ],
                     [
                         'name' => 'visitors',
@@ -312,12 +341,11 @@ class DeviceDataProviderTest extends UnitTestCase
      */
     public function getBrowserDataCallsMethodsCorrect(): void {
         $languageServiceProphecy = $this->prophesize(LanguageService::class);
-
         $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
 
         $GLOBALS['LANG'] = $languageServiceProphecy->reveal();
 
-        $DeviceDataProviderMock = $this->getMockBuilder(DeviceDataProvider::class)
+        $deviceDataProviderMock = $this->getMockBuilder(DeviceDataProvider::class)
             ->onlyMethods(['getBrowserDataWithoutGoal', 'getBrowserDataWithGoal'])
             ->setConstructorArgs([
                 $plausibleServiceProphecy->reveal(),
@@ -327,11 +355,11 @@ class DeviceDataProviderTest extends UnitTestCase
         $filterRepo = new FilterRepository();
         $filterRepo->addFilter(new Filter(FilterRepository::FILTEREVENTGOAL, 'path'));
 
-        $DeviceDataProviderMock->expects($this->once())->method('getBrowserDataWithGoal')->willReturn(['overviewWithGoalData']);
-        self::assertSame(['overviewWithGoalData'], $DeviceDataProviderMock->getBrowserData('', '', $filterRepo));
+        $deviceDataProviderMock->expects($this->once())->method('getBrowserDataWithGoal')->willReturn(['overviewWithGoalData']);
+        self::assertSame(['overviewWithGoalData'], $deviceDataProviderMock->getBrowserData('', '', $filterRepo));
 
-        $DeviceDataProviderMock->expects($this->once())->method('getBrowserDataWithoutGoal')->willReturn(['overviewWithoutGoalData']);
-        self::assertSame(['overviewWithoutGoalData'], $DeviceDataProviderMock->getBrowserData('', '', new FilterRepository()));
+        $deviceDataProviderMock->expects($this->once())->method('getBrowserDataWithoutGoal')->willReturn(['overviewWithoutGoalData']);
+        self::assertSame(['overviewWithoutGoalData'], $deviceDataProviderMock->getBrowserData('', '', new FilterRepository()));
     }
 
     public function getOSDataWithGoalReturnsProperValuesDataProvider(): \Generator
@@ -447,11 +475,11 @@ class DeviceDataProviderTest extends UnitTestCase
             ],
         ];
 
-        yield 'all items are transformed with filter' => [
+        yield 'all items are transformed with os filter' => [
             'plausibleSiteId' => 'waldhacker.dev',
             'timeFrame' => '7d',
             'filters' => [
-                ['name' => 'visit:os', 'value' => 'Mac'],
+                ['name' => FilterRepository::FILTERVISITOS, 'value' => 'Mac'],
             ],
             'endpointData' => [
                 ['os_version' => '10.15', 'visitors' => 32],
@@ -470,6 +498,35 @@ class DeviceDataProviderTest extends UnitTestCase
                             'name' => 'visit:os_version',
                             'label' => '${os} version is',
                         ],
+                    ],
+                    [
+                        'name' => 'visitors',
+                        'label' => 'Visitors',
+                    ],
+                ],
+            ],
+        ];
+
+        yield 'all items are transformed with os and version filter' => [
+            'plausibleSiteId' => 'waldhacker.dev',
+            'timeFrame' => '7d',
+            'filters' => [
+                ['name' => FilterRepository::FILTERVISITOS, 'value' => 'Mac'],
+                ['name' => FilterRepository::FILTERVISITOSVERSION, 'value' => '1.0'],
+            ],
+            'endpointData' => [
+                ['os_version' => '10.15', 'visitors' => 32],
+                ['os_version' => '10.11', 'visitors' => 48],
+            ],
+            'expected' => [
+                'data' => [
+                    ['os_version' => '10.15', 'visitors' => 32, 'percentage' => 40.0],
+                    ['os_version' => '10.11', 'visitors' => 48, 'percentage' => 60.0],
+                ],
+                'columns' => [
+                    [
+                        'name' => 'os_version',
+                        'label' => '${os} version',
                     ],
                     [
                         'name' => 'visitors',
@@ -585,7 +642,7 @@ class DeviceDataProviderTest extends UnitTestCase
             'metrics' => 'visitors',
         ];
         if (!$filterRepo->empty()) {
-            $authorizedRequestParams['filters'] = $filters[0]['name'] . '==' . $filters[0]['value'];
+            $authorizedRequestParams['filters'] = $filterRepo->toPlausibleFilterString();
         }
 
         $plausibleServiceProphecy->sendAuthorizedRequest($plausibleSiteId, 'api/v1/stats/breakdown?', $authorizedRequestParams,)->willReturn($endpointData);
@@ -611,7 +668,7 @@ class DeviceDataProviderTest extends UnitTestCase
 
         $GLOBALS['LANG'] = $languageServiceProphecy->reveal();
 
-        $DeviceDataProviderMock = $this->getMockBuilder(DeviceDataProvider::class)
+        $deviceDataProviderMock = $this->getMockBuilder(DeviceDataProvider::class)
             ->onlyMethods(['getOSDataWithoutGoal', 'getOSDataWithGoal'])
             ->setConstructorArgs([
                 $plausibleServiceProphecy->reveal(),
@@ -621,11 +678,11 @@ class DeviceDataProviderTest extends UnitTestCase
         $filterRepo = new FilterRepository();
         $filterRepo->addFilter(new Filter(FilterRepository::FILTEREVENTGOAL, 'path'));
 
-        $DeviceDataProviderMock->expects($this->once())->method('getOSDataWithGoal')->willReturn(['overviewWithGoalData']);
-        self::assertSame(['overviewWithGoalData'], $DeviceDataProviderMock->getOSDataWithGoal('', '', $filterRepo));
+        $deviceDataProviderMock->expects($this->once())->method('getOSDataWithGoal')->willReturn(['overviewWithGoalData']);
+        self::assertSame(['overviewWithGoalData'], $deviceDataProviderMock->getOSDataWithGoal('', '', $filterRepo));
 
-        $DeviceDataProviderMock->expects($this->once())->method('getOSDataWithoutGoal')->willReturn(['overviewWithoutGoalData']);
-        self::assertSame(['overviewWithoutGoalData'], $DeviceDataProviderMock->getOSDataWithoutGoal('', '', new FilterRepository()));
+        $deviceDataProviderMock->expects($this->once())->method('getOSDataWithoutGoal')->willReturn(['overviewWithoutGoalData']);
+        self::assertSame(['overviewWithoutGoalData'], $deviceDataProviderMock->getOSDataWithoutGoal('', '', new FilterRepository()));
     }
 
     public function getDeviceDataWithGoalReturnsProperValuesDataProvider(): \Generator
@@ -746,7 +803,7 @@ class DeviceDataProviderTest extends UnitTestCase
             'plausibleSiteId' => 'waldhacker.dev',
             'timeFrame' => '7d',
             'filters' => [
-                ['name' => 'visit:device', 'value' => 'Desktop'],
+                ['name' => FilterRepository::FILTERVISITDEVICE, 'value' => 'Desktop'],
             ],
             'endpointData' => [
                 ['device' => 'Desktop', 'visitors' => 3],
@@ -898,7 +955,7 @@ class DeviceDataProviderTest extends UnitTestCase
 
         $GLOBALS['LANG'] = $languageServiceProphecy->reveal();
 
-        $DeviceDataProviderMock = $this->getMockBuilder(DeviceDataProvider::class)
+        $deviceDataProviderMock = $this->getMockBuilder(DeviceDataProvider::class)
             ->onlyMethods(['getDeviceDataWithoutGoal', 'getDeviceDataWithGoal'])
             ->setConstructorArgs([
                 $plausibleServiceProphecy->reveal(),
@@ -908,10 +965,10 @@ class DeviceDataProviderTest extends UnitTestCase
         $filterRepo = new FilterRepository();
         $filterRepo->addFilter(new Filter(FilterRepository::FILTEREVENTGOAL, 'path'));
 
-        $DeviceDataProviderMock->expects($this->once())->method('getDeviceDataWithGoal')->willReturn(['overviewWithGoalData']);
-        self::assertSame(['overviewWithGoalData'], $DeviceDataProviderMock->getDeviceDataWithGoal('', '', $filterRepo));
+        $deviceDataProviderMock->expects($this->once())->method('getDeviceDataWithGoal')->willReturn(['overviewWithGoalData']);
+        self::assertSame(['overviewWithGoalData'], $deviceDataProviderMock->getDeviceDataWithGoal('', '', $filterRepo));
 
-        $DeviceDataProviderMock->expects($this->once())->method('getDeviceDataWithoutGoal')->willReturn(['overviewWithoutGoalData']);
-        self::assertSame(['overviewWithoutGoalData'], $DeviceDataProviderMock->getDeviceDataWithoutGoal('', '', new FilterRepository()));
+        $deviceDataProviderMock->expects($this->once())->method('getDeviceDataWithoutGoal')->willReturn(['overviewWithoutGoalData']);
+        self::assertSame(['overviewWithoutGoalData'], $deviceDataProviderMock->getDeviceDataWithoutGoal('', '', new FilterRepository()));
     }
 }

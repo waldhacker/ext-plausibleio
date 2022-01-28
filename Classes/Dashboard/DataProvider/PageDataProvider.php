@@ -18,12 +18,46 @@ declare(strict_types=1);
 
 namespace Waldhacker\Plausibleio\Dashboard\DataProvider;
 
-use TYPO3\CMS\Core\Localization\LanguageService;
 use Waldhacker\Plausibleio\FilterRepository;
 
 class PageDataProvider extends AbstractDataProvider
 {
-    public function getTopPageData(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
+    public function getTopPageDataWithGoal(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
+    {
+        $topPageDataWithGoal = $this->getTopPageDataWithoutGoal($plausibleSiteId, $timeFrame, $filters);
+        $filtersWithoutGoal = $filters->getRepository()->removeFilter(FilterRepository::FILTEREVENTGOAL);
+        $topPageDataWithoutGoal = $this->getTopPageDataWithoutGoal($plausibleSiteId, $timeFrame, $filtersWithoutGoal);
+
+        $result = [];
+        $result['data'] = $this->calcConversionRateOnData($topPageDataWithoutGoal['columns'][0]['name'], $topPageDataWithoutGoal['data'], $topPageDataWithGoal['data']);
+        $result['columns'] = [
+            // Take over the data name column, so the correct label (browser, version) does not have to be determined.
+            $topPageDataWithoutGoal['columns'][0],
+            [
+                'name' => 'visitors',
+                'label' => $this->getLanguageService()->getLL('barChart.labels.conversions'),
+            ],
+            [
+                'name' => 'cr',
+                'label' => $this->getLanguageService()->getLL('barChart.labels.cr'),
+            ],
+        ];
+
+        return $result;
+    }
+
+    /**
+     * Note: The goal filter must already have been removed from $filters before the call.
+     *       Within the method there is no check whether the goal filter is activated. The
+     *       real difference to getBrowserDataWithGoal are the returned columns and their
+     *       corresponding data.
+     *
+     * @param string $plausibleSiteId
+     * @param string $timeFrame
+     * @param array $filters
+     * @return array
+     */
+    public function getTopPageDataWithoutGoal(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
     {
         $topPageFilterActivated = $filters->isFilterActivated(FilterRepository::FILTEREVENTPAGE);
         $responseData = $this->getData($plausibleSiteId, $timeFrame, 'event:page', $filters);
@@ -52,7 +86,42 @@ class PageDataProvider extends AbstractDataProvider
         return $responseData;
     }
 
-    public function getEntryPageData(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
+    public function getTopPageData(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
+    {
+        $goalFilterActivated = $filters->isFilterActivated(FilterRepository::FILTEREVENTGOAL);
+
+        if (!$goalFilterActivated) {
+            return $this->getTopPageDataWithoutGoal($plausibleSiteId, $timeFrame, $filters);
+        } else {
+            return $this->getTopPageDataWithGoal($plausibleSiteId, $timeFrame, $filters);
+        }
+    }
+
+    public function getEntryPageDataWithGoal(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
+    {
+        $entryPageDataWithGoal = $this->getEntryPageDataWithoutGoal($plausibleSiteId, $timeFrame, $filters);
+        $filtersWithoutGoal = $filters->getRepository()->removeFilter(FilterRepository::FILTEREVENTGOAL);
+        $entryPageDataWithoutGoal = $this->getEntryPageDataWithoutGoal($plausibleSiteId, $timeFrame, $filtersWithoutGoal);
+
+        $result = [];
+        $result['data'] = $this->calcConversionRateOnData($entryPageDataWithoutGoal['columns'][0]['name'], $entryPageDataWithoutGoal['data'], $entryPageDataWithGoal['data']);
+        $result['columns'] = [
+            // Take over the data name column, so the correct label (browser, version) does not have to be determined.
+            $entryPageDataWithoutGoal['columns'][0],
+            [
+                'name' => 'visitors',
+                'label' => $this->getLanguageService()->getLL('barChart.labels.conversions'),
+            ],
+            [
+                'name' => 'cr',
+                'label' => $this->getLanguageService()->getLL('barChart.labels.cr'),
+            ],
+        ];
+
+        return $result;
+    }
+
+    public function getEntryPageDataWithoutGoal(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
     {
         $entryPageFilterActivated = $filters->isFilterActivated(FilterRepository::FILTERVISITENTRYPAGE);
         $responseData = $this->getData($plausibleSiteId, $timeFrame, 'visit:entry_page', $filters);
@@ -81,7 +150,42 @@ class PageDataProvider extends AbstractDataProvider
         return $responseData;
     }
 
-    public function getExitPageData(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
+    public function getEntryPageData(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
+    {
+        $goalFilterActivated = $filters->isFilterActivated(FilterRepository::FILTEREVENTGOAL);
+
+        if (!$goalFilterActivated) {
+            return $this->getEntryPageDataWithoutGoal($plausibleSiteId, $timeFrame, $filters);
+        } else {
+            return $this->getEntryPageDataWithGoal($plausibleSiteId, $timeFrame, $filters);
+        }
+    }
+
+    public function getExitPageDataWithGoal(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
+    {
+        $exitPageDataWithGoal = $this->getExitPageDataWithoutGoal($plausibleSiteId, $timeFrame, $filters);
+        $filtersWithoutGoal = $filters->getRepository()->removeFilter(FilterRepository::FILTEREVENTGOAL);
+        $exitPageDataWithoutGoal = $this->getExitPageDataWithoutGoal($plausibleSiteId, $timeFrame, $filtersWithoutGoal);
+
+        $result = [];
+        $result['data'] = $this->calcConversionRateOnData($exitPageDataWithoutGoal['columns'][0]['name'], $exitPageDataWithoutGoal['data'], $exitPageDataWithGoal['data']);
+        $result['columns'] = [
+            // Take over the data name column, so the correct label (browser, version) does not have to be determined.
+            $exitPageDataWithoutGoal['columns'][0],
+            [
+                'name' => 'visitors',
+                'label' => $this->getLanguageService()->getLL('barChart.labels.conversions'),
+            ],
+            [
+                'name' => 'cr',
+                'label' => $this->getLanguageService()->getLL('barChart.labels.cr'),
+            ],
+        ];
+
+        return $result;
+    }
+
+    public function getExitPageDataWithoutGoal(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
     {
         $exitPageFilterActivated = $filters->isFilterActivated(FilterRepository::FILTERVISITEXITPAGE);
         $responseData = $this->getData($plausibleSiteId, $timeFrame, 'visit:exit_page', $filters);
@@ -110,6 +214,17 @@ class PageDataProvider extends AbstractDataProvider
         return $responseData;
     }
 
+    public function getExitPageData(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
+    {
+        $goalFilterActivated = $filters->isFilterActivated(FilterRepository::FILTEREVENTGOAL);
+
+        if (!$goalFilterActivated) {
+            return $this->getExitPageDataWithoutGoal($plausibleSiteId, $timeFrame, $filters);
+        } else {
+            return $this->getExitPageDataWithGoal($plausibleSiteId, $timeFrame, $filters);
+        }
+    }
+
     private function getData(string $plausibleSiteId, string $timeFrame, string $property, FilterRepository $filters): array
     {
         $endpoint = 'api/v1/stats/breakdown?';
@@ -131,10 +246,5 @@ class PageDataProvider extends AbstractDataProvider
         }
 
         return $responseData;
-    }
-
-    private function getLanguageService(): LanguageService
-    {
-        return $GLOBALS['LANG'];
     }
 }

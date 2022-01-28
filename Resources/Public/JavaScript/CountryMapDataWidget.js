@@ -17,10 +17,9 @@ define([
   'datamaps',
   'TYPO3/CMS/Core/Ajax/AjaxRequest',
   'TYPO3/CMS/Core/Event/RegularEvent',
-  'TYPO3/CMS/Plausibleio/Contrib/d3-format',
   'TYPO3/CMS/Plausibleio/WidgetService',
   'TYPO3/CMS/Plausibleio/Tabs',
-], function (D3, Datamap, AjaxRequest, RegularEvent, D3Format, WidgetService, Tabs) {
+], function (D3, Datamap, AjaxRequest, RegularEvent, WidgetService, Tabs) {
   'use strict';
 
   class CountryMapDataWidget {
@@ -103,7 +102,7 @@ define([
           let iso = item.alpha3;
           let value = item.visitors;
           // 2400 -> 2.4k
-          value = D3Format.format('.2~s')(value);
+          value = WidgetService.formatSIPrefix(value);
           dataset[iso] = {
             numberOfThings: value,
             fillColor: paletteScale(item.visitors),

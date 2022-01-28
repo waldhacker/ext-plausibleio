@@ -108,7 +108,6 @@ class VisitorsOverTimeWidget implements WidgetInterface, EventDataInterface, Add
         return [
             'TYPO3/CMS/Dashboard/Contrib/chartjs',
             'TYPO3/CMS/Dashboard/ChartInitializer',
-            'TYPO3/CMS/Plausibleio/Contrib/d3-format',
             'TYPO3/CMS/Plausibleio/VisitorsOverTimeWidget',
             'TYPO3/CMS/Plausibleio/WidgetService',
         ];

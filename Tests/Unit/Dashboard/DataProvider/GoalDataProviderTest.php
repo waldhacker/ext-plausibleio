@@ -384,7 +384,7 @@ class GoalDataProviderTest extends UnitTestCase
             'timeFrame' => '7d',
             'filters' => [],
             'goal' => '404',
-            'property' => 'path',
+            'property' => ['path'],
             'endpointData' => [
                 ['path' => '/end/point', 'visitors' => 6, 'events' => 5],
                 ['path' => '/exit', 'visitors' => 10, 'events' => 6],
@@ -417,18 +417,18 @@ class GoalDataProviderTest extends UnitTestCase
             'timeFrame' => '7d',
             'filters' => [],
             'goal' => '',
-            'property' => '',
+            'property' => [],
             'endpointData' => [],
             'totalVisitorData' => [],
             'expected' => [],
         ];
 
-        yield 'no goal other than 404 leads to empty result' => [
+        yield 'no property leads to empty result' => [
             'plausibleSiteId' => 'waldhacker.dev',
             'timeFrame' => '7d',
             'filters' => [],
-            'goal' => 'newsletter',
-            'property' => 'email',
+            'goal' => '404',
+            'property' => [],
             'endpointData' => [],
             'totalVisitorData' => [],
             'expected' => [],
@@ -439,7 +439,7 @@ class GoalDataProviderTest extends UnitTestCase
             'timeFrame' => '7d',
             'filters' => [],
             'goal' => '404',
-            'property' => 'path',
+            'property' => ['path'],
             'endpointData' => [
                 ['visitors' => 6, 'events' => 5],
                 ['path' => '/exit', 'visitors' => 10, 'events' => 6],
@@ -471,7 +471,7 @@ class GoalDataProviderTest extends UnitTestCase
             'timeFrame' => '7d',
             'filters' => [],
             'goal' => '404',
-            'property' => 'path',
+            'property' => ['path'],
             'endpointData' => [
                 ['path' => '/end/point', 'visitors' => 6, 'events' => 5],
                 ['path' => '/exit', 'events' => 6],
@@ -503,7 +503,7 @@ class GoalDataProviderTest extends UnitTestCase
             'timeFrame' => '7d',
             'filters' => [],
             'goal' => '404',
-            'property' => 'path',
+            'property' => ['path'],
             'endpointData' => [
                 ['path' => '/end/point', 'visitors' => 6],
                 ['path' => '/exit', 'visitors' => 10, 'events' => 6],
@@ -550,7 +550,7 @@ class GoalDataProviderTest extends UnitTestCase
         string $timeFrame,
         array $filters,
         string $goal,
-        string $property,
+        array $property,
         ?array $endpointData,
         ?array $totalVisitorData,
         array $expected): void
@@ -561,18 +561,20 @@ class GoalDataProviderTest extends UnitTestCase
         $filterRepo->setFiltersFromArray($filters);
 
         $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
-        $plausibleServiceProphecy
-            ->sendAuthorizedRequest(
-                $plausibleSiteId,
-                'api/v1/stats/breakdown?',
-                [
-                    'site_id' => $plausibleSiteId,
-                    'period' => $timeFrame,
-                    'property' => 'event:props:' . $property,
-                    'metrics' => 'visitors,events',
-                ]
-            )
-            ->willReturn($endpointData);
+        if (count($property) > 0) {
+            $plausibleServiceProphecy
+                ->sendAuthorizedRequest(
+                    $plausibleSiteId,
+                    'api/v1/stats/breakdown?',
+                    [
+                        'site_id' => $plausibleSiteId,
+                        'period' => $timeFrame,
+                        'property' => 'event:props:' . $property[0],
+                        'metrics' => 'visitors,events',
+                    ]
+                )
+                ->willReturn($endpointData);
+        }
         // for calcConversionRate
         $plausibleServiceProphecy
             ->sendAuthorizedRequest(
@@ -587,6 +589,6 @@ class GoalDataProviderTest extends UnitTestCase
             ->willReturn($totalVisitorData);
 
         $subject = new GoalDataProvider($plausibleServiceProphecy->reveal());
-        self::assertSame($expected, $subject->getGoalPropertiesData($goal, $plausibleSiteId, $timeFrame, $filterRepo));
+        self::assertSame($expected, $subject->getGoalPropertiesData($goal, $plausibleSiteId, $timeFrame, $filterRepo, $property));
     }
 }

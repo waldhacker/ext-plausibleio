@@ -35,7 +35,7 @@ class VisitorsOverTimeDataProvider extends AbstractDataProvider
 
     public function getOverviewWithGoal(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
     {
-        $filtersWithoutGoal = $filters->removeFilter(FilterRepository::FILTEREVENTGOAL);
+        $filtersWithoutGoal = $filters->getRepository()->removeFilter(FilterRepository::FILTEREVENTGOAL, FilterRepository::FILTEREVENTPROPS);
 
         $dataWithoutGoal = $this->getOverviewWithoutGoal($plausibleSiteId, $timeFrame, $filtersWithoutGoal);
         $dataWithoutGoal = $dataWithoutGoal['data'] ?? [];
@@ -151,7 +151,7 @@ class VisitorsOverTimeDataProvider extends AbstractDataProvider
 
     public function getOverview(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
     {
-        $goalFilterActivated = $filters->isFilterActivated(FilterRepository::FILTEREVENTGOAL);
+        $goalFilterActivated = $filters->isFilterActivated(FilterRepository::FILTEREVENTGOAL, FilterRepository::FILTEREVENTPROPS);
 
         if (!$goalFilterActivated) {
             return $this->getOverviewWithoutGoal($plausibleSiteId, $timeFrame, $filters);

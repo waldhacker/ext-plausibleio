@@ -316,12 +316,18 @@ define([
       lit.render(template, targetElement, {eventContext: this});
     }
 
-    getFilterByType(name) {
+    /**
+     *
+     * @param string typeName
+     * @return If a filter of the corresponding type was found, it is returned, if not, null is returned.
+     */
+    getFilterByType(typeName) {
       let savedFilter = this.getFilters();
       let result = null
 
+      let regex = new RegExp('^' + typeName + '$', 'i');
       savedFilter.every(filter => {
-        if (filter.name.toLowerCase() == name.toLowerCase()) {
+        if (filter.name.match(regex) !== null) {
           result = filter;
           return false;
         }
@@ -331,16 +337,26 @@ define([
       return result;
     }
 
-    removeFilterByType(name) {
+    removeFilterByType(typeName) {
       let savedFilter = this.getFilters();
       let newFilterArray = [];
 
+      let regex = new RegExp('^' + typeName + '$', 'i');
       savedFilter.forEach(filter => {
-          if (filter.name.toLowerCase() != name.toLowerCase())
+          if (filter.name.match(regex) === null) {
             newFilterArray.push(filter);
+          }
         });
 
       this.setFilters(newFilterArray);
+
+      // At the moment, removeFilterByType removes a standalone custom property
+      // filter because they are not supported by Plausible. See for this
+      // FilterRepository->setFiltersFromArray
+      if (this.getFilterByType('event:props:.+') &&
+          !this.getFilterByType('event:goal')) {
+        this.removeFilterByType('event:props:.+');
+      }
     }
 
     filterBadgeRemoveButtonOnClick(e) {

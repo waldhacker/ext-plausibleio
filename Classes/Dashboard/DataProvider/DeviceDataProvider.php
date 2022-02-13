@@ -25,7 +25,7 @@ class DeviceDataProvider extends AbstractDataProvider
     public function getBrowserDataWithGoal(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
     {
         $browserDataWithGoal = $this->getBrowserDataWithoutGoal($plausibleSiteId, $timeFrame, $filters);
-        $filtersWithoutGoal = $filters->getRepository()->removeFilter(FilterRepository::FILTEREVENTGOAL);
+        $filtersWithoutGoal = $filters->getRepository()->removeFilter(FilterRepository::FILTEREVENTGOAL, FilterRepository::FILTEREVENTPROPS);
         $browserDataWithoutGoal = $this->getBrowserDataWithoutGoal($plausibleSiteId, $timeFrame, $filtersWithoutGoal);
 
         $result = [];
@@ -92,7 +92,7 @@ class DeviceDataProvider extends AbstractDataProvider
 
     public function getBrowserData(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
     {
-        $goalFilterActivated = $filters->isFilterActivated(FilterRepository::FILTEREVENTGOAL);
+        $goalFilterActivated = $filters->isFilterActivated(FilterRepository::FILTEREVENTGOAL, FilterRepository::FILTEREVENTPROPS);
 
         if (!$goalFilterActivated) {
             return $this->getBrowserDataWithoutGoal($plausibleSiteId, $timeFrame, $filters);
@@ -104,7 +104,7 @@ class DeviceDataProvider extends AbstractDataProvider
     public function getOSDataWithGoal(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
     {
         $osDataWithGoal = $this->getOSDataWithoutGoal($plausibleSiteId, $timeFrame, $filters);
-        $filtersWithoutGoal = $filters->getRepository()->removeFilter(FilterRepository::FILTEREVENTGOAL);
+        $filtersWithoutGoal = $filters->getRepository()->removeFilter(FilterRepository::FILTEREVENTGOAL, FilterRepository::FILTEREVENTPROPS);
         $osDataWithoutGoal = $this->getOSDataWithoutGoal($plausibleSiteId, $timeFrame, $filtersWithoutGoal);
 
         $result = [];
@@ -160,7 +160,7 @@ class DeviceDataProvider extends AbstractDataProvider
 
     public function getOSData(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
     {
-        $goalFilterActivated = $filters->isFilterActivated(FilterRepository::FILTEREVENTGOAL);
+        $goalFilterActivated = $filters->isFilterActivated(FilterRepository::FILTEREVENTGOAL, FilterRepository::FILTEREVENTPROPS);
 
         if (!$goalFilterActivated) {
             return $this->getOSDataWithoutGoal($plausibleSiteId, $timeFrame, $filters);
@@ -172,7 +172,7 @@ class DeviceDataProvider extends AbstractDataProvider
     public function getDeviceDataWithGoal(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
     {
         $deviceDataWithGoal = $this->getDeviceDataWithoutGoal($plausibleSiteId, $timeFrame, $filters);
-        $filtersWithoutGoal = $filters->getRepository()->removeFilter(FilterRepository::FILTEREVENTGOAL);
+        $filtersWithoutGoal = $filters->getRepository()->removeFilter(FilterRepository::FILTEREVENTGOAL, FilterRepository::FILTEREVENTPROPS);
         $deviceDataWithoutGoal = $this->getDeviceDataWithoutGoal($plausibleSiteId, $timeFrame, $filtersWithoutGoal);
 
         $result = [];
@@ -220,7 +220,7 @@ class DeviceDataProvider extends AbstractDataProvider
 
     public function getDeviceData(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
     {
-        $goalFilterActivated = $filters->isFilterActivated(FilterRepository::FILTEREVENTGOAL);
+        $goalFilterActivated = $filters->isFilterActivated(FilterRepository::FILTEREVENTGOAL, FilterRepository::FILTEREVENTPROPS);
 
         if (!$goalFilterActivated) {
             return $this->getDeviceDataWithoutGoal($plausibleSiteId, $timeFrame, $filters);

@@ -548,6 +548,7 @@ class ConfigurationServiceTest extends UnitTestCase
      * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::getBackendUser
      * @covers \Waldhacker\Plausibleio\FilterRepository::getFiltersAsArray
      * @covers \Waldhacker\Plausibleio\FilterRepository::setFiltersFromArray
+     * @covers \Waldhacker\Plausibleio\FilterRepository::isFilterActivated
      */
     public function getFiltersFromUserConfigurationReturnsEmptyArrayOnInvalidBackendUserConfiguration(
         ?BackendUserAuthentication $beUser,

@@ -25,7 +25,7 @@ class SourceDataProvider extends AbstractDataProvider
     public function getAllSourcesDataWithGoal(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
     {
         $allSourcesDataWithGoal = $this->getAllSourcesDataWithoutGoal($plausibleSiteId, $timeFrame, $filters);
-        $filtersWithoutGoal = $filters->getRepository()->removeFilter(FilterRepository::FILTEREVENTGOAL);
+        $filtersWithoutGoal = $filters->getRepository()->removeFilter(FilterRepository::FILTEREVENTGOAL, FilterRepository::FILTEREVENTPROPS);
         $allSourcesDataWithoutGoal = $this->getAllSourcesDataWithoutGoal($plausibleSiteId, $timeFrame, $filtersWithoutGoal);
 
         $result = [];
@@ -73,7 +73,7 @@ class SourceDataProvider extends AbstractDataProvider
 
     public function getAllSourcesData(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
     {
-        $goalFilterActivated = $filters->isFilterActivated(FilterRepository::FILTEREVENTGOAL);
+        $goalFilterActivated = $filters->isFilterActivated(FilterRepository::FILTEREVENTGOAL, FilterRepository::FILTEREVENTPROPS);
 
         if (!$goalFilterActivated) {
             return $this->getAllSourcesDataWithoutGoal($plausibleSiteId, $timeFrame, $filters);
@@ -85,7 +85,7 @@ class SourceDataProvider extends AbstractDataProvider
     public function getMediumDataWithGoal(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
     {
         $mediumDataWithGoal = $this->getMediumDataWithoutGoal($plausibleSiteId, $timeFrame, $filters);
-        $filtersWithoutGoal = $filters->getRepository()->removeFilter(FilterRepository::FILTEREVENTGOAL);
+        $filtersWithoutGoal = $filters->getRepository()->removeFilter(FilterRepository::FILTEREVENTGOAL, FilterRepository::FILTEREVENTPROPS);
         $mediumDataWithoutGoal = $this->getMediumDataWithoutGoal($plausibleSiteId, $timeFrame, $filtersWithoutGoal);
 
         $result = [];
@@ -133,7 +133,7 @@ class SourceDataProvider extends AbstractDataProvider
 
     public function getMediumData(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
     {
-        $goalFilterActivated = $filters->isFilterActivated(FilterRepository::FILTEREVENTGOAL);
+        $goalFilterActivated = $filters->isFilterActivated(FilterRepository::FILTEREVENTGOAL, FilterRepository::FILTEREVENTPROPS);
 
         if (!$goalFilterActivated) {
             return $this->getMediumDataWithoutGoal($plausibleSiteId, $timeFrame, $filters);
@@ -145,7 +145,7 @@ class SourceDataProvider extends AbstractDataProvider
     public function getSourceDataWithGoal(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
     {
         $sourceDataWithGoal = $this->getSourceDataWithoutGoal($plausibleSiteId, $timeFrame, $filters);
-        $filtersWithoutGoal = $filters->getRepository()->removeFilter(FilterRepository::FILTEREVENTGOAL);
+        $filtersWithoutGoal = $filters->getRepository()->removeFilter(FilterRepository::FILTEREVENTGOAL, FilterRepository::FILTEREVENTPROPS);
         $sourceDataWithoutGoal = $this->getSourceDataWithoutGoal($plausibleSiteId, $timeFrame, $filtersWithoutGoal);
 
         $result = [];
@@ -193,7 +193,7 @@ class SourceDataProvider extends AbstractDataProvider
 
     public function getSourceData(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
     {
-        $goalFilterActivated = $filters->isFilterActivated(FilterRepository::FILTEREVENTGOAL);
+        $goalFilterActivated = $filters->isFilterActivated(FilterRepository::FILTEREVENTGOAL, FilterRepository::FILTEREVENTPROPS);
 
         if (!$goalFilterActivated) {
             return $this->getSourceDataWithoutGoal($plausibleSiteId, $timeFrame, $filters);
@@ -205,7 +205,7 @@ class SourceDataProvider extends AbstractDataProvider
     public function getCampaignDataWithGoal(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
     {
         $campaignDataWithGoal = $this->getCampaignDataWithoutGoal($plausibleSiteId, $timeFrame, $filters);
-        $filtersWithoutGoal = $filters->getRepository()->removeFilter(FilterRepository::FILTEREVENTGOAL);
+        $filtersWithoutGoal = $filters->getRepository()->removeFilter(FilterRepository::FILTEREVENTGOAL, FilterRepository::FILTEREVENTPROPS);
         $campaignDataWithoutGoal = $this->getCampaignDataWithoutGoal($plausibleSiteId, $timeFrame, $filtersWithoutGoal);
 
         $result = [];
@@ -253,7 +253,7 @@ class SourceDataProvider extends AbstractDataProvider
 
     public function getCampaignData(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
     {
-        $goalFilterActivated = $filters->isFilterActivated(FilterRepository::FILTEREVENTGOAL);
+        $goalFilterActivated = $filters->isFilterActivated(FilterRepository::FILTEREVENTGOAL, FilterRepository::FILTEREVENTPROPS);
 
         if (!$goalFilterActivated) {
             return $this->getCampaignDataWithoutGoal($plausibleSiteId, $timeFrame, $filters);
@@ -265,7 +265,7 @@ class SourceDataProvider extends AbstractDataProvider
     public function getTermDataWithGoal(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
     {
         $termDataWithGoal = $this->getTermDataWithoutGoal($plausibleSiteId, $timeFrame, $filters);
-        $filtersWithoutGoal = $filters->getRepository()->removeFilter(FilterRepository::FILTEREVENTGOAL);
+        $filtersWithoutGoal = $filters->getRepository()->removeFilter(FilterRepository::FILTEREVENTGOAL, FilterRepository::FILTEREVENTPROPS);
         $termDataWithoutGoal = $this->getTermDataWithoutGoal($plausibleSiteId, $timeFrame, $filtersWithoutGoal);
 
         $result = [];
@@ -313,7 +313,7 @@ class SourceDataProvider extends AbstractDataProvider
 
     public function getTermData(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
     {
-        $goalFilterActivated = $filters->isFilterActivated(FilterRepository::FILTEREVENTGOAL);
+        $goalFilterActivated = $filters->isFilterActivated(FilterRepository::FILTEREVENTGOAL, FilterRepository::FILTEREVENTPROPS);
 
         if (!$goalFilterActivated) {
             return $this->getTermDataWithoutGoal($plausibleSiteId, $timeFrame, $filters);
@@ -325,7 +325,7 @@ class SourceDataProvider extends AbstractDataProvider
     public function getContentDataWithGoal(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
     {
         $contentDataWithGoal = $this->getContentDataWithoutGoal($plausibleSiteId, $timeFrame, $filters);
-        $filtersWithoutGoal = $filters->getRepository()->removeFilter(FilterRepository::FILTEREVENTGOAL);
+        $filtersWithoutGoal = $filters->getRepository()->removeFilter(FilterRepository::FILTEREVENTGOAL, FilterRepository::FILTEREVENTPROPS);
         $contentDataWithoutGoal = $this->getContentDataWithoutGoal($plausibleSiteId, $timeFrame, $filtersWithoutGoal);
 
         $result = [];
@@ -373,7 +373,7 @@ class SourceDataProvider extends AbstractDataProvider
 
     public function getContentData(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
     {
-        $goalFilterActivated = $filters->isFilterActivated(FilterRepository::FILTEREVENTGOAL);
+        $goalFilterActivated = $filters->isFilterActivated(FilterRepository::FILTEREVENTGOAL, FilterRepository::FILTEREVENTPROPS);
 
         if (!$goalFilterActivated) {
             return $this->getContentDataWithoutGoal($plausibleSiteId, $timeFrame, $filters);

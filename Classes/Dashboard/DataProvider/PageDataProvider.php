@@ -25,7 +25,7 @@ class PageDataProvider extends AbstractDataProvider
     public function getTopPageDataWithGoal(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
     {
         $topPageDataWithGoal = $this->getTopPageDataWithoutGoal($plausibleSiteId, $timeFrame, $filters);
-        $filtersWithoutGoal = $filters->getRepository()->removeFilter(FilterRepository::FILTEREVENTGOAL);
+        $filtersWithoutGoal = $filters->getRepository()->removeFilter(FilterRepository::FILTEREVENTGOAL, FilterRepository::FILTEREVENTPROPS);
         $topPageDataWithoutGoal = $this->getTopPageDataWithoutGoal($plausibleSiteId, $timeFrame, $filtersWithoutGoal);
 
         $result = [];
@@ -88,7 +88,7 @@ class PageDataProvider extends AbstractDataProvider
 
     public function getTopPageData(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
     {
-        $goalFilterActivated = $filters->isFilterActivated(FilterRepository::FILTEREVENTGOAL);
+        $goalFilterActivated = $filters->isFilterActivated(FilterRepository::FILTEREVENTGOAL, FilterRepository::FILTEREVENTPROPS);
 
         if (!$goalFilterActivated) {
             return $this->getTopPageDataWithoutGoal($plausibleSiteId, $timeFrame, $filters);
@@ -100,7 +100,7 @@ class PageDataProvider extends AbstractDataProvider
     public function getEntryPageDataWithGoal(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
     {
         $entryPageDataWithGoal = $this->getEntryPageDataWithoutGoal($plausibleSiteId, $timeFrame, $filters);
-        $filtersWithoutGoal = $filters->getRepository()->removeFilter(FilterRepository::FILTEREVENTGOAL);
+        $filtersWithoutGoal = $filters->getRepository()->removeFilter(FilterRepository::FILTEREVENTGOAL, FilterRepository::FILTEREVENTPROPS);
         $entryPageDataWithoutGoal = $this->getEntryPageDataWithoutGoal($plausibleSiteId, $timeFrame, $filtersWithoutGoal);
 
         $result = [];
@@ -152,7 +152,7 @@ class PageDataProvider extends AbstractDataProvider
 
     public function getEntryPageData(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
     {
-        $goalFilterActivated = $filters->isFilterActivated(FilterRepository::FILTEREVENTGOAL);
+        $goalFilterActivated = $filters->isFilterActivated(FilterRepository::FILTEREVENTGOAL, FilterRepository::FILTEREVENTPROPS);
 
         if (!$goalFilterActivated) {
             return $this->getEntryPageDataWithoutGoal($plausibleSiteId, $timeFrame, $filters);
@@ -164,7 +164,7 @@ class PageDataProvider extends AbstractDataProvider
     public function getExitPageDataWithGoal(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
     {
         $exitPageDataWithGoal = $this->getExitPageDataWithoutGoal($plausibleSiteId, $timeFrame, $filters);
-        $filtersWithoutGoal = $filters->getRepository()->removeFilter(FilterRepository::FILTEREVENTGOAL);
+        $filtersWithoutGoal = $filters->getRepository()->removeFilter(FilterRepository::FILTEREVENTGOAL, FilterRepository::FILTEREVENTPROPS);
         $exitPageDataWithoutGoal = $this->getExitPageDataWithoutGoal($plausibleSiteId, $timeFrame, $filtersWithoutGoal);
 
         $result = [];
@@ -216,7 +216,7 @@ class PageDataProvider extends AbstractDataProvider
 
     public function getExitPageData(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
     {
-        $goalFilterActivated = $filters->isFilterActivated(FilterRepository::FILTEREVENTGOAL);
+        $goalFilterActivated = $filters->isFilterActivated(FilterRepository::FILTEREVENTGOAL, FilterRepository::FILTEREVENTPROPS);
 
         if (!$goalFilterActivated) {
             return $this->getExitPageDataWithoutGoal($plausibleSiteId, $timeFrame, $filters);

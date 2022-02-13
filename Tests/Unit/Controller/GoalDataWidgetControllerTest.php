@@ -99,6 +99,7 @@ class GoalDataWidgetControllerTest extends UnitTestCase
      * @covers \Waldhacker\Plausibleio\FilterRepository::setFiltersFromArray
      * @covers \Waldhacker\Plausibleio\Controller\AbstractWidgetController::__construct
      * @covers \Waldhacker\Plausibleio\Controller\AbstractWidgetController::__invoke
+     * @covers \Waldhacker\Plausibleio\FilterRepository::isFilterActivated
      */
     public function controllerProcessesValidAndInvalidUserInputCorrectly(
         array $queryParameters,

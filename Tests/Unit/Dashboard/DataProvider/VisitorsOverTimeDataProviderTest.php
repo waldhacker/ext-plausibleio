@@ -295,6 +295,11 @@ class VisitorsOverTimeDataProviderTest extends UnitTestCase
      * @covers       \Waldhacker\Plausibleio\FilterRepository::removeFilter
      * @covers       \Waldhacker\Plausibleio\FilterRepository::setFiltersFromArray
      * @covers       \Waldhacker\Plausibleio\FilterRepository::toPlausibleFilterString
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::getRepository
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::setFiltersFromFilterRepository
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::getIterator
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::clearFilters
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::isFilterActivated
      */
     public function getOverviewWithGoalReturnsProperValues(
         string $plausibleSiteId,
@@ -456,6 +461,7 @@ class VisitorsOverTimeDataProviderTest extends UnitTestCase
      * @covers       \Waldhacker\Plausibleio\FilterRepository::empty
      * @covers       \Waldhacker\Plausibleio\FilterRepository::setFiltersFromArray
      * @covers       \Waldhacker\Plausibleio\FilterRepository::toPlausibleFilterString
+     * @covers       \Waldhacker\Plausibleio\FilterRepository::isFilterActivated
      */
     public function getOverviewWithoutGoalReturnsProperValues(
         string $plausibleSiteId,
@@ -577,7 +583,8 @@ class VisitorsOverTimeDataProviderTest extends UnitTestCase
      * @covers       \Waldhacker\Plausibleio\FilterRepository::empty
      * @covers       \Waldhacker\Plausibleio\FilterRepository::setFiltersFromArray
      * @covers       \Waldhacker\Plausibleio\FilterRepository::toPlausibleFilterString
- */
+     * @covers \Waldhacker\Plausibleio\FilterRepository::isFilterActivated
+     */
     public function getCurrentVisitorsReturnsVisitors(
         string $plausibleSiteId,
         array $filters,

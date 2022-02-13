@@ -141,19 +141,23 @@ class FilterRepository implements \IteratorAggregate, \Countable
     }
 
     /**
-     * @param string $filterName An empty name is not allowed
-     * @throws \InvalidArgumentException if the $filterName is empty
+     * @param string ...$filterNames If more than one filter name is passed, true is
+     *                               returned if one of the filters is active. An empty
+     *                               name is not allowed.
+     * @throws \InvalidArgumentException if one of the $filterNames is empty
      * @return bool
      * */
-    public function isFilterActivated(string $filterName): bool
+    public function isFilterActivated(string ...$filterNames): bool
     {
-        if ($filterName === '') {
-            throw new \InvalidArgumentException('To check for presence of the filter, the name must not be empty', 1556447631);
-        }
+        foreach ($filterNames as $filterName) {
+            if ($filterName === '') {
+                throw new \InvalidArgumentException('To check for presence of the filter, the name must not be empty', 1556447631);
+            }
 
-        foreach ($this->filters as $f) {
-            if ($f->getName() === $filterName) {
-                return true;
+            foreach ($this->filters as $filter) {
+                if (preg_match('/^' . $filterName . '$/iu', $filter->getName())) {
+                    return true;
+                }
             }
         }
 
@@ -161,22 +165,21 @@ class FilterRepository implements \IteratorAggregate, \Countable
     }
 
     /**
-     * Removes all Filters from $toRemove from $filters
+     * Removes all Filters from ...$filtersToRemove from the FilterRepository
      *
-     * @param string $filterToRemove Filter name to remove from $filters
+     * @param string ...$filtersToRemove Filter name to remove from the FilterRepository
      * @return FilterRepository This FilterRepository (not a new one)
      */
-    public function removeFilter(string $filterToRemove): FilterRepository
+    public function removeFilter(string ...$filtersToRemove): FilterRepository
     {
-        $result = [];
-
-        foreach ($this->filters as $filter) {
-            if ($filter->getName() !== $filterToRemove) {
-                $result[] = $filter;
+        foreach ($filtersToRemove as $filterToRemove) {
+            foreach ($this->filters as $index => $filter) {
+                if (preg_match('/^' . $filterToRemove . '$/iu', $filter->getName())) {
+                    unset($this->filters[$index]);
+                    break;
+                }
             }
         }
-
-        $this->filters = $result;
 
         return $this;
     }
@@ -193,7 +196,14 @@ class FilterRepository implements \IteratorAggregate, \Countable
     /**
      * Note: Empty names of filters are not allowed and will be skipped
      * Note: Empty values of filters are not allowed and will be skipped
+     * Note: A filter for a custom property must not be active without a
+     *       filter for a goal. As long as this restriction has not been
+     *       remedied in Plausible, a stand-alone custom property filter
+     *       is removed at this point as a precaution.
+     *       See: https://plausible.io/docs/stats-api#custom-props
      *
+     * @TODO The removal of a stand-alone custom property filter must be
+     *       removed again as soon as Plausible allows such a filter.
      * @param array $filters
      * @return FilterRepository This FilterRepository (not a new one)
      */
@@ -211,6 +221,11 @@ class FilterRepository implements \IteratorAggregate, \Countable
                     ));
                 }
             }
+        }
+
+        if ($this->isFilterActivated(FilterRepository::FILTEREVENTPROPS) &&
+            !$this->isFilterActivated(FilterRepository::FILTEREVENTGOAL)) {
+            $this->removeFilter(FilterRepository::FILTEREVENTPROPS);
         }
 
         return $this;

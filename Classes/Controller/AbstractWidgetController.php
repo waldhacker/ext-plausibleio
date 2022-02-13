@@ -47,6 +47,9 @@ abstract class AbstractWidgetController
             $filters = [];
         }
         $this->filterRepo = new FilterRepository();
+        // At the moment, setFiltersFromArray removes a standalone custom property
+        // filter because they are not supported by Plausible. See for this
+        // FilterRepository->setFiltersFromArray
         $this->filterRepo->setFiltersFromArray($filters);
 
         $this->configurationService->persistPlausibleSiteIdInUserConfiguration($this->plausibleSiteId, $this->dashBoardId);

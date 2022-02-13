@@ -45,7 +45,7 @@ class CountryMapDataProvider extends AbstractDataProvider
     public function getCountryDataForDataMapWithGoal(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
     {
         $countryDataWithGoal = $this->getCountryDataForDataMapWithoutGoal($plausibleSiteId, $timeFrame, $filters);
-        $filtersWithoutGoal = $filters->getRepository()->removeFilter(FilterRepository::FILTEREVENTGOAL);
+        $filtersWithoutGoal = $filters->getRepository()->removeFilter(FilterRepository::FILTEREVENTGOAL, FilterRepository::FILTEREVENTPROPS);
         $countryDataWithoutGoal = $this->getCountryDataForDataMapWithoutGoal($plausibleSiteId, $timeFrame, $filtersWithoutGoal);
 
         $result = [];
@@ -101,7 +101,10 @@ class CountryMapDataProvider extends AbstractDataProvider
      */
     public function getCountryDataForDataMap(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
     {
-        $goalFilterActivated = $filters->isFilterActivated(FilterRepository::FILTEREVENTGOAL);
+        // At the moment, setFiltersFromArray removes a standalone custom property
+        // filter because they are not supported by Plausible. See for this
+        // FilterRepository->setFiltersFromArray
+        $goalFilterActivated = $filters->isFilterActivated(FilterRepository::FILTEREVENTGOAL, FilterRepository::FILTEREVENTPROPS);
 
         if (!$goalFilterActivated) {
             return $this->getCountryDataForDataMapWithoutGoal($plausibleSiteId, $timeFrame, $filters);

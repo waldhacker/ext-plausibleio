@@ -544,7 +544,8 @@ class GoalDataProviderTest extends UnitTestCase
      * @covers \Waldhacker\Plausibleio\Dashboard\DataProvider\AbstractDataProvider::getLanguageService
      * @covers \Waldhacker\Plausibleio\FilterRepository::setFiltersFromArray
      * @covers \Waldhacker\Plausibleio\FilterRepository::toPlausibleFilterString
- */
+     * @covers \Waldhacker\Plausibleio\FilterRepository::isFilterActivated
+     */
     public function getGoalPropertiesDataReturnsProperValues(
         string $plausibleSiteId,
         string $timeFrame,

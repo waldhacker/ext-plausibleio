@@ -265,12 +265,19 @@ class FilterRepositoryTest extends UnitTestCase
         $subject->addFilter(new Filter(FilterRepository::FILTERVISITSOURCE, 'waldhacker.dev'));
         $subject->addFilter(new Filter(FilterRepository::FILTERVISITEXITPAGE, '/page/first'));
         $subject->addFilter(new Filter(FilterRepository::FILTEREVENTGOAL, '404'));
+        $subject->addFilter(new Filter(FilterRepository::FILTERVISITOSVERSION, '11.2'));
         $subject->addFilter(new Filter('event:props:path', '/path/sublevel'));
 
         $this->assertTrue($subject->isFilterActivated(FilterRepository::FILTERVISITEXITPAGE));
         $this->assertTrue($subject->isFilterActivated('event:props:path'));
+        $this->assertTrue($subject->isFilterActivated(FilterRepository::FILTEREVENTPROPS));
+        $this->assertTrue($subject->isFilterActivated(FilterRepository::FILTERVISITEXITPAGE, FilterRepository::FILTEREVENTPROPS));
+        // first filter is not active
+        $this->assertTrue($subject->isFilterActivated(FilterRepository::FILTERVISITCOUNTRY, FilterRepository::FILTERVISITEXITPAGE));
         // check filter that is not in the list
         $this->assertFalse($subject->isFilterActivated(FilterRepository::FILTERVISITUTMCONTENT));
+        $this->assertFalse($subject->isFilterActivated(FilterRepository::FILTERVISITOS));
+        $this->assertFalse($subject->isFilterActivated(FilterRepository::FILTERVISITEXITPAGE . '\n'));
     }
 
     /**
@@ -285,7 +292,8 @@ class FilterRepositoryTest extends UnitTestCase
         $this->expectException(\InvalidArgumentException::class);
         $subject = new FilterRepository();
         $subject->addFilter(new Filter(FilterRepository::FILTERVISITSOURCE, 'waldhacker.dev'));
-        $this->assertTrue($subject->isFilterActivated(''));
+        $subject->addFilter(new Filter(FilterRepository::FILTERVISITOSVERSION, '10.1'));
+        $this->assertTrue($subject->isFilterActivated(FilterRepository::FILTERVISITOS, ''));
     }
 
     /**
@@ -315,6 +323,34 @@ class FilterRepositoryTest extends UnitTestCase
                     'labelValue' => '',
                 ],
             ],
+            $subject->getFiltersAsArray()
+        );
+
+        $subject->addFilter(new Filter('event:props:path', '/path/sublevel'));
+        $subject->addFilter(new Filter(FilterRepository::FILTERVISITOSVERSION, 'UBUNTU'));
+
+        $subject->removeFilter(FilterRepository::FILTEREVENTPROPS, FilterRepository::FILTEREVENTGOAL);
+        $this->assertSame([
+                [
+                    'name' => FilterRepository::FILTERVISITOSVERSION,
+                    'value' => 'UBUNTU',
+                    'label' => '',
+                    'labelValue' => '',
+                ],
+            ],
+            $subject->getFiltersAsArray()
+        );
+
+        $subject->addFilter(new Filter(FilterRepository::FILTERVISITOSVERSION, 'UBUNTU'));
+        $subject->removeFilter(FilterRepository::FILTERVISITOS);
+        $this->assertSame([
+            [
+                'name' => FilterRepository::FILTERVISITOSVERSION,
+                'value' => 'UBUNTU',
+                'label' => '',
+                'labelValue' => '',
+            ],
+        ],
             $subject->getFiltersAsArray()
         );
     }

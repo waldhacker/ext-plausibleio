@@ -104,6 +104,9 @@ define([
             WidgetService.renderFilterBar(filterBar);
           }
           that.requestUpdatedData(evt, widget, visitorsWidgetChart);
+          // Adjust the size of the chart when a filter is added or removed,
+          // as the available height may change in such a case.
+          visitorsWidgetChart.resize(true);
         });
 
         let timeFrameSelect = widget.querySelector(that.options.timeframeSelectSelector);

@@ -26,13 +26,18 @@ use TYPO3\CMS\Core\Localization\LanguageService;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Type\Bitmask\Permission;
+use TYPO3\CMS\Core\Utility\ArrayUtility;
 use Waldhacker\Plausibleio\Services\Exception\InvalidConfigurationException;
+use Waldhacker\Plausibleio\FilterRepository;
+
+use function PHPUnit\Framework\isEmpty;
 
 class ConfigurationService
 {
     private const EXT_KEY = 'plausibleio';
     private const DEFAULT_TIME_FRAME = '30d';
     private const DEFAULT_TIME_FRAMES = 'day,7d,30d,month,6mo,12mo';
+    const DASHBOARD_DEFAULT_ID = 'default';
     private ExtensionConfiguration $extensionConfiguration;
     private SiteFinder $siteFinder;
 
@@ -72,12 +77,16 @@ class ConfigurationService
         return $frames;
     }
 
-    public function getTimeFrameValueFromUserConfiguration(): string
+    public function getTimeFrameValueFromUserConfiguration(string $dashBoardId): string
     {
         $userConfiguration = $this->getBackendUser() !== null && is_array($this->getBackendUser()->uc)
                              ? $this->getBackendUser()->uc
                              : [];
-        $timeFrameValue = $userConfiguration['plausible']['timeFrame'] ?? null;
+        if (ArrayUtility::isValidPath($userConfiguration, 'plausible/' . $dashBoardId . '/timeFrame')) {
+            $timeFrameValue = $userConfiguration['plausible'][$dashBoardId]['timeFrame'] ?? null;
+        } else {
+            $timeFrameValue = $userConfiguration['plausible'][self::DASHBOARD_DEFAULT_ID]['timeFrame'] ?? null;
+        }
 
         if ($timeFrameValue === null) {
             $timeFrameValue = $this->getDefaultTimeFrameValue();
@@ -86,16 +95,84 @@ class ConfigurationService
         return $timeFrameValue;
     }
 
-    public function persistTimeFrameValueInUserConfiguration(string $timeFrameValue): void
+    public function persistTimeFrameValueInUserConfiguration(string $timeFrameValue, string $dashBoardId): void
     {
         if ($this->getBackendUser() === null || !is_array($this->getBackendUser()->uc)) {
             return;
         }
+        if (empty($dashBoardId)) {
+            $dashBoardId = self::DASHBOARD_DEFAULT_ID;
+        }
 
         $userConfiguration = $this->getBackendUser()->uc['plausible'] ?? [];
-        $userConfiguration['timeFrame'] = $timeFrameValue;
+        $userConfiguration[$dashBoardId]['timeFrame'] = $timeFrameValue;
         $this->getBackendUser()->uc['plausible'] = $userConfiguration;
         $this->getBackendUser()->writeUC();
+    }
+
+    public function persistFiltersInUserConfiguration(FilterRepository $filters, string $dashBoardId): void
+    {
+        if ($this->getBackendUser() === null || !is_array($this->getBackendUser()->uc)) {
+            return;
+        }
+        if (empty($dashBoardId)) {
+            $dashBoardId = self::DASHBOARD_DEFAULT_ID;
+        }
+
+        $userConfiguration = $this->getBackendUser()->uc['plausible'] ?? [];
+        $userConfiguration[$dashBoardId]['filters'] = $filters->getFiltersAsArray();
+        $this->getBackendUser()->uc['plausible'] = $userConfiguration;
+        $this->getBackendUser()->writeUC();
+    }
+
+    public function getFiltersFromUserConfiguration(string $dashBoardId): FilterRepository
+    {
+        if (empty($dashBoardId)) {
+            $dashBoardId = self::DASHBOARD_DEFAULT_ID;
+        }
+
+        $userConfiguration = $this->getBackendUser() !== null && is_array($this->getBackendUser()->uc)
+            ? $this->getBackendUser()->uc
+            : [];
+
+        // In case there is no configuration for this dashboard key, use a possibly
+        // existing configuration from the default key. The default key should only
+        // be used if the dashboard key could not be determined on the browser side.
+        // The default key is considered here because when the dashboard and widgets
+        // are initialised (***Widget->getEventData()), the dashboard key does not
+        // come from the browser side but from the database and thus a key is always
+        // available, even if it may not exist or cannot be determined on the browser
+        // side. If no key could be determined on the browser side, this is indicated
+        // by the fact that the key from the database could not be found in the filter
+        // array.
+        if (ArrayUtility::isValidPath($userConfiguration, 'plausible/' . $dashBoardId . '/filters')) {
+            $filters = $userConfiguration['plausible'][$dashBoardId]['filters'] ?? [];
+        } else {
+            $filters = $userConfiguration['plausible'][self::DASHBOARD_DEFAULT_ID]['filters'] ?? [];
+        }
+
+        $filtersRepo = new FilterRepository();
+        $filtersRepo->setFiltersFromArray($filters);
+
+        return $filtersRepo;
+    }
+
+    public function getAllFiltersFromUserConfiguration(): array
+    {
+        $userConfiguration = $this->getBackendUser() !== null && is_array($this->getBackendUser()->uc)
+            ? $this->getBackendUser()->uc
+            : [];
+
+        $dashboardConfiguration = $userConfiguration['plausible'] ?? [];
+        $filters = [];
+
+        foreach ($dashboardConfiguration as $key => $config) {
+            if (isset($config['filters'])) {
+                $filters[$key] = $config['filters'];
+            }
+        }
+
+        return $filters;
     }
 
     public function getDefaultTimeFrameValue(): string
@@ -109,12 +186,20 @@ class ConfigurationService
         return empty($value) ? self::DEFAULT_TIME_FRAME : $value;
     }
 
-    public function getPlausibleSiteIdFromUserConfiguration(): string
+    public function getPlausibleSiteIdFromUserConfiguration(string $dashBoardId): string
     {
         $userConfiguration = $this->getBackendUser() !== null && is_array($this->getBackendUser()->uc)
                              ? $this->getBackendUser()->uc
                              : [];
-        $plausibleSiteId = $userConfiguration['plausible']['siteId'] ?? null;
+        if (empty($dashBoardId)) {
+            $dashBoardId = self::DASHBOARD_DEFAULT_ID;
+        }
+
+        if (ArrayUtility::isValidPath($userConfiguration, 'plausible/' . $dashBoardId . '/siteId')) {
+            $plausibleSiteId = $userConfiguration['plausible'][$dashBoardId]['siteId'] ?? null;
+        } else {
+            $plausibleSiteId = $userConfiguration['plausible'][self::DASHBOARD_DEFAULT_ID]['siteId'] ?? null;
+        }
 
         if ($plausibleSiteId === null) {
             $plausibleSiteId = $this->getFirstAvailablePlausibleSiteId();
@@ -123,14 +208,17 @@ class ConfigurationService
         return $plausibleSiteId;
     }
 
-    public function persistPlausibleSiteIdInUserConfiguration(string $plausibleSiteId): void
+    public function persistPlausibleSiteIdInUserConfiguration(string $plausibleSiteId, string $dashBoardId): void
     {
         if ($this->getBackendUser() === null || !is_array($this->getBackendUser()->uc)) {
             return;
         }
+        if (empty($dashBoardId)) {
+            $dashBoardId = self::DASHBOARD_DEFAULT_ID;
+        }
 
         $userConfiguration = $this->getBackendUser()->uc['plausible'] ?? [];
-        $userConfiguration['siteId'] = $plausibleSiteId;
+        $userConfiguration[$dashBoardId]['siteId'] = $plausibleSiteId;
         $this->getBackendUser()->uc['plausible'] = $userConfiguration;
         $this->getBackendUser()->writeUC();
     }
@@ -212,6 +300,7 @@ class ConfigurationService
             'includeTrackingScript' => $languageData['plausible_includeTrackingScript'],
             'trackingScriptBaseUrl' => $languageData['plausible_trackingScriptBaseUrl'],
             'trackingScriptType' => $languageData['plausible_trackingScriptType'],
+            'auto404Tracking' => $languageData['plausible_auto404Tracking'],
         ];
     }
 

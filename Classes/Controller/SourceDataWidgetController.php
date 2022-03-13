@@ -24,59 +24,54 @@ use Psr\Http\Message\ServerRequestInterface;
 use Waldhacker\Plausibleio\Dashboard\DataProvider\SourceDataProvider;
 use Waldhacker\Plausibleio\Services\ConfigurationService;
 
-class SourceDataWidgetController
+class SourceDataWidgetController extends AbstractWidgetController
 {
-    private ResponseFactoryInterface $responseFactory;
     private SourceDataProvider $dataProvider;
-    private ConfigurationService $configurationService;
 
     public function __construct(
         SourceDataProvider $sourceDataProvider,
         ConfigurationService $configurationService,
         ResponseFactoryInterface $responseFactory
     ) {
-        $this->responseFactory = $responseFactory;
+        parent::__construct($configurationService, $responseFactory);
         $this->dataProvider = $sourceDataProvider;
-        $this->configurationService = $configurationService;
     }
 
     public function __invoke(ServerRequestInterface $request): ResponseInterface
     {
-        $plausibleSiteId = $request->getQueryParams()['siteId'] ?? null;
-        if ($plausibleSiteId === null || !in_array($plausibleSiteId, $this->configurationService->getAvailablePlausibleSiteIds(), true)) {
-            $plausibleSiteId = $this->configurationService->getPlausibleSiteIdFromUserConfiguration();
-        }
-
-        $timeFrame = $request->getQueryParams()['timeFrame'] ?? null;
-        if ($timeFrame === null || !in_array($timeFrame, $this->configurationService->getTimeFrameValues(), true)) {
-            $timeFrame = $this->configurationService->getTimeFrameValueFromUserConfiguration();
-        }
-
-        $this->configurationService->persistPlausibleSiteIdInUserConfiguration($plausibleSiteId);
-        $this->configurationService->persistTimeFrameValueInUserConfiguration($timeFrame);
+        parent::__invoke($request);
 
         $data = [
             [
                 'tab' => 'allsources',
-                'data'=> $this->dataProvider->getAllSourcesData($plausibleSiteId, $timeFrame),
+                'data'=> $this->dataProvider->getAllSourcesData($this->plausibleSiteId, $this->timeFrame, $this->filterRepo),
             ],
             [
                 'tab' => 'mediumsource',
-                'data' => $this->dataProvider->getMediumData($plausibleSiteId, $timeFrame),
+                'data' => $this->dataProvider->getMediumData($this->plausibleSiteId, $this->timeFrame, $this->filterRepo),
             ],
             [
                 'tab' => 'sourcesource',
-                'data' => $this->dataProvider->getSourceData($plausibleSiteId, $timeFrame),
+                'data' => $this->dataProvider->getSourceData($this->plausibleSiteId, $this->timeFrame, $this->filterRepo),
             ],
             [
                 'tab' => 'campaignsource',
-                'data' => $this->dataProvider->getCampaignData($plausibleSiteId, $timeFrame),
+                'data' => $this->dataProvider->getCampaignData($this->plausibleSiteId, $this->timeFrame, $this->filterRepo),
+            ],
+            [
+                'tab' => 'termsource',
+                'data' => $this->dataProvider->getTermData($this->plausibleSiteId, $this->timeFrame, $this->filterRepo),
+            ],
+            [
+                'tab' => 'contentsource',
+                'data' => $this->dataProvider->getContentData($this->plausibleSiteId, $this->timeFrame, $this->filterRepo),
             ],
         ];
 
         $response = $this->responseFactory->createResponse(200)
             ->withHeader('Content-Type', 'application/json');
         $response->getBody()->write((string)json_encode($data, JSON_THROW_ON_ERROR));
+
         return $response;
     }
 }

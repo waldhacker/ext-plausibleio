@@ -44,6 +44,13 @@
 				<source>Choose which type of script to include (read more: https://plausible.io/docs/script-extensions)</source>
 			</trans-unit>
 
+			<trans-unit id="auto404Tracking.title">
+				<source>Server side automatic 404 error tracking</source>
+			</trans-unit>
+			<trans-unit id="auto404Tracking.description">
+				<source>Global server side 404 error tracking for the entire site for this language. The error is tracked as a custom goal with the name 404.</source>
+			</trans-unit>
+
 			<trans-unit id="site.tab">
 				<source>Plausible Analytics</source>
 			</trans-unit>

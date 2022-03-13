@@ -18,63 +18,218 @@ declare(strict_types=1);
 
 namespace Waldhacker\Plausibleio\Dashboard\DataProvider;
 
-use Waldhacker\Plausibleio\Services\PlausibleService;
+use Waldhacker\Plausibleio\FilterRepository;
 
-class DeviceDataProvider
+class DeviceDataProvider extends AbstractDataProvider
 {
-    private PlausibleService $plausibleService;
-
-    public function __construct(PlausibleService $plausibleService)
+    public function getBrowserDataWithGoal(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
     {
-        $this->plausibleService = $plausibleService;
+        $browserDataWithGoal = $this->getBrowserDataWithoutGoal($plausibleSiteId, $timeFrame, $filters);
+        $filtersWithoutGoal = $filters->getRepository()->removeFilter(FilterRepository::FILTEREVENTGOAL, FilterRepository::FILTEREVENTPROPS);
+        $browserDataWithoutGoal = $this->getBrowserDataWithoutGoal($plausibleSiteId, $timeFrame, $filtersWithoutGoal);
+
+        $result = [];
+        $result['data'] = $this->calcConversionRateOnData($browserDataWithoutGoal['columns'][0]['name'], $browserDataWithoutGoal['data'], $browserDataWithGoal['data']);
+        $result['columns'] = [
+            // Take over the data name column, so the correct label (browser, version) does not have to be determined.
+            $browserDataWithoutGoal['columns'][0],
+            [
+                'name' => 'visitors',
+                'label' => $this->getLanguageService()->getLL('barChart.labels.conversions'),
+            ],
+            [
+                'name' => 'cr',
+                'label' => $this->getLanguageService()->getLL('barChart.labels.cr'),
+            ],
+        ];
+
+        return $result;
     }
 
-    public function getBrowserData(string $plausibleSiteId, string $timeFrame): array
+    /**
+     * Note: The goal filter must already have been removed from $filters before the call.
+     *       Within the method there is no check whether the goal filter is activated. The
+     *       real difference to getBrowserDataWithGoal are the returned columns and their
+     *       corresponding data.
+     *
+     * @param string $plausibleSiteId
+     * @param string $timeFrame
+     * @param array $filters
+     * @return array
+     */
+    public function getBrowserDataWithoutGoal(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
     {
-        $map = [];
-        $result = $this->getData($plausibleSiteId, $timeFrame, 'visit:browser');
+        $browserFilterActivated = $filters->isFilterActivated(FilterRepository::FILTERVISITBROWSER);
+        $browserVersionFilterActivated = $filters->isFilterActivated(FilterRepository::FILTERVISITBROWSERVERSION);
+        $property = $browserFilterActivated ? 'visit:browser_version' : 'visit:browser';
+        $dataColumnName = $browserFilterActivated ? 'browser_version' : 'browser';
+        $filterLabel = $browserFilterActivated ? 'filter.deviceData.browserVersionIs' : 'filter.deviceData.browserIs';
+        $columnLabel = $browserFilterActivated ? 'barChart.labels.browserVersion' : 'barChart.labels.browser';
 
-        foreach ($result as $item) {
-            if (!isset($item['browser']) || !isset($item['visitors'])) {
-                continue;
-            }
-            $map[] = ['label' => $item['browser'], 'visitors' => $item['visitors']];
+        // show only browser data or, if browser is filtered, show all versions of the selected (filtered) browser
+        $responseData = $this->getData($plausibleSiteId, $timeFrame, $property, $filters);
+
+        // Show only browser data or, if browser is filtered, show all versions of the selected (filtered) browser
+        $browserColumn = [
+            'name' => $dataColumnName,
+            'label' => $this->getLanguageService()->getLL($columnLabel),
+        ];
+        // When filtering by browser and browser version there is no deeper filter than that
+        if (!$browserFilterActivated || !$browserVersionFilterActivated) {
+            $browserColumn['filter'] = [
+                'name' => $property,
+                'label' => $this->getLanguageService()->getLL($filterLabel),
+            ];
         }
+        array_unshift($responseData['columns'], $browserColumn);
 
-        return $map;
+        $map = $this->dataCleanUp([$dataColumnName, 'visitors'], $responseData['data']);
+        $map = $this->calcPercentage($map);
+        $responseData['data'] = $map;
+
+        return $responseData;
     }
 
-    public function getOSData(string $plausibleSiteId, string $timeFrame): array
+    public function getBrowserData(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
     {
-        $map = [];
-        $result = $this->getData($plausibleSiteId, $timeFrame, 'visit:os');
+        $goalFilterActivated = $filters->isFilterActivated(FilterRepository::FILTEREVENTGOAL, FilterRepository::FILTEREVENTPROPS);
 
-        foreach ($result as $item) {
-            if (!isset($item['os']) || !isset($item['visitors'])) {
-                continue;
-            }
-            $map[] = ['label' => $item['os'], 'visitors' => $item['visitors']];
+        if (!$goalFilterActivated) {
+            return $this->getBrowserDataWithoutGoal($plausibleSiteId, $timeFrame, $filters);
+        } else {
+            return $this->getBrowserDataWithGoal($plausibleSiteId, $timeFrame, $filters);
         }
-
-        return $map;
     }
 
-    public function getDeviceData(string $plausibleSiteId, string $timeFrame): array
+    public function getOSDataWithGoal(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
     {
-        $map = [];
-        $result = $this->getData($plausibleSiteId, $timeFrame, 'visit:device');
+        $osDataWithGoal = $this->getOSDataWithoutGoal($plausibleSiteId, $timeFrame, $filters);
+        $filtersWithoutGoal = $filters->getRepository()->removeFilter(FilterRepository::FILTEREVENTGOAL, FilterRepository::FILTEREVENTPROPS);
+        $osDataWithoutGoal = $this->getOSDataWithoutGoal($plausibleSiteId, $timeFrame, $filtersWithoutGoal);
 
-        foreach ($result as $item) {
-            if (!isset($item['device']) || !isset($item['visitors'])) {
-                continue;
-            }
-            $map[] = ['label' => $item['device'], 'visitors' => $item['visitors']];
-        }
+        $result = [];
+        $result['data'] = $this->calcConversionRateOnData($osDataWithoutGoal['columns'][0]['name'], $osDataWithoutGoal['data'], $osDataWithGoal['data']);
+        $result['columns'] = [
+            // Take over the data name column, so the correct label (os, version) does not have to be determined.
+            $osDataWithoutGoal['columns'][0],
+            [
+                'name' => 'visitors',
+                'label' => $this->getLanguageService()->getLL('barChart.labels.conversions'),
+            ],
+            [
+                'name' => 'cr',
+                'label' => $this->getLanguageService()->getLL('barChart.labels.cr'),
+            ],
+        ];
 
-        return $map;
+        return $result;
     }
 
-    private function getData(string $plausibleSiteId, string $timeFrame, string $property): array
+    public function getOSDataWithoutGoal(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
+    {
+        $osFilterActivated = $filters->isFilterActivated(FilterRepository::FILTERVISITOS);
+        $osVersionFilterActivated = $filters->isFilterActivated(FilterRepository::FILTERVISITOSVERSION);
+        $property = $osFilterActivated ? 'visit:os_version' : 'visit:os';
+        $dataColumnName = $osFilterActivated ? 'os_version' : 'os';
+        $filterLabel = $osFilterActivated ? 'filter.deviceData.osVersionIs' : 'filter.deviceData.osIs';
+        $columnLabel = $osFilterActivated ? 'barChart.labels.osVersion' : 'barChart.labels.os';
+
+        $responseData = $this->getData($plausibleSiteId, $timeFrame, $property, $filters);
+
+        // Show only os data or, if os is filtered, show all versions of the selected (filtered) browser
+        $osColumn = [
+            'name' => $dataColumnName,
+            'label' => $this->getLanguageService()->getLL($columnLabel),
+
+        ];
+        // When filtering by os and os version there is no deeper filter than that
+        if (!$osFilterActivated || !$osVersionFilterActivated) {
+            $osColumn['filter'] = [
+                'name' => $property,
+                'label' => $this->getLanguageService()->getLL($filterLabel),
+            ];
+        }
+        array_unshift($responseData['columns'], $osColumn);
+
+        $map = $this->dataCleanUp([$dataColumnName, 'visitors'], $responseData['data']);
+        $map = $this->calcPercentage($map);
+        $responseData['data'] = $map;
+
+        return $responseData;
+    }
+
+    public function getOSData(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
+    {
+        $goalFilterActivated = $filters->isFilterActivated(FilterRepository::FILTEREVENTGOAL, FilterRepository::FILTEREVENTPROPS);
+
+        if (!$goalFilterActivated) {
+            return $this->getOSDataWithoutGoal($plausibleSiteId, $timeFrame, $filters);
+        } else {
+            return $this->getOSDataWithGoal($plausibleSiteId, $timeFrame, $filters);
+        }
+    }
+
+    public function getDeviceDataWithGoal(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
+    {
+        $deviceDataWithGoal = $this->getDeviceDataWithoutGoal($plausibleSiteId, $timeFrame, $filters);
+        $filtersWithoutGoal = $filters->getRepository()->removeFilter(FilterRepository::FILTEREVENTGOAL, FilterRepository::FILTEREVENTPROPS);
+        $deviceDataWithoutGoal = $this->getDeviceDataWithoutGoal($plausibleSiteId, $timeFrame, $filtersWithoutGoal);
+
+        $result = [];
+        $result['data'] = $this->calcConversionRateOnData($deviceDataWithoutGoal['columns'][0]['name'], $deviceDataWithoutGoal['data'], $deviceDataWithGoal['data']);
+        $result['columns'] = [
+            // Take over the data name column, so the correct label (Desktop) does not have to be determined.
+            $deviceDataWithoutGoal['columns'][0],
+            [
+                'name' => 'visitors',
+                'label' => $this->getLanguageService()->getLL('barChart.labels.conversions'),
+            ],
+            [
+                'name' => 'cr',
+                'label' => $this->getLanguageService()->getLL('barChart.labels.cr'),
+            ],
+        ];
+
+        return $result;
+    }
+
+    public function getDeviceDataWithoutGoal(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
+    {
+        $deviceFilterActivated = $filters->isFilterActivated(FilterRepository::FILTERVISITDEVICE);
+        $responseData = $this->getData($plausibleSiteId, $timeFrame, 'visit:device', $filters);
+
+        $map = $this->dataCleanUp(['device', 'visitors'], $responseData['data']);
+        $map = $this->calcPercentage($map);
+        $responseData['data'] = $map;
+
+        $deviceColumn = [
+            'name' => 'device',
+            'label' => $this->getLanguageService()->getLL('barChart.labels.screenSize'),
+        ];
+        // there is no deeper filter than Device
+        if (!$deviceFilterActivated) {
+            $deviceColumn['filter'] = [
+                'name' => 'visit:device',
+                'label' => $this->getLanguageService()->getLL('filter.deviceData.screenSizeIs'),
+            ];
+        }
+        array_unshift($responseData['columns'], $deviceColumn);
+
+        return $responseData;
+    }
+
+    public function getDeviceData(string $plausibleSiteId, string $timeFrame, FilterRepository $filters): array
+    {
+        $goalFilterActivated = $filters->isFilterActivated(FilterRepository::FILTEREVENTGOAL, FilterRepository::FILTEREVENTPROPS);
+
+        if (!$goalFilterActivated) {
+            return $this->getDeviceDataWithoutGoal($plausibleSiteId, $timeFrame, $filters);
+        } else {
+            return $this->getDeviceDataWithGoal($plausibleSiteId, $timeFrame, $filters);
+        }
+    }
+
+    private function getData(string $plausibleSiteId, string $timeFrame, string $property, FilterRepository $filters): array
     {
         $endpoint = 'api/v1/stats/breakdown?';
         $params = [
@@ -83,8 +238,22 @@ class DeviceDataProvider
             'property' => $property,
             'metrics' => 'visitors',
         ];
+        $filterStr = $filters->toPlausibleFilterString();
+        if ($filterStr) {
+            $params['filters'] = $filterStr;
+        }
 
-        $responseData = $this->plausibleService->sendAuthorizedRequest($plausibleSiteId, $endpoint, $params);
-        return is_array($responseData) ? $responseData : [];
+        $responseData = [];
+        $responseData['data'] = $this->plausibleService->sendAuthorizedRequest($plausibleSiteId, $endpoint, $params);
+        if (!is_array($responseData['data'])) {
+            $responseData['data'] = [];
+        }
+
+        $responseData['columns'][] = [
+            'name' => 'visitors',
+            'label' => $this->getLanguageService()->getLL('barChart.labels.visitors'),
+        ];
+
+        return $responseData;
     }
 }

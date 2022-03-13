@@ -28,6 +28,8 @@ use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
+use Waldhacker\Plausibleio\Filter;
+use Waldhacker\Plausibleio\FilterRepository;
 use Waldhacker\Plausibleio\Services\ConfigurationService;
 use Waldhacker\Plausibleio\Services\Exception\InvalidConfigurationException;
 
@@ -172,9 +174,26 @@ class ConfigurationServiceTest extends UnitTestCase
     {
         $GLOBALS['TYPO3_CONF_VARS']['BE']['cookieName'] = '';
         $GLOBALS['BE_USER'] = new BackendUserAuthentication();
-        $GLOBALS['BE_USER']->uc = ['plausible' => ['timeFrame' => '7d']];
+        $GLOBALS['BE_USER']->uc = [
+            'plausible' => [
+                'dashBoardId_98321' => [
+                    'timeFrame' => '7d',
+                ]
+            ]
+        ];
 
-        self::assertSame('7d', $this->subject->getTimeFrameValueFromUserConfiguration());
+        self::assertSame('7d', $this->subject->getTimeFrameValueFromUserConfiguration('dashBoardId_98321'));
+
+        // empty dashBoardId -> dashBoardId = ConfigurationService::DASHBOARD_DEFAULT_ID
+        $GLOBALS['BE_USER']->uc = [
+            'plausible' => [
+                ConfigurationService::DASHBOARD_DEFAULT_ID => [
+                    'timeFrame' => '31d',
+                ]
+            ]
+        ];
+
+        self::assertSame('31d', $this->subject->getTimeFrameValueFromUserConfiguration(''));
     }
 
     /**
@@ -192,7 +211,7 @@ class ConfigurationServiceTest extends UnitTestCase
         $GLOBALS['BE_USER']->uc = [];
         $this->extensionConfigurationProphecy->get('plausibleio', 'defaultTimeFrame')->willReturn('30d');
 
-        self::assertSame('30d', $this->subject->getTimeFrameValueFromUserConfiguration());
+        self::assertSame('30d', $this->subject->getTimeFrameValueFromUserConfiguration(ConfigurationService::DASHBOARD_DEFAULT_ID));
     }
 
     /**
@@ -208,7 +227,7 @@ class ConfigurationServiceTest extends UnitTestCase
         $GLOBALS['BE_USER'] = $backendUserProphecy->reveal();
 
         $backendUserProphecy->writeUC()->shouldNotBeCalled();
-        self::assertNull($this->subject->persistTimeFrameValueInUserConfiguration('7d'));
+        self::assertNull($this->subject->persistTimeFrameValueInUserConfiguration('7d', ConfigurationService::DASHBOARD_DEFAULT_ID));
     }
 
     /**
@@ -225,8 +244,26 @@ class ConfigurationServiceTest extends UnitTestCase
         $GLOBALS['BE_USER']->uc = [];
 
         $backendUserProphecy->writeUC()->shouldBeCalled();
-        self::assertNull($this->subject->persistTimeFrameValueInUserConfiguration('7d'));
-        self::assertSame(['plausible' => ['timeFrame' => '7d']], $backendUserProphecy->uc);
+        self::assertNull($this->subject->persistTimeFrameValueInUserConfiguration('7d', 'dashBoardId_98321'));
+        self::assertSame([
+            'plausible' => [
+                'dashBoardId_98321' => [
+                    'timeFrame' => '7d',
+                ],
+            ],
+        ], $backendUserProphecy->uc);
+
+        // empty dashBoardId -> dashBoardId = ConfigurationService::DASHBOARD_DEFAULT_ID
+        $GLOBALS['BE_USER']->uc = [];
+        $backendUserProphecy->writeUC()->shouldBeCalled();
+        self::assertNull($this->subject->persistTimeFrameValueInUserConfiguration('7d', ''));
+        self::assertSame([
+            'plausible' => [
+                ConfigurationService::DASHBOARD_DEFAULT_ID => [
+                    'timeFrame' => '7d',
+                ],
+            ],
+        ], $backendUserProphecy->uc);
     }
 
     /**
@@ -264,9 +301,26 @@ class ConfigurationServiceTest extends UnitTestCase
     {
         $GLOBALS['TYPO3_CONF_VARS']['BE']['cookieName'] = '';
         $GLOBALS['BE_USER'] = new BackendUserAuthentication();
-        $GLOBALS['BE_USER']->uc = ['plausible' => ['siteId' => 'waldhacker.dev']];
+        $GLOBALS['BE_USER']->uc = [
+            'plausible' => [
+                ConfigurationService::DASHBOARD_DEFAULT_ID => [
+                    'siteId' => 'waldhacker.dev',
+                ],
+            ],
+        ];
 
-        self::assertSame('waldhacker.dev', $this->subject->getPlausibleSiteIdFromUserConfiguration());
+        self::assertSame('waldhacker.dev', $this->subject->getPlausibleSiteIdFromUserConfiguration(ConfigurationService::DASHBOARD_DEFAULT_ID));
+
+        // empty dashBoardId -> dashBoardId = ConfigurationService::DASHBOARD_DEFAULT_ID
+        $GLOBALS['BE_USER']->uc = [
+            'plausible' => [
+                ConfigurationService::DASHBOARD_DEFAULT_ID => [
+                    'siteId' => 'waldhacker.dev',
+                ],
+            ],
+        ];
+
+        self::assertSame('waldhacker.dev', $this->subject->getPlausibleSiteIdFromUserConfiguration(''));
     }
 
     /**
@@ -292,7 +346,7 @@ class ConfigurationServiceTest extends UnitTestCase
 
         $subject->expects(self::any())->method('getFirstAvailablePlausibleSiteId')->willReturn('waldhacker.dev');
 
-        self::assertSame('waldhacker.dev', $subject->getPlausibleSiteIdFromUserConfiguration());
+        self::assertSame('waldhacker.dev', $subject->getPlausibleSiteIdFromUserConfiguration(ConfigurationService::DASHBOARD_DEFAULT_ID));
     }
 
     /**
@@ -308,7 +362,275 @@ class ConfigurationServiceTest extends UnitTestCase
         $GLOBALS['BE_USER'] = $backendUserProphecy->reveal();
 
         $backendUserProphecy->writeUC()->shouldNotBeCalled();
-        self::assertNull($this->subject->persistPlausibleSiteIdInUserConfiguration('waldhacker.dev'));
+        self::assertNull($this->subject->persistPlausibleSiteIdInUserConfiguration('waldhacker.dev', ConfigurationService::DASHBOARD_DEFAULT_ID));
+    }
+
+    /**
+     * @test
+     * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::__construct
+     * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::persistFiltersInUserConfiguration
+     * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::getLanguageService
+     * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::getBackendUser
+     */
+    public function persistPlausibleFiltersInUserConfigurationDoesNothingOnInvalidBackendUserConfiguration(): void
+    {
+        $backendUserProphecy = $this->prophesize(BackendUserAuthentication::class);
+        $GLOBALS['BE_USER'] = $backendUserProphecy->reveal();
+
+        $backendUserProphecy->writeUC()->shouldNotBeCalled();
+        self::assertNull($this->subject->persistFiltersInUserConfiguration(new FilterRepository(), ConfigurationService::DASHBOARD_DEFAULT_ID));
+    }
+
+    /**
+     * @test
+     * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::__construct
+     * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::persistFiltersInUserConfiguration
+     * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::getLanguageService
+     * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::getBackendUser
+     * @covers \Waldhacker\Plausibleio\Filter::__construct
+     * @covers \Waldhacker\Plausibleio\FilterRepository::addFilter
+     * @covers \Waldhacker\Plausibleio\FilterRepository::checkFilter
+     * @covers \Waldhacker\Plausibleio\FilterRepository::clearFilters
+     * @covers \Waldhacker\Plausibleio\FilterRepository::getFiltersAsArray
+     * @covers \Waldhacker\Plausibleio\FilterRepository::isFilterActivated
+ */
+    public function persistFiltersInUserConfigurationPersistValue(): void
+    {
+        $backendUserProphecy = $this->prophesize(BackendUserAuthentication::class);
+        $GLOBALS['BE_USER'] = $backendUserProphecy->reveal();
+        $GLOBALS['BE_USER']->uc = [];
+
+        $filterRepo = new FilterRepository();
+        $filterRepo->addFilter(new Filter(FilterRepository::FILTERVISITOS, 'Mac'));
+
+        $backendUserProphecy->writeUC()->shouldBeCalled();
+        self::assertNull($this->subject->persistFiltersInUserConfiguration($filterRepo, 'dashBoardId_98321'));
+        self::assertSame([
+            'plausible' => [
+                'dashBoardId_98321' => [
+                    'filters' => [
+                        [
+                            'name' => FilterRepository::FILTERVISITOS,
+                            'value' => 'Mac',
+                            'label' => '',
+                            'labelValue' => '',
+                        ]
+                    ],
+                ],
+            ],
+        ], $backendUserProphecy->uc);
+
+        // empty dashBoardId -> dashBoardId = ConfigurationService::DASHBOARD_DEFAULT_ID
+        $filterRepo->clearFilters();
+        $filterRepo->addFilter(new Filter(FilterRepository::FILTERVISITOS, 'Windows'));
+        $GLOBALS['BE_USER']->uc = [];
+        self::assertNull($this->subject->persistFiltersInUserConfiguration($filterRepo, ''));
+        self::assertSame([
+            'plausible' => [
+                ConfigurationService::DASHBOARD_DEFAULT_ID => [
+                    'filters' => [
+                        [
+                            'name' => FilterRepository::FILTERVISITOS,
+                            'value' => 'Windows',
+                            'label' => '',
+                            'labelValue' => '',
+                        ]
+                    ],
+                ],
+            ],
+        ], $backendUserProphecy->uc);
+    }
+
+    /**
+     * @test
+     * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::__construct
+     * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::getFiltersFromUserConfiguration
+     * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::getLanguageService
+     * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::getBackendUser
+     * @covers \Waldhacker\Plausibleio\FilterRepository::getFiltersAsArray
+     * @covers \Waldhacker\Plausibleio\Filter::__construct
+     * @covers \Waldhacker\Plausibleio\Filter::getLabel
+     * @covers \Waldhacker\Plausibleio\Filter::getLabelValue
+     * @covers \Waldhacker\Plausibleio\Filter::getName
+     * @covers \Waldhacker\Plausibleio\Filter::getValue
+     * @covers \Waldhacker\Plausibleio\FilterRepository::addFilter
+     * @covers \Waldhacker\Plausibleio\FilterRepository::checkFilter
+     * @covers \Waldhacker\Plausibleio\FilterRepository::isFilterActivated
+     * @covers \Waldhacker\Plausibleio\FilterRepository::setFiltersFromArray
+     */
+    public function getFiltersFromUserConfigurationWithDefaultDashboardReturnsValueFromUserConfiguration(): void
+    {
+        $GLOBALS['TYPO3_CONF_VARS']['BE']['cookieName'] = '';
+        $GLOBALS['BE_USER'] = new BackendUserAuthentication();
+        $GLOBALS['BE_USER']->uc = [
+            'plausible' => [
+                'dashBoardId_98321' => [
+                    'filters' => [['name' => 'visit:os', 'value' => 'Mac']],
+                ],
+            ],
+        ];
+
+        self::assertSame([['name' => 'visit:os', 'value' => 'Mac', 'label' => '', 'labelValue' => '']], $this->subject->getFiltersFromUserConfiguration('dashBoardId_98321')->getFiltersAsArray());
+
+        // dashboardKey could not be found -> ConfigurationService::DASHBOARD_DEFAULT_ID is used as fallback
+        $GLOBALS['BE_USER']->uc = [
+            'plausible' => [
+                ConfigurationService::DASHBOARD_DEFAULT_ID => [
+                    'filters' => [['name' => 'visit:os', 'value' => 'Windows']],
+                ],
+            ],
+        ];
+
+        self::assertSame([['name' => 'visit:os', 'value' => 'Windows', 'label' => '', 'labelValue' => '']], $this->subject->getFiltersFromUserConfiguration('unavailableKey')->getFiltersAsArray());
+    }
+
+    /**
+     * @test
+     * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::__construct
+     * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::getFiltersFromUserConfiguration
+     * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::getLanguageService
+     * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::getBackendUser
+     * @covers \Waldhacker\Plausibleio\Filter::__construct
+     * @covers \Waldhacker\Plausibleio\Filter::getLabel
+     * @covers \Waldhacker\Plausibleio\Filter::getLabelValue
+     * @covers \Waldhacker\Plausibleio\Filter::getName
+     * @covers \Waldhacker\Plausibleio\Filter::getValue
+     * @covers \Waldhacker\Plausibleio\FilterRepository::addFilter
+     * @covers \Waldhacker\Plausibleio\FilterRepository::checkFilter
+     * @covers \Waldhacker\Plausibleio\FilterRepository::isFilterActivated
+     * @covers \Waldhacker\Plausibleio\FilterRepository::getFiltersAsArray
+     * @covers \Waldhacker\Plausibleio\FilterRepository::setFiltersFromArray
+     */
+    public function getFiltersFromUserConfigurationWithConcreteDashboardReturnsValueFromUserConfiguration(): void
+    {
+        $GLOBALS['TYPO3_CONF_VARS']['BE']['cookieName'] = '';
+        $GLOBALS['BE_USER'] = new BackendUserAuthentication();
+        $GLOBALS['BE_USER']->uc = [
+            'plausible' => [
+                'dashboard_AAA' => [
+                    'filters' => [['name' => 'visit:os', 'value' => 'Mac']],
+                ],
+                ConfigurationService::DASHBOARD_DEFAULT_ID => [
+                    'filters' => [['name' => 'visit:os', 'value' => 'Windows']],
+                ],
+            ],
+        ];
+
+        self::assertSame([['name' => 'visit:os', 'value' => 'Mac', 'label' => '', 'labelValue' => '']], $this->subject->getFiltersFromUserConfiguration('dashboard_AAA')->getFiltersAsArray());
+    }
+
+    public function getFiltersFromUserConfigurationReturnsEmptyArrayOnInvalidBackendUserConfigurationDataProvider(): \Generator
+    {
+        $GLOBALS['TYPO3_CONF_VARS']['BE']['cookieName'] = '';
+
+        yield 'BE_USER null' => [
+            'beUser' => null,
+            'uc' => [],
+            ];
+
+        yield 'uc not an array' => [
+            'beUser' => new BackendUserAuthentication(),
+            'uc' => null,
+        ];
+
+        yield 'BE_USER null and uc null' => [
+            'beUser' => null,
+            'uc' => null,
+        ];
+    }
+
+    /**
+     * @test
+     * @dataProvider getFiltersFromUserConfigurationReturnsEmptyArrayOnInvalidBackendUserConfigurationDataProvider
+     * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::__construct
+     * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::getFiltersFromUserConfiguration
+     * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::getLanguageService
+     * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::getBackendUser
+     * @covers \Waldhacker\Plausibleio\FilterRepository::getFiltersAsArray
+     * @covers \Waldhacker\Plausibleio\FilterRepository::setFiltersFromArray
+     * @covers \Waldhacker\Plausibleio\FilterRepository::isFilterActivated
+     */
+    public function getFiltersFromUserConfigurationReturnsEmptyArrayOnInvalidBackendUserConfiguration(
+        ?BackendUserAuthentication $beUser,
+        ?array $uc
+    ): void {
+        $GLOBALS['BE_USER'] = $beUser;
+        if ($beUser) {
+            $GLOBALS['BE_USER']->uc = $uc;
+        }
+
+        self::assertSame([], $this->subject->getFiltersFromUserConfiguration(ConfigurationService::DASHBOARD_DEFAULT_ID)->getFiltersAsArray());
+    }
+
+    public function getAllFiltersFromUserConfigurationReturnsEmptyArrayOnInvalidBackendUserConfigurationDataProvider(): \Generator
+    {
+        $GLOBALS['TYPO3_CONF_VARS']['BE']['cookieName'] = '';
+
+        yield 'BE_USER null' => [
+            'beUser' => null,
+            'uc' => [],
+        ];
+
+        yield 'uc not an array' => [
+            'beUser' => new BackendUserAuthentication(),
+            'uc' => null,
+        ];
+
+        yield 'BE_USER null and uc null' => [
+            'beUser' => null,
+            'uc' => null,
+        ];
+    }
+
+    /**
+     * @test
+     * @dataProvider getAllFiltersFromUserConfigurationReturnsEmptyArrayOnInvalidBackendUserConfigurationDataProvider
+     * @covers       \Waldhacker\Plausibleio\Services\ConfigurationService::__construct
+     * @covers       \Waldhacker\Plausibleio\Services\ConfigurationService::getAllFiltersFromUserConfiguration
+     * @covers       \Waldhacker\Plausibleio\Services\ConfigurationService::getLanguageService
+     * @covers       \Waldhacker\Plausibleio\Services\ConfigurationService::getBackendUser
+     */
+    public function getAllFiltersFromUserConfigurationReturnsEmptyArrayOnInvalidBackendUserConfiguration(
+        ?BackendUserAuthentication $beUser,
+        ?array $uc
+    ): void {
+        $GLOBALS['BE_USER'] = $beUser;
+        if ($beUser) {
+            $GLOBALS['BE_USER']->uc = $uc;
+        }
+
+        self::assertSame([], $this->subject->getAllFiltersFromUserConfiguration());
+    }
+
+    /**
+     * @test
+     * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::__construct
+     * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::getAllFiltersFromUserConfiguration
+     * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::getLanguageService
+     * @covers \Waldhacker\Plausibleio\Services\ConfigurationService::getBackendUser
+     */
+    public function getAllFiltersFromUserConfigurationReturnsValueFromUserConfiguration(): void
+    {
+        $GLOBALS['TYPO3_CONF_VARS']['BE']['cookieName'] = '';
+        $GLOBALS['BE_USER'] = new BackendUserAuthentication();
+        $GLOBALS['BE_USER']->uc = [
+            'plausible' => [
+                'dashboard_AAA' => [
+                    'filters' => ['name' => 'visit:os==Mac'],
+                ],
+                ConfigurationService::DASHBOARD_DEFAULT_ID => [
+                    'filters' => ['name' => 'visit:os==Windows'],
+                ],
+            ],
+        ];
+
+        self::assertSame(
+            [
+                'dashboard_AAA' => ['name' => 'visit:os==Mac'],
+                ConfigurationService::DASHBOARD_DEFAULT_ID => ['name' => 'visit:os==Windows'],
+            ],
+            $this->subject->getAllFiltersFromUserConfiguration()
+        );
     }
 
     /**
@@ -325,8 +647,25 @@ class ConfigurationServiceTest extends UnitTestCase
         $GLOBALS['BE_USER']->uc = [];
 
         $backendUserProphecy->writeUC()->shouldBeCalled();
-        self::assertNull($this->subject->persistPlausibleSiteIdInUserConfiguration('waldhacker.dev'));
-        self::assertSame(['plausible' => ['siteId' => 'waldhacker.dev']], $backendUserProphecy->uc);
+        self::assertNull($this->subject->persistPlausibleSiteIdInUserConfiguration('waldhacker.dev', ConfigurationService::DASHBOARD_DEFAULT_ID));
+        self::assertSame([
+            'plausible' => [
+                ConfigurationService::DASHBOARD_DEFAULT_ID => [
+                    'siteId' => 'waldhacker.dev'
+                ],
+            ],
+        ], $backendUserProphecy->uc);
+
+        // empty dashBoardId -> dashBoardId = ConfigurationService::DASHBOARD_DEFAULT_ID
+        $GLOBALS['BE_USER']->uc = [];
+        self::assertNull($this->subject->persistPlausibleSiteIdInUserConfiguration('waldhacker.dev', ''));
+        self::assertSame([
+            'plausible' => [
+                ConfigurationService::DASHBOARD_DEFAULT_ID => [
+                    'siteId' => 'waldhacker.dev'
+                ],
+            ],
+        ], $backendUserProphecy->uc);
     }
 
     /**
@@ -456,6 +795,7 @@ class ConfigurationServiceTest extends UnitTestCase
             'plausible_includeTrackingScript' => true,
             'plausible_trackingScriptBaseUrl' => 'https://example.com/',
             'plausible_trackingScriptType' => 'plausible.js',
+            'plausible_auto404Tracking' => false,
         ]);
         $siteLanguage2Prophecy->toArray()->willReturn([
             'plausible_baseUrl' => 'https://de.example.com/',
@@ -464,6 +804,7 @@ class ConfigurationServiceTest extends UnitTestCase
             'plausible_includeTrackingScript' => true,
             'plausible_trackingScriptBaseUrl' => 'https://de.example.com/',
             'plausible_trackingScriptType' => 'plausible.js',
+            'plausible_auto404Tracking' => true,
         ]);
         $siteLanguage3Prophecy->toArray()->willReturn([
             'plausible_baseUrl' => 'https://zz.example.com/',
@@ -472,6 +813,7 @@ class ConfigurationServiceTest extends UnitTestCase
             'plausible_includeTrackingScript' => true,
             'plausible_trackingScriptBaseUrl' => 'https://zz.example.com/',
             'plausible_trackingScriptType' => 'plausible.js',
+            'plausible_auto404Tracking' => false,
         ]);
         $siteLanguage4Prophecy->toArray()->willReturn([
             'plausible_baseUrl' => 'https://yy.example.com/',
@@ -480,6 +822,7 @@ class ConfigurationServiceTest extends UnitTestCase
             'plausible_includeTrackingScript' => true,
             'plausible_trackingScriptBaseUrl' => 'https://yy.example.com/',
             'plausible_trackingScriptType' => 'plausible.js',
+            'plausible_auto404Tracking' => false,
         ]);
         $siteLanguage5Prophecy->toArray()->willReturn([
             'plausible_baseUrl' => 'https://dd.example.com/',
@@ -488,6 +831,7 @@ class ConfigurationServiceTest extends UnitTestCase
             'plausible_includeTrackingScript' => true,
             'plausible_trackingScriptBaseUrl' => 'https://dd.example.com/',
             'plausible_trackingScriptType' => 'plausible.js',
+            'plausible_auto404Tracking' => true,
         ]);
 
         $site1Prophecy->getRootPageId()->willReturn(1);
@@ -534,6 +878,7 @@ class ConfigurationServiceTest extends UnitTestCase
                     'includeTrackingScript' => true,
                     'trackingScriptBaseUrl' => 'https://example.com/',
                     'trackingScriptType' => 'plausible.js',
+                    'auto404Tracking' => false,
                 ],
                 'de.example.com' => [
                     'apiUrl' => 'https://de.example.com/',
@@ -542,6 +887,7 @@ class ConfigurationServiceTest extends UnitTestCase
                     'includeTrackingScript' => true,
                     'trackingScriptBaseUrl' => 'https://de.example.com/',
                     'trackingScriptType' => 'plausible.js',
+                    'auto404Tracking' => true,
                 ],
             ],
             $subject->getAvailablePlausibleSiteIdConfigurations()
@@ -636,6 +982,7 @@ class ConfigurationServiceTest extends UnitTestCase
             'plausible_includeTrackingScript' => true,
             'plausible_trackingScriptBaseUrl' => 'https://example.com/',
             'plausible_trackingScriptType' => 'plausible.js',
+            'plausible_auto404Tracking' => false,
         ]);
 
         self::assertSame(
@@ -646,6 +993,7 @@ class ConfigurationServiceTest extends UnitTestCase
                 'includeTrackingScript' => true,
                 'trackingScriptBaseUrl' => 'https://example.com/',
                 'trackingScriptType' => 'plausible.js',
+                'auto404Tracking' => false,
             ],
             $this->subject->getPlausibleConfigurationFromSiteLanguage($siteLanguageProphecy->reveal())
         );

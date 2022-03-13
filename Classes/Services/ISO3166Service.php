@@ -20,1005 +20,259 @@ namespace Waldhacker\Plausibleio\Services;
 
 class ISO3166Service
 {
+    public const COUNTRYNAME = 'country';
     public const ALPHA2 = 'alpha2';
     public const ALPHA3 = 'alpha3';
     private array $data = [
-        [
-            'alpha2' => 'AF',
-            'alpha3' => 'AFG',
-        ],
-        [
-            'alpha2' => 'AX',
-            'alpha3' => 'ALA',
-        ],
-        [
-            'alpha2' => 'AL',
-            'alpha3' => 'ALB',
-        ],
-        [
-            'alpha2' => 'DZ',
-            'alpha3' => 'DZA',
-        ],
-        [
-            'alpha2' => 'AS',
-            'alpha3' => 'ASM',
-        ],
-        [
-            'alpha2' => 'AD',
-            'alpha3' => 'AND',
-        ],
-        [
-            'alpha2' => 'AO',
-            'alpha3' => 'AGO',
-        ],
-        [
-            'alpha2' => 'AI',
-            'alpha3' => 'AIA',
-        ],
-        [
-            'alpha2' => 'AQ',
-            'alpha3' => 'ATA',
-        ],
-        [
-            'alpha2' => 'AG',
-            'alpha3' => 'ATG',
-        ],
-        [
-            'alpha2' => 'AR',
-            'alpha3' => 'ARG',
-        ],
-        [
-            'alpha2' => 'AM',
-            'alpha3' => 'ARM',
-        ],
-        [
-            'alpha2' => 'AW',
-            'alpha3' => 'ABW',
-        ],
-        [
-            'alpha2' => 'AU',
-            'alpha3' => 'AUS',
-        ],
-        [
-            'alpha2' => 'AT',
-            'alpha3' => 'AUT',
-        ],
-        [
-            'alpha2' => 'AZ',
-            'alpha3' => 'AZE',
-        ],
-        [
-            'alpha2' => 'BS',
-            'alpha3' => 'BHS',
-        ],
-        [
-            'alpha2' => 'BH',
-            'alpha3' => 'BHR',
-        ],
-        [
-            'alpha2' => 'BD',
-            'alpha3' => 'BGD',
-        ],
-        [
-            'alpha2' => 'BB',
-            'alpha3' => 'BRB',
-        ],
-        [
-            'alpha2' => 'BY',
-            'alpha3' => 'BLR',
-        ],
-        [
-            'alpha2' => 'BE',
-            'alpha3' => 'BEL',
-        ],
-        [
-            'alpha2' => 'BZ',
-            'alpha3' => 'BLZ',
-        ],
-        [
-            'alpha2' => 'BJ',
-            'alpha3' => 'BEN',
-        ],
-        [
-            'alpha2' => 'BM',
-            'alpha3' => 'BMU',
-        ],
-        [
-            'alpha2' => 'BT',
-            'alpha3' => 'BTN',
-        ],
-        [
-            'alpha2' => 'BO',
-            'alpha3' => 'BOL',
-        ],
-        [
-            'alpha2' => 'BQ',
-            'alpha3' => 'BES',
-        ],
-        [
-            'alpha2' => 'BA',
-            'alpha3' => 'BIH',
-        ],
-        [
-            'alpha2' => 'BW',
-            'alpha3' => 'BWA',
-        ],
-        [
-            'alpha2' => 'BV',
-            'alpha3' => 'BVT',
-        ],
-        [
-            'alpha2' => 'BR',
-            'alpha3' => 'BRA',
-        ],
-        [
-            'alpha2' => 'IO',
-            'alpha3' => 'IOT',
-        ],
-        [
-            'alpha2' => 'BN',
-            'alpha3' => 'BRN',
-        ],
-        [
-            'alpha2' => 'BG',
-            'alpha3' => 'BGR',
-        ],
-        [
-            'alpha2' => 'BF',
-            'alpha3' => 'BFA',
-        ],
-        [
-            'alpha2' => 'BI',
-            'alpha3' => 'BDI',
-        ],
-        [
-            'alpha2' => 'CV',
-            'alpha3' => 'CPV',
-        ],
-        [
-            'alpha2' => 'KH',
-            'alpha3' => 'KHM',
-        ],
-        [
-            'alpha2' => 'CM',
-            'alpha3' => 'CMR',
-        ],
-        [
-            'alpha2' => 'CA',
-            'alpha3' => 'CAN',
-        ],
-        [
-            'alpha2' => 'KY',
-            'alpha3' => 'CYM',
-        ],
-        [
-            'alpha2' => 'CF',
-            'alpha3' => 'CAF',
-        ],
-        [
-            'alpha2' => 'TD',
-            'alpha3' => 'TCD',
-        ],
-        [
-            'alpha2' => 'CL',
-            'alpha3' => 'CHL',
-        ],
-        [
-            'alpha2' => 'CN',
-            'alpha3' => 'CHN',
-        ],
-        [
-            'alpha2' => 'CX',
-            'alpha3' => 'CXR',
-        ],
-        [
-            'alpha2' => 'CC',
-            'alpha3' => 'CCK',
-        ],
-        [
-            'alpha2' => 'CO',
-            'alpha3' => 'COL',
-        ],
-        [
-            'alpha2' => 'KM',
-            'alpha3' => 'COM',
-        ],
-        [
-            'alpha2' => 'CG',
-            'alpha3' => 'COG',
-        ],
-        [
-            'alpha2' => 'CD',
-            'alpha3' => 'COD',
-        ],
-        [
-            'alpha2' => 'CK',
-            'alpha3' => 'COK',
-        ],
-        [
-            'alpha2' => 'CR',
-            'alpha3' => 'CRI',
-        ],
-        [
-            'alpha2' => 'CI',
-            'alpha3' => 'CIV',
-        ],
-        [
-            'alpha2' => 'HR',
-            'alpha3' => 'HRV',
-        ],
-        [
-            'alpha2' => 'CU',
-            'alpha3' => 'CUB',
-        ],
-        [
-            'alpha2' => 'CW',
-            'alpha3' => 'CUW',
-        ],
-        [
-            'alpha2' => 'CY',
-            'alpha3' => 'CYP',
-        ],
-        [
-            'alpha2' => 'CZ',
-            'alpha3' => 'CZE',
-        ],
-        [
-            'alpha2' => 'DK',
-            'alpha3' => 'DNK',
-        ],
-        [
-            'alpha2' => 'DJ',
-            'alpha3' => 'DJI',
-        ],
-        [
-            'alpha2' => 'DM',
-            'alpha3' => 'DMA',
-        ],
-        [
-            'alpha2' => 'DO',
-            'alpha3' => 'DOM',
-        ],
-        [
-            'alpha2' => 'EC',
-            'alpha3' => 'ECU',
-        ],
-        [
-            'alpha2' => 'EG',
-            'alpha3' => 'EGY',
-        ],
-        [
-            'alpha2' => 'SV',
-            'alpha3' => 'SLV',
-        ],
-        [
-            'alpha2' => 'GQ',
-            'alpha3' => 'GNQ',
-        ],
-        [
-            'alpha2' => 'ER',
-            'alpha3' => 'ERI',
-        ],
-        [
-            'alpha2' => 'EE',
-            'alpha3' => 'EST',
-        ],
-        [
-            'alpha2' => 'ET',
-            'alpha3' => 'ETH',
-        ],
-        [
-            'alpha2' => 'SZ',
-            'alpha3' => 'SWZ',
-        ],
-        [
-            'alpha2' => 'FK',
-            'alpha3' => 'FLK',
-        ],
-        [
-            'alpha2' => 'FO',
-            'alpha3' => 'FRO',
-        ],
-        [
-            'alpha2' => 'FJ',
-            'alpha3' => 'FJI',
-        ],
-        [
-            'alpha2' => 'FI',
-            'alpha3' => 'FIN',
-        ],
-        [
-            'alpha2' => 'FR',
-            'alpha3' => 'FRA',
-        ],
-        [
-            'alpha2' => 'GF',
-            'alpha3' => 'GUF',
-        ],
-        [
-            'alpha2' => 'PF',
-            'alpha3' => 'PYF',
-        ],
-        [
-            'alpha2' => 'TF',
-            'alpha3' => 'ATF',
-        ],
-        [
-            'alpha2' => 'GA',
-            'alpha3' => 'GAB',
-        ],
-        [
-            'alpha2' => 'GM',
-            'alpha3' => 'GMB',
-        ],
-        [
-            'alpha2' => 'GE',
-            'alpha3' => 'GEO',
-        ],
-        [
-            'alpha2' => 'DE',
-            'alpha3' => 'DEU',
-        ],
-        [
-            'alpha2' => 'GH',
-            'alpha3' => 'GHA',
-        ],
-        [
-            'alpha2' => 'GI',
-            'alpha3' => 'GIB',
-        ],
-        [
-            'alpha2' => 'GR',
-            'alpha3' => 'GRC',
-        ],
-        [
-            'alpha2' => 'GL',
-            'alpha3' => 'GRL',
-        ],
-        [
-            'alpha2' => 'GD',
-            'alpha3' => 'GRD',
-        ],
-        [
-            'alpha2' => 'GP',
-            'alpha3' => 'GLP',
-        ],
-        [
-            'alpha2' => 'GU',
-            'alpha3' => 'GUM',
-        ],
-        [
-            'alpha2' => 'GT',
-            'alpha3' => 'GTM',
-        ],
-        [
-            'alpha2' => 'GG',
-            'alpha3' => 'GGY',
-        ],
-        [
-            'alpha2' => 'GN',
-            'alpha3' => 'GIN',
-        ],
-        [
-            'alpha2' => 'GW',
-            'alpha3' => 'GNB',
-        ],
-        [
-            'alpha2' => 'GY',
-            'alpha3' => 'GUY',
-        ],
-        [
-            'alpha2' => 'HT',
-            'alpha3' => 'HTI',
-        ],
-        [
-            'alpha2' => 'HM',
-            'alpha3' => 'HMD',
-        ],
-        [
-            'alpha2' => 'VA',
-            'alpha3' => 'VAT',
-        ],
-        [
-            'alpha2' => 'HN',
-            'alpha3' => 'HND',
-        ],
-        [
-            'alpha2' => 'HK',
-            'alpha3' => 'HKG',
-        ],
-        [
-            'alpha2' => 'HU',
-            'alpha3' => 'HUN',
-        ],
-        [
-            'alpha2' => 'IS',
-            'alpha3' => 'ISL',
-        ],
-        [
-            'alpha2' => 'IN',
-            'alpha3' => 'IND',
-        ],
-        [
-            'alpha2' => 'ID',
-            'alpha3' => 'IDN',
-        ],
-        [
-            'alpha2' => 'IR',
-            'alpha3' => 'IRN',
-        ],
-        [
-            'alpha2' => 'IQ',
-            'alpha3' => 'IRQ',
-        ],
-        [
-            'alpha2' => 'IE',
-            'alpha3' => 'IRL',
-        ],
-        [
-            'alpha2' => 'IM',
-            'alpha3' => 'IMN',
-        ],
-        [
-            'alpha2' => 'IL',
-            'alpha3' => 'ISR',
-        ],
-        [
-            'alpha2' => 'IT',
-            'alpha3' => 'ITA',
-        ],
-        [
-            'alpha2' => 'JM',
-            'alpha3' => 'JAM',
-        ],
-        [
-            'alpha2' => 'JP',
-            'alpha3' => 'JPN',
-        ],
-        [
-            'alpha2' => 'JE',
-            'alpha3' => 'JEY',
-        ],
-        [
-            'alpha2' => 'JO',
-            'alpha3' => 'JOR',
-        ],
-        [
-            'alpha2' => 'KZ',
-            'alpha3' => 'KAZ',
-        ],
-        [
-            'alpha2' => 'KE',
-            'alpha3' => 'KEN',
-        ],
-        [
-            'alpha2' => 'KI',
-            'alpha3' => 'KIR',
-        ],
-        [
-            'alpha2' => 'KP',
-            'alpha3' => 'PRK',
-        ],
-        [
-            'alpha2' => 'KR',
-            'alpha3' => 'KOR',
-        ],
-        [
-            'alpha2' => 'KW',
-            'alpha3' => 'KWT',
-        ],
-        [
-            'alpha2' => 'KG',
-            'alpha3' => 'KGZ',
-        ],
-        [
-            'alpha2' => 'LA',
-            'alpha3' => 'LAO',
-        ],
-        [
-            'alpha2' => 'LV',
-            'alpha3' => 'LVA',
-        ],
-        [
-            'alpha2' => 'LB',
-            'alpha3' => 'LBN',
-        ],
-        [
-            'alpha2' => 'LS',
-            'alpha3' => 'LSO',
-        ],
-        [
-            'alpha2' => 'LR',
-            'alpha3' => 'LBR',
-        ],
-        [
-            'alpha2' => 'LY',
-            'alpha3' => 'LBY',
-        ],
-        [
-            'alpha2' => 'LI',
-            'alpha3' => 'LIE',
-        ],
-        [
-            'alpha2' => 'LT',
-            'alpha3' => 'LTU',
-        ],
-        [
-            'alpha2' => 'LU',
-            'alpha3' => 'LUX',
-        ],
-        [
-            'alpha2' => 'MO',
-            'alpha3' => 'MAC',
-        ],
-        [
-            'alpha2' => 'MK',
-            'alpha3' => 'MKD',
-        ],
-        [
-            'alpha2' => 'MG',
-            'alpha3' => 'MDG',
-        ],
-        [
-            'alpha2' => 'MW',
-            'alpha3' => 'MWI',
-        ],
-        [
-            'alpha2' => 'MY',
-            'alpha3' => 'MYS',
-        ],
-        [
-            'alpha2' => 'MV',
-            'alpha3' => 'MDV',
-        ],
-        [
-            'alpha2' => 'ML',
-            'alpha3' => 'MLI',
-        ],
-        [
-            'alpha2' => 'MT',
-            'alpha3' => 'MLT',
-        ],
-        [
-            'alpha2' => 'MH',
-            'alpha3' => 'MHL',
-        ],
-        [
-            'alpha2' => 'MQ',
-            'alpha3' => 'MTQ',
-        ],
-        [
-            'alpha2' => 'MR',
-            'alpha3' => 'MRT',
-        ],
-        [
-            'alpha2' => 'MU',
-            'alpha3' => 'MUS',
-        ],
-        [
-            'alpha2' => 'YT',
-            'alpha3' => 'MYT',
-        ],
-        [
-            'alpha2' => 'MX',
-            'alpha3' => 'MEX',
-        ],
-        [
-            'alpha2' => 'FM',
-            'alpha3' => 'FSM',
-        ],
-        [
-            'alpha2' => 'MD',
-            'alpha3' => 'MDA',
-        ],
-        [
-            'alpha2' => 'MC',
-            'alpha3' => 'MCO',
-        ],
-        [
-            'alpha2' => 'MN',
-            'alpha3' => 'MNG',
-        ],
-        [
-            'alpha2' => 'ME',
-            'alpha3' => 'MNE',
-        ],
-        [
-            'alpha2' => 'MS',
-            'alpha3' => 'MSR',
-        ],
-        [
-            'alpha2' => 'MA',
-            'alpha3' => 'MAR',
-        ],
-        [
-            'alpha2' => 'MZ',
-            'alpha3' => 'MOZ',
-        ],
-        [
-            'alpha2' => 'MM',
-            'alpha3' => 'MMR',
-        ],
-        [
-            'alpha2' => 'NA',
-            'alpha3' => 'NAM',
-        ],
-        [
-            'alpha2' => 'NR',
-            'alpha3' => 'NRU',
-        ],
-        [
-            'alpha2' => 'NP',
-            'alpha3' => 'NPL',
-        ],
-        [
-            'alpha2' => 'NL',
-            'alpha3' => 'NLD',
-        ],
-        [
-            'alpha2' => 'NC',
-            'alpha3' => 'NCL',
-        ],
-        [
-            'alpha2' => 'NZ',
-            'alpha3' => 'NZL',
-        ],
-        [
-            'alpha2' => 'NI',
-            'alpha3' => 'NIC',
-        ],
-        [
-            'alpha2' => 'NE',
-            'alpha3' => 'NER',
-        ],
-        [
-            'alpha2' => 'NG',
-            'alpha3' => 'NGA',
-        ],
-        [
-            'alpha2' => 'NU',
-            'alpha3' => 'NIU',
-        ],
-        [
-            'alpha2' => 'NF',
-            'alpha3' => 'NFK',
-        ],
-        [
-            'alpha2' => 'MP',
-            'alpha3' => 'MNP',
-        ],
-        [
-            'alpha2' => 'NO',
-            'alpha3' => 'NOR',
-        ],
-        [
-            'alpha2' => 'OM',
-            'alpha3' => 'OMN',
-        ],
-        [
-            'alpha2' => 'PK',
-            'alpha3' => 'PAK',
-        ],
-        [
-            'alpha2' => 'PW',
-            'alpha3' => 'PLW',
-        ],
-        [
-            'alpha2' => 'PS',
-            'alpha3' => 'PSE',
-        ],
-        [
-            'alpha2' => 'PA',
-            'alpha3' => 'PAN',
-        ],
-        [
-            'alpha2' => 'PG',
-            'alpha3' => 'PNG',
-        ],
-        [
-            'alpha2' => 'PY',
-            'alpha3' => 'PRY',
-        ],
-        [
-            'alpha2' => 'PE',
-            'alpha3' => 'PER',
-        ],
-        [
-            'alpha2' => 'PH',
-            'alpha3' => 'PHL',
-        ],
-        [
-            'alpha2' => 'PN',
-            'alpha3' => 'PCN',
-        ],
-        [
-            'alpha2' => 'PL',
-            'alpha3' => 'POL',
-        ],
-        [
-            'alpha2' => 'PT',
-            'alpha3' => 'PRT',
-        ],
-        [
-            'alpha2' => 'PR',
-            'alpha3' => 'PRI',
-        ],
-        [
-            'alpha2' => 'QA',
-            'alpha3' => 'QAT',
-        ],
-        [
-            'alpha2' => 'RE',
-            'alpha3' => 'REU',
-        ],
-        [
-            'alpha2' => 'RO',
-            'alpha3' => 'ROU',
-        ],
-        [
-            'alpha2' => 'RU',
-            'alpha3' => 'RUS',
-        ],
-        [
-            'alpha2' => 'RW',
-            'alpha3' => 'RWA',
-        ],
-        [
-            'alpha2' => 'BL',
-            'alpha3' => 'BLM',
-        ],
-        [
-            'alpha2' => 'SH',
-            'alpha3' => 'SHN',
-        ],
-        [
-            'alpha2' => 'KN',
-            'alpha3' => 'KNA',
-        ],
-        [
-            'alpha2' => 'LC',
-            'alpha3' => 'LCA',
-        ],
-        [
-            'alpha2' => 'MF',
-            'alpha3' => 'MAF',
-        ],
-        [
-            'alpha2' => 'PM',
-            'alpha3' => 'SPM',
-        ],
-        [
-            'alpha2' => 'VC',
-            'alpha3' => 'VCT',
-        ],
-        [
-            'alpha2' => 'WS',
-            'alpha3' => 'WSM',
-        ],
-        [
-            'alpha2' => 'SM',
-            'alpha3' => 'SMR',
-        ],
-        [
-            'alpha2' => 'ST',
-            'alpha3' => 'STP',
-        ],
-        [
-            'alpha2' => 'SA',
-            'alpha3' => 'SAU',
-        ],
-        [
-            'alpha2' => 'SN',
-            'alpha3' => 'SEN',
-        ],
-        [
-            'alpha2' => 'RS',
-            'alpha3' => 'SRB',
-        ],
-        [
-            'alpha2' => 'SC',
-            'alpha3' => 'SYC',
-        ],
-        [
-            'alpha2' => 'SL',
-            'alpha3' => 'SLE',
-        ],
-        [
-            'alpha2' => 'SG',
-            'alpha3' => 'SGP',
-        ],
-        [
-            'alpha2' => 'SX',
-            'alpha3' => 'SXM',
-        ],
-        [
-            'alpha2' => 'SK',
-            'alpha3' => 'SVK',
-        ],
-        [
-            'alpha2' => 'SI',
-            'alpha3' => 'SVN',
-        ],
-        [
-            'alpha2' => 'SB',
-            'alpha3' => 'SLB',
-        ],
-        [
-            'alpha2' => 'SO',
-            'alpha3' => 'SOM',
-        ],
-        [
-            'alpha2' => 'ZA',
-            'alpha3' => 'ZAF',
-        ],
-        [
-            'alpha2' => 'GS',
-            'alpha3' => 'SGS',
-        ],
-        [
-            'alpha2' => 'SS',
-            'alpha3' => 'SSD',
-        ],
-        [
-            'alpha2' => 'ES',
-            'alpha3' => 'ESP',
-        ],
-        [
-            'alpha2' => 'LK',
-            'alpha3' => 'LKA',
-        ],
-        [
-            'alpha2' => 'SD',
-            'alpha3' => 'SDN',
-        ],
-        [
-            'alpha2' => 'SR',
-            'alpha3' => 'SUR',
-        ],
-        [
-            'alpha2' => 'SJ',
-            'alpha3' => 'SJM',
-        ],
-        [
-            'alpha2' => 'SE',
-            'alpha3' => 'SWE',
-        ],
-        [
-            'alpha2' => 'CH',
-            'alpha3' => 'CHE',
-        ],
-        [
-            'alpha2' => 'SY',
-            'alpha3' => 'SYR',
-        ],
-        [
-            'alpha2' => 'TW',
-            'alpha3' => 'TWN',
-        ],
-        [
-            'alpha2' => 'TJ',
-            'alpha3' => 'TJK',
-        ],
-        [
-            'alpha2' => 'TZ',
-            'alpha3' => 'TZA',
-        ],
-        [
-            'alpha2' => 'TH',
-            'alpha3' => 'THA',
-        ],
-        [
-            'alpha2' => 'TL',
-            'alpha3' => 'TLS',
-        ],
-        [
-            'alpha2' => 'TG',
-            'alpha3' => 'TGO',
-        ],
-        [
-            'alpha2' => 'TK',
-            'alpha3' => 'TKL',
-        ],
-        [
-            'alpha2' => 'TO',
-            'alpha3' => 'TON',
-        ],
-        [
-            'alpha2' => 'TT',
-            'alpha3' => 'TTO',
-        ],
-        [
-            'alpha2' => 'TN',
-            'alpha3' => 'TUN',
-        ],
-        [
-            'alpha2' => 'TR',
-            'alpha3' => 'TUR',
-        ],
-        [
-            'alpha2' => 'TM',
-            'alpha3' => 'TKM',
-        ],
-        [
-            'alpha2' => 'TC',
-            'alpha3' => 'TCA',
-        ],
-        [
-            'alpha2' => 'TV',
-            'alpha3' => 'TUV',
-        ],
-        [
-            'alpha2' => 'UG',
-            'alpha3' => 'UGA',
-        ],
-        [
-            'alpha2' => 'UA',
-            'alpha3' => 'UKR',
-        ],
-        [
-            'alpha2' => 'AE',
-            'alpha3' => 'ARE',
-        ],
-        [
-            'alpha2' => 'GB',
-            'alpha3' => 'GBR',
-        ],
-        [
-            'alpha2' => 'US',
-            'alpha3' => 'USA',
-        ],
-        [
-            'alpha2' => 'UM',
-            'alpha3' => 'UMI',
-        ],
-        [
-            'alpha2' => 'UY',
-            'alpha3' => 'URY',
-        ],
-        [
-            'alpha2' => 'UZ',
-            'alpha3' => 'UZB',
-        ],
-        [
-            'alpha2' => 'VU',
-            'alpha3' => 'VUT',
-        ],
-        [
-            'alpha2' => 'VE',
-            'alpha3' => 'VEN',
-        ],
-        [
-            'alpha2' => 'VN',
-            'alpha3' => 'VNM',
-        ],
-        [
-            'alpha2' => 'VG',
-            'alpha3' => 'VGB',
-        ],
-        [
-            'alpha2' => 'VI',
-            'alpha3' => 'VIR',
-        ],
-        [
-            'alpha2' => 'WF',
-            'alpha3' => 'WLF',
-        ],
-        [
-            'alpha2' => 'EH',
-            'alpha3' => 'ESH',
-        ],
-        [
-            'alpha2' => 'YE',
-            'alpha3' => 'YEM',
-        ],
-        [
-            'alpha2' => 'ZM',
-            'alpha3' => 'ZMB',
-        ],
-        [
-            'alpha2' => 'ZW',
-            'alpha3' => 'ZWE',
-        ],
+        [self::COUNTRYNAME => 'Afghanistan', self::ALPHA2 => 'AF', self::ALPHA3 => 'AFG'],
+        [self::COUNTRYNAME => 'Åland Islands', self::ALPHA2 => 'AX', self::ALPHA3 => 'ALA'],
+        [self::COUNTRYNAME => 'Albania', self::ALPHA2 => 'AL', self::ALPHA3 => 'ALB'],
+        [self::COUNTRYNAME => 'Algeria', self::ALPHA2 => 'DZ', self::ALPHA3 => 'DZA'],
+        [self::COUNTRYNAME => 'American Samoa', self::ALPHA2 => 'AS', self::ALPHA3 => 'ASM'],
+        [self::COUNTRYNAME => 'Andorra', self::ALPHA2 => 'AD', self::ALPHA3 => 'AND'],
+        [self::COUNTRYNAME => 'Angola', self::ALPHA2 => 'AO', self::ALPHA3 => 'AGO'],
+        [self::COUNTRYNAME => 'Anguilla', self::ALPHA2 => 'AI', self::ALPHA3 => 'AIA'],
+        [self::COUNTRYNAME => 'Antarctica', self::ALPHA2 => 'AQ', self::ALPHA3 => 'ATA'],
+        [self::COUNTRYNAME => 'Antigua and Barbuda', self::ALPHA2 => 'AG', self::ALPHA3 => 'ATG'],
+        [self::COUNTRYNAME => 'Argentina', self::ALPHA2 => 'AR', self::ALPHA3 => 'ARG'],
+        [self::COUNTRYNAME => 'Armenia', self::ALPHA2 => 'AM', self::ALPHA3 => 'ARM'],
+        [self::COUNTRYNAME => 'Aruba', self::ALPHA2 => 'AW', self::ALPHA3 => 'ABW'],
+        [self::COUNTRYNAME => 'Australia', self::ALPHA2 => 'AU', self::ALPHA3 => 'AUS'],
+        [self::COUNTRYNAME => 'Austria', self::ALPHA2 => 'AT', self::ALPHA3 => 'AUT'],
+        [self::COUNTRYNAME => 'Azerbaijan', self::ALPHA2 => 'AZ', self::ALPHA3 => 'AZE'],
+        [self::COUNTRYNAME => 'Bahamas', self::ALPHA2 => 'BS', self::ALPHA3 => 'BHS'],
+        [self::COUNTRYNAME => 'Bahrain', self::ALPHA2 => 'BH', self::ALPHA3 => 'BHR'],
+        [self::COUNTRYNAME => 'Bangladesh', self::ALPHA2 => 'BD', self::ALPHA3 => 'BGD'],
+        [self::COUNTRYNAME => 'Barbados', self::ALPHA2 => 'BB', self::ALPHA3 => 'BRB'],
+        [self::COUNTRYNAME => 'Belarus', self::ALPHA2 => 'BY', self::ALPHA3 => 'BLR'],
+        [self::COUNTRYNAME => 'Belgium', self::ALPHA2 => 'BE', self::ALPHA3 => 'BEL'],
+        [self::COUNTRYNAME => 'Belize', self::ALPHA2 => 'BZ', self::ALPHA3 => 'BLZ'],
+        [self::COUNTRYNAME => 'Benin', self::ALPHA2 => 'BJ', self::ALPHA3 => 'BEN'],
+        [self::COUNTRYNAME => 'Bermuda', self::ALPHA2 => 'BM', self::ALPHA3 => 'BMU'],
+        [self::COUNTRYNAME => 'Bhutan', self::ALPHA2 => 'BT', self::ALPHA3 => 'BTN'],
+        [self::COUNTRYNAME => 'Bolivia', self::ALPHA2 => 'BO', self::ALPHA3 => 'BOL'],
+        [self::COUNTRYNAME => 'Bonaire, Sint Eustatius and Saba', self::ALPHA2 => 'BQ', self::ALPHA3 => 'BES'],
+        [self::COUNTRYNAME => 'Bosnia and Herzegovina', self::ALPHA2 => 'BA', self::ALPHA3 => 'BIH'],
+        [self::COUNTRYNAME => 'Botswana', self::ALPHA2 => 'BW', self::ALPHA3 => 'BWA'],
+        [self::COUNTRYNAME => 'Bouvet Island', self::ALPHA2 => 'BV', self::ALPHA3 => 'BVT'],
+        [self::COUNTRYNAME => 'Brazil', self::ALPHA2 => 'BR', self::ALPHA3 => 'BRA'],
+        [self::COUNTRYNAME => 'British Indian Ocean Territory', self::ALPHA2 => 'IO', self::ALPHA3 => 'IOT'],
+        [self::COUNTRYNAME => 'Brunei Darussalam', self::ALPHA2 => 'BN', self::ALPHA3 => 'BRN'],
+        [self::COUNTRYNAME => 'Bulgaria', self::ALPHA2 => 'BG', self::ALPHA3 => 'BGR'],
+        [self::COUNTRYNAME => 'Burkina Faso', self::ALPHA2 => 'BF', self::ALPHA3 => 'BFA'],
+        [self::COUNTRYNAME => 'Burundi', self::ALPHA2 => 'BI', self::ALPHA3 => 'BDI'],
+        [self::COUNTRYNAME => 'Cabo Verde', self::ALPHA2 => 'CV', self::ALPHA3 => 'CPV'],
+        [self::COUNTRYNAME => 'Cambodia', self::ALPHA2 => 'KH', self::ALPHA3 => 'KHM'],
+        [self::COUNTRYNAME => 'Cameroon', self::ALPHA2 => 'CM', self::ALPHA3 => 'CMR'],
+        [self::COUNTRYNAME => 'Canada', self::ALPHA2 => 'CA', self::ALPHA3 => 'CAN'],
+        [self::COUNTRYNAME => 'Cayman Islands', self::ALPHA2 => 'KY', self::ALPHA3 => 'CYM'],
+        [self::COUNTRYNAME => 'Central African Republic', self::ALPHA2 => 'CF', self::ALPHA3 => 'CAF'],
+        [self::COUNTRYNAME => 'Chad', self::ALPHA2 => 'TD', self::ALPHA3 => 'TCD'],
+        [self::COUNTRYNAME => 'Chile', self::ALPHA2 => 'CL', self::ALPHA3 => 'CHL'],
+        [self::COUNTRYNAME => 'China', self::ALPHA2 => 'CN', self::ALPHA3 => 'CHN'],
+        [self::COUNTRYNAME => 'Christmas Island', self::ALPHA2 => 'CX', self::ALPHA3 => 'CXR'],
+        [self::COUNTRYNAME => 'Cocos (Keeling) Islands', self::ALPHA2 => 'CC', self::ALPHA3 => 'CCK'],
+        [self::COUNTRYNAME => 'Colombia', self::ALPHA2 => 'CO', self::ALPHA3 => 'COL'],
+        [self::COUNTRYNAME => 'Comoros', self::ALPHA2 => 'KM', self::ALPHA3 => 'COM'],
+        [self::COUNTRYNAME => 'Congo', self::ALPHA2 => 'CD', self::ALPHA3 => 'COD'],
+        [self::COUNTRYNAME => 'Congo', self::ALPHA2 => 'CG', self::ALPHA3 => 'COG'],
+        [self::COUNTRYNAME => 'Cook Islands', self::ALPHA2 => 'CK', self::ALPHA3 => 'COK'],
+        [self::COUNTRYNAME => 'Costa Rica', self::ALPHA2 => 'CR', self::ALPHA3 => 'CRI'],
+        [self::COUNTRYNAME => 'Côte d\'Ivoire', self::ALPHA2 => 'CI', self::ALPHA3 => 'CIV'],
+        [self::COUNTRYNAME => 'Croatia', self::ALPHA2 => 'HR', self::ALPHA3 => 'HRV'],
+        [self::COUNTRYNAME => 'Cuba', self::ALPHA2 => 'CU', self::ALPHA3 => 'CUB'],
+        [self::COUNTRYNAME => 'Curaçao', self::ALPHA2 => 'CW', self::ALPHA3 => 'CUW'],
+        [self::COUNTRYNAME => 'Cyprus', self::ALPHA2 => 'CY', self::ALPHA3 => 'CYP'],
+        [self::COUNTRYNAME => 'Czechia', self::ALPHA2 => 'CZ', self::ALPHA3 => 'CZE'],
+        [self::COUNTRYNAME => 'Denmark', self::ALPHA2 => 'DK', self::ALPHA3 => 'DNK'],
+        [self::COUNTRYNAME => 'Djibouti', self::ALPHA2 => 'DJ', self::ALPHA3 => 'DJI'],
+        [self::COUNTRYNAME => 'Dominica', self::ALPHA2 => 'DM', self::ALPHA3 => 'DMA'],
+        [self::COUNTRYNAME => 'Dominican Republic', self::ALPHA2 => 'do', self::ALPHA3 => 'DOM'],
+        [self::COUNTRYNAME => 'Ecuador', self::ALPHA2 => 'EC', self::ALPHA3 => 'ECU'],
+        [self::COUNTRYNAME => 'Egypt', self::ALPHA2 => 'EG', self::ALPHA3 => 'EGY'],
+        [self::COUNTRYNAME => 'El Salvador', self::ALPHA2 => 'SV', self::ALPHA3 => 'SLV'],
+        [self::COUNTRYNAME => 'Equatorial Guinea', self::ALPHA2 => 'GQ', self::ALPHA3 => 'GNQ'],
+        [self::COUNTRYNAME => 'Eritrea', self::ALPHA2 => 'ER', self::ALPHA3 => 'ERI'],
+        [self::COUNTRYNAME => 'Estonia', self::ALPHA2 => 'EE', self::ALPHA3 => 'EST'],
+        [self::COUNTRYNAME => 'Eswatini', self::ALPHA2 => 'SZ', self::ALPHA3 => 'SWZ'],
+        [self::COUNTRYNAME => 'Ethiopia', self::ALPHA2 => 'ET', self::ALPHA3 => 'ETH'],
+        [self::COUNTRYNAME => 'Falkland Islands', self::ALPHA2 => 'FK', self::ALPHA3 => 'FLK'],
+        [self::COUNTRYNAME => 'Faroe Islands', self::ALPHA2 => 'FO', self::ALPHA3 => 'FRO'],
+        [self::COUNTRYNAME => 'Fiji', self::ALPHA2 => 'FJ', self::ALPHA3 => 'FJI'],
+        [self::COUNTRYNAME => 'Finland', self::ALPHA2 => 'FI', self::ALPHA3 => 'FIN'],
+        [self::COUNTRYNAME => 'France', self::ALPHA2 => 'FR', self::ALPHA3 => 'FRA'],
+        [self::COUNTRYNAME => 'French Guiana', self::ALPHA2 => 'GF', self::ALPHA3 => 'GUF'],
+        [self::COUNTRYNAME => 'French Polynesia', self::ALPHA2 => 'PF', self::ALPHA3 => 'PYF'],
+        [self::COUNTRYNAME => 'French Southern Territories', self::ALPHA2 => 'TF', self::ALPHA3 => 'ATF'],
+        [self::COUNTRYNAME => 'Gabon', self::ALPHA2 => 'GA', self::ALPHA3 => 'GAB'],
+        [self::COUNTRYNAME => 'Gambia', self::ALPHA2 => 'GM', self::ALPHA3 => 'GMB'],
+        [self::COUNTRYNAME => 'Georgia', self::ALPHA2 => 'GE', self::ALPHA3 => 'GEO'],
+        [self::COUNTRYNAME => 'Germany', self::ALPHA2 => 'DE', self::ALPHA3 => 'DEU'],
+        [self::COUNTRYNAME => 'Ghana', self::ALPHA2 => 'GH', self::ALPHA3 => 'GHA'],
+        [self::COUNTRYNAME => 'Gibraltar', self::ALPHA2 => 'GI', self::ALPHA3 => 'GIB'],
+        [self::COUNTRYNAME => 'Greece', self::ALPHA2 => 'GR', self::ALPHA3 => 'GRC'],
+        [self::COUNTRYNAME => 'Greenland', self::ALPHA2 => 'GL', self::ALPHA3 => 'GRL'],
+        [self::COUNTRYNAME => 'Grenada', self::ALPHA2 => 'GD', self::ALPHA3 => 'GRD'],
+        [self::COUNTRYNAME => 'Guadeloupe', self::ALPHA2 => 'GP', self::ALPHA3 => 'GLP'],
+        [self::COUNTRYNAME => 'Guam', self::ALPHA2 => 'GU', self::ALPHA3 => 'GUM'],
+        [self::COUNTRYNAME => 'Guatemala', self::ALPHA2 => 'GT', self::ALPHA3 => 'GTM'],
+        [self::COUNTRYNAME => 'Guernsey', self::ALPHA2 => 'GG', self::ALPHA3 => 'GGY'],
+        [self::COUNTRYNAME => 'Guinea', self::ALPHA2 => 'GN', self::ALPHA3 => 'GIN'],
+        [self::COUNTRYNAME => 'Guinea-Bissau', self::ALPHA2 => 'GW', self::ALPHA3 => 'GNB'],
+        [self::COUNTRYNAME => 'Guyana', self::ALPHA2 => 'GY', self::ALPHA3 => 'GUY'],
+        [self::COUNTRYNAME => 'Haiti', self::ALPHA2 => 'HT', self::ALPHA3 => 'HTI'],
+        [self::COUNTRYNAME => 'Heard Island and McDonald Islands', self::ALPHA2 => 'HM', self::ALPHA3 => 'HMD'],
+        [self::COUNTRYNAME => 'Holy See', self::ALPHA2 => 'VA', self::ALPHA3 => 'VAT'],
+        [self::COUNTRYNAME => 'Honduras', self::ALPHA2 => 'HN', self::ALPHA3 => 'HND'],
+        [self::COUNTRYNAME => 'Hong Kong', self::ALPHA2 => 'HK', self::ALPHA3 => 'HKG'],
+        [self::COUNTRYNAME => 'Hungary', self::ALPHA2 => 'HU', self::ALPHA3 => 'HUN'],
+        [self::COUNTRYNAME => 'Iceland', self::ALPHA2 => 'IS', self::ALPHA3 => 'ISL'],
+        [self::COUNTRYNAME => 'India', self::ALPHA2 => 'IN', self::ALPHA3 => 'IND'],
+        [self::COUNTRYNAME => 'Indonesia', self::ALPHA2 => 'ID', self::ALPHA3 => 'IDN'],
+        [self::COUNTRYNAME => 'Iran', self::ALPHA2 => 'IR', self::ALPHA3 => 'IRN'],
+        [self::COUNTRYNAME => 'Iraq', self::ALPHA2 => 'IQ', self::ALPHA3 => 'IRQ'],
+        [self::COUNTRYNAME => 'Ireland', self::ALPHA2 => 'IE', self::ALPHA3 => 'IRL'],
+        [self::COUNTRYNAME => 'Isle of Man', self::ALPHA2 => 'IM', self::ALPHA3 => 'IMN'],
+        [self::COUNTRYNAME => 'Israel', self::ALPHA2 => 'IL', self::ALPHA3 => 'ISR'],
+        [self::COUNTRYNAME => 'Italy', self::ALPHA2 => 'IT', self::ALPHA3 => 'ITA'],
+        [self::COUNTRYNAME => 'Jamaica', self::ALPHA2 => 'JM', self::ALPHA3 => 'JAM'],
+        [self::COUNTRYNAME => 'Japan', self::ALPHA2 => 'JP', self::ALPHA3 => 'JPN'],
+        [self::COUNTRYNAME => 'Jersey', self::ALPHA2 => 'JE', self::ALPHA3 => 'JEY'],
+        [self::COUNTRYNAME => 'Jordan', self::ALPHA2 => 'JO', self::ALPHA3 => 'JOR'],
+        [self::COUNTRYNAME => 'Kazakhstan', self::ALPHA2 => 'KZ', self::ALPHA3 => 'KAZ'],
+        [self::COUNTRYNAME => 'Kenya', self::ALPHA2 => 'KE', self::ALPHA3 => 'KEN'],
+        [self::COUNTRYNAME => 'Kiribati', self::ALPHA2 => 'KI', self::ALPHA3 => 'KIR'],
+        [self::COUNTRYNAME => 'Korea (the Democratic People\'s Republic of)', self::ALPHA2 => 'KP', self::ALPHA3 => 'PRK'],
+        [self::COUNTRYNAME => 'Korea (the Republic of)', self::ALPHA2 => 'KR', self::ALPHA3 => 'KOR'],
+        [self::COUNTRYNAME => 'Kuwait', self::ALPHA2 => 'KW', self::ALPHA3 => 'KWT'],
+        [self::COUNTRYNAME => 'Kyrgyzstan', self::ALPHA2 => 'KG', self::ALPHA3 => 'KGZ'],
+        [self::COUNTRYNAME => 'Lao', self::ALPHA2 => 'LA', self::ALPHA3 => 'LAO'],
+        [self::COUNTRYNAME => 'Latvia', self::ALPHA2 => 'LV', self::ALPHA3 => 'LVA'],
+        [self::COUNTRYNAME => 'Lebanon', self::ALPHA2 => 'LB', self::ALPHA3 => 'LBN'],
+        [self::COUNTRYNAME => 'Lesotho', self::ALPHA2 => 'LS', self::ALPHA3 => 'LSO'],
+        [self::COUNTRYNAME => 'Liberia', self::ALPHA2 => 'LR', self::ALPHA3 => 'LBR'],
+        [self::COUNTRYNAME => 'Libya', self::ALPHA2 => 'LY', self::ALPHA3 => 'LBY'],
+        [self::COUNTRYNAME => 'Liechtenstein', self::ALPHA2 => 'LI', self::ALPHA3 => 'LIE'],
+        [self::COUNTRYNAME => 'Lithuania', self::ALPHA2 => 'LT', self::ALPHA3 => 'LTU'],
+        [self::COUNTRYNAME => 'Luxembourg', self::ALPHA2 => 'LU', self::ALPHA3 => 'LUX'],
+        [self::COUNTRYNAME => 'Macao', self::ALPHA2 => 'MO', self::ALPHA3 => 'MAC'],
+        [self::COUNTRYNAME => 'North Macedonia', self::ALPHA2 => 'MK', self::ALPHA3 => 'MKD'],
+        [self::COUNTRYNAME => 'Madagascar', self::ALPHA2 => 'MG', self::ALPHA3 => 'MDG'],
+        [self::COUNTRYNAME => 'Malawi', self::ALPHA2 => 'MW', self::ALPHA3 => 'MWI'],
+        [self::COUNTRYNAME => 'Malaysia', self::ALPHA2 => 'MY', self::ALPHA3 => 'MYS'],
+        [self::COUNTRYNAME => 'Maldives', self::ALPHA2 => 'MV', self::ALPHA3 => 'MDV'],
+        [self::COUNTRYNAME => 'Mali', self::ALPHA2 => 'ML', self::ALPHA3 => 'MLI'],
+        [self::COUNTRYNAME => 'Malta', self::ALPHA2 => 'MT', self::ALPHA3 => 'MLT'],
+        [self::COUNTRYNAME => 'Marshall Islands', self::ALPHA2 => 'MH', self::ALPHA3 => 'MHL'],
+        [self::COUNTRYNAME => 'Martinique', self::ALPHA2 => 'MQ', self::ALPHA3 => 'MTQ'],
+        [self::COUNTRYNAME => 'Mauritania', self::ALPHA2 => 'MR', self::ALPHA3 => 'MRT'],
+        [self::COUNTRYNAME => 'Mauritius', self::ALPHA2 => 'MU', self::ALPHA3 => 'MUS'],
+        [self::COUNTRYNAME => 'Mayotte', self::ALPHA2 => 'YT', self::ALPHA3 => 'MYT'],
+        [self::COUNTRYNAME => 'Mexico', self::ALPHA2 => 'MX', self::ALPHA3 => 'MEX'],
+        [self::COUNTRYNAME => 'Micronesia', self::ALPHA2 => 'FM', self::ALPHA3 => 'FSM'],
+        [self::COUNTRYNAME => 'Moldova', self::ALPHA2 => 'MD', self::ALPHA3 => 'MDA'],
+        [self::COUNTRYNAME => 'Monaco', self::ALPHA2 => 'MC', self::ALPHA3 => 'MCO'],
+        [self::COUNTRYNAME => 'Mongolia', self::ALPHA2 => 'MN', self::ALPHA3 => 'MNG'],
+        [self::COUNTRYNAME => 'Montenegro', self::ALPHA2 => 'ME', self::ALPHA3 => 'MNE'],
+        [self::COUNTRYNAME => 'Montserrat', self::ALPHA2 => 'MS', self::ALPHA3 => 'MSR'],
+        [self::COUNTRYNAME => 'Morocco', self::ALPHA2 => 'MA', self::ALPHA3 => 'MAR'],
+        [self::COUNTRYNAME => 'Mozambique', self::ALPHA2 => 'MZ', self::ALPHA3 => 'MOZ'],
+        [self::COUNTRYNAME => 'Myanmar', self::ALPHA2 => 'MM', self::ALPHA3 => 'MMR'],
+        [self::COUNTRYNAME => 'Namibia', self::ALPHA2 => 'NA', self::ALPHA3 => 'NAM'],
+        [self::COUNTRYNAME => 'Nauru', self::ALPHA2 => 'NR', self::ALPHA3 => 'NRU'],
+        [self::COUNTRYNAME => 'Nepal', self::ALPHA2 => 'NP', self::ALPHA3 => 'NPL'],
+        [self::COUNTRYNAME => 'Netherlands', self::ALPHA2 => 'NL', self::ALPHA3 => 'NLD'],
+        [self::COUNTRYNAME => 'new Caledonia', self::ALPHA2 => 'NC', self::ALPHA3 => 'NCL'],
+        [self::COUNTRYNAME => 'new Zealand', self::ALPHA2 => 'NZ', self::ALPHA3 => 'NZL'],
+        [self::COUNTRYNAME => 'Nicaragua', self::ALPHA2 => 'NI', self::ALPHA3 => 'NIC'],
+        [self::COUNTRYNAME => 'Niger', self::ALPHA2 => 'NE', self::ALPHA3 => 'NER'],
+        [self::COUNTRYNAME => 'Nigeria', self::ALPHA2 => 'NG', self::ALPHA3 => 'NGA'],
+        [self::COUNTRYNAME => 'Niue', self::ALPHA2 => 'NU', self::ALPHA3 => 'NIU'],
+        [self::COUNTRYNAME => 'Norfolk Island', self::ALPHA2 => 'NF', self::ALPHA3 => 'NFK'],
+        [self::COUNTRYNAME => 'Northern Mariana Islands', self::ALPHA2 => 'MP', self::ALPHA3 => 'MNP'],
+        [self::COUNTRYNAME => 'Norway', self::ALPHA2 => 'NO', self::ALPHA3 => 'NOR'],
+        [self::COUNTRYNAME => 'Oman', self::ALPHA2 => 'OM', self::ALPHA3 => 'OMN'],
+        [self::COUNTRYNAME => 'Pakistan', self::ALPHA2 => 'PK', self::ALPHA3 => 'PAK'],
+        [self::COUNTRYNAME => 'Palau', self::ALPHA2 => 'PW', self::ALPHA3 => 'PLW'],
+        [self::COUNTRYNAME => 'Palestine, State of', self::ALPHA2 => 'PS', self::ALPHA3 => 'PSE'],
+        [self::COUNTRYNAME => 'Panama', self::ALPHA2 => 'PA', self::ALPHA3 => 'PAN'],
+        [self::COUNTRYNAME => 'Papua new Guinea', self::ALPHA2 => 'PG', self::ALPHA3 => 'PNG'],
+        [self::COUNTRYNAME => 'Paraguay', self::ALPHA2 => 'PY', self::ALPHA3 => 'PRY'],
+        [self::COUNTRYNAME => 'Peru', self::ALPHA2 => 'PE', self::ALPHA3 => 'PER'],
+        [self::COUNTRYNAME => 'Philippines', self::ALPHA2 => 'PH', self::ALPHA3 => 'PHL'],
+        [self::COUNTRYNAME => 'Pitcairn', self::ALPHA2 => 'PN', self::ALPHA3 => 'PCN'],
+        [self::COUNTRYNAME => 'Poland', self::ALPHA2 => 'PL', self::ALPHA3 => 'POL'],
+        [self::COUNTRYNAME => 'Portugal', self::ALPHA2 => 'PT', self::ALPHA3 => 'PRT'],
+        [self::COUNTRYNAME => 'Puerto Rico', self::ALPHA2 => 'PR', self::ALPHA3 => 'PRI'],
+        [self::COUNTRYNAME => 'Qatar', self::ALPHA2 => 'QA', self::ALPHA3 => 'QAT'],
+        [self::COUNTRYNAME => 'Réunion', self::ALPHA2 => 'RE', self::ALPHA3 => 'REU'],
+        [self::COUNTRYNAME => 'Romania', self::ALPHA2 => 'RO', self::ALPHA3 => 'ROU'],
+        [self::COUNTRYNAME => 'Russian Federation', self::ALPHA2 => 'RU', self::ALPHA3 => 'RUS'],
+        [self::COUNTRYNAME => 'Rwanda', self::ALPHA2 => 'RW', self::ALPHA3 => 'RWA'],
+        [self::COUNTRYNAME => 'Saint Barthélemy', self::ALPHA2 => 'BL', self::ALPHA3 => 'BLM'],
+        [self::COUNTRYNAME => 'Saint Helena', self::ALPHA2 => 'SH', self::ALPHA3 => 'SHN'],
+        [self::COUNTRYNAME => 'Saint Kitts and Nevis', self::ALPHA2 => 'KN', self::ALPHA3 => 'KNA'],
+        [self::COUNTRYNAME => 'Saint Lucia', self::ALPHA2 => 'LC', self::ALPHA3 => 'LCA'],
+        [self::COUNTRYNAME => 'Saint Martin (French part)', self::ALPHA2 => 'MF', self::ALPHA3 => 'MAF'],
+        [self::COUNTRYNAME => 'Saint Pierre and Miquelon', self::ALPHA2 => 'PM', self::ALPHA3 => 'SPM'],
+        [self::COUNTRYNAME => 'Saint Vincent and the Grenadines', self::ALPHA2 => 'VC', self::ALPHA3 => 'VCT'],
+        [self::COUNTRYNAME => 'Samoa', self::ALPHA2 => 'WS', self::ALPHA3 => 'WSM'],
+        [self::COUNTRYNAME => 'San Marino', self::ALPHA2 => 'SM', self::ALPHA3 => 'SMR'],
+        [self::COUNTRYNAME => 'Sao Tome and Principe', self::ALPHA2 => 'ST', self::ALPHA3 => 'STP'],
+        [self::COUNTRYNAME => 'Saudi Arabia', self::ALPHA2 => 'SA', self::ALPHA3 => 'SAU'],
+        [self::COUNTRYNAME => 'Senegal', self::ALPHA2 => 'SN', self::ALPHA3 => 'SEN'],
+        [self::COUNTRYNAME => 'Serbia', self::ALPHA2 => 'RS', self::ALPHA3 => 'SRB'],
+        [self::COUNTRYNAME => 'Seychelles', self::ALPHA2 => 'SC', self::ALPHA3 => 'SYC'],
+        [self::COUNTRYNAME => 'Sierra Leone', self::ALPHA2 => 'SL', self::ALPHA3 => 'SLE'],
+        [self::COUNTRYNAME => 'Singapore', self::ALPHA2 => 'SG', self::ALPHA3 => 'SGP'],
+        [self::COUNTRYNAME => 'Sint Maarten (Dutch part)', self::ALPHA2 => 'SX', self::ALPHA3 => 'SXM'],
+        [self::COUNTRYNAME => 'Slovakia', self::ALPHA2 => 'SK', self::ALPHA3 => 'SVK'],
+        [self::COUNTRYNAME => 'Slovenia', self::ALPHA2 => 'SI', self::ALPHA3 => 'SVN'],
+        [self::COUNTRYNAME => 'Solomon Islands', self::ALPHA2 => 'SB', self::ALPHA3 => 'SLB'],
+        [self::COUNTRYNAME => 'Somalia', self::ALPHA2 => 'SO', self::ALPHA3 => 'SOM'],
+        [self::COUNTRYNAME => 'South Africa', self::ALPHA2 => 'ZA', self::ALPHA3 => 'ZAF'],
+        [self::COUNTRYNAME => 'South Georgia and the South Sandwich Islands', self::ALPHA2 => 'GS', self::ALPHA3 => 'SGS'],
+        [self::COUNTRYNAME => 'South Sudan', self::ALPHA2 => 'SS', self::ALPHA3 => 'SSD'],
+        [self::COUNTRYNAME => 'Spain', self::ALPHA2 => 'ES', self::ALPHA3 => 'ESP'],
+        [self::COUNTRYNAME => 'Sri Lanka', self::ALPHA2 => 'LK', self::ALPHA3 => 'LKA'],
+        [self::COUNTRYNAME => 'Sudan', self::ALPHA2 => 'SD', self::ALPHA3 => 'SDN'],
+        [self::COUNTRYNAME => 'Suriname', self::ALPHA2 => 'SR', self::ALPHA3 => 'SUR'],
+        [self::COUNTRYNAME => 'Svalbard and Jan Mayen', self::ALPHA2 => 'SJ', self::ALPHA3 => 'SJM'],
+        [self::COUNTRYNAME => 'Sweden', self::ALPHA2 => 'SE', self::ALPHA3 => 'SWE'],
+        [self::COUNTRYNAME => 'Switzerland', self::ALPHA2 => 'CH', self::ALPHA3 => 'CHE'],
+        [self::COUNTRYNAME => 'Syrian Arab Republic', self::ALPHA2 => 'SY', self::ALPHA3 => 'SYR'],
+        [self::COUNTRYNAME => 'Taiwan', self::ALPHA2 => 'TW', self::ALPHA3 => 'TWN'],
+        [self::COUNTRYNAME => 'Tajikistan', self::ALPHA2 => 'TJ', self::ALPHA3 => 'TJK'],
+        [self::COUNTRYNAME => 'Tanzania, the United Republic of', self::ALPHA2 => 'TZ', self::ALPHA3 => 'TZA'],
+        [self::COUNTRYNAME => 'Thailand', self::ALPHA2 => 'TH', self::ALPHA3 => 'THA'],
+        [self::COUNTRYNAME => 'Timor-Leste', self::ALPHA2 => 'TL', self::ALPHA3 => 'TLS'],
+        [self::COUNTRYNAME => 'Togo', self::ALPHA2 => 'TG', self::ALPHA3 => 'TGO'],
+        [self::COUNTRYNAME => 'Tokelau', self::ALPHA2 => 'TK', self::ALPHA3 => 'TKL'],
+        [self::COUNTRYNAME => 'Tonga', self::ALPHA2 => 'TO', self::ALPHA3 => 'TON'],
+        [self::COUNTRYNAME => 'Trinidad and Tobago', self::ALPHA2 => 'TT', self::ALPHA3 => 'TTO'],
+        [self::COUNTRYNAME => 'Tunisia', self::ALPHA2 => 'TN', self::ALPHA3 => 'TUN'],
+        [self::COUNTRYNAME => 'Turkey', self::ALPHA2 => 'TR', self::ALPHA3 => 'TUR'],
+        [self::COUNTRYNAME => 'Turkmenistan', self::ALPHA2 => 'TM', self::ALPHA3 => 'TKM'],
+        [self::COUNTRYNAME => 'Turks and Caicos Islands', self::ALPHA2 => 'TC', self::ALPHA3 => 'TCA'],
+        [self::COUNTRYNAME => 'Tuvalu', self::ALPHA2 => 'TV', self::ALPHA3 => 'TUV'],
+        [self::COUNTRYNAME => 'Uganda', self::ALPHA2 => 'UG', self::ALPHA3 => 'UGA'],
+        [self::COUNTRYNAME => 'Ukraine', self::ALPHA2 => 'UA', self::ALPHA3 => 'UKR'],
+        [self::COUNTRYNAME => 'United Arab Emirates', self::ALPHA2 => 'AE', self::ALPHA3 => 'ARE'],
+        [self::COUNTRYNAME => 'Great Britain', self::ALPHA2 => 'GB', self::ALPHA3 => 'GBR'],
+        [self::COUNTRYNAME => 'United States Minor Outlying Islands', self::ALPHA2 => 'UM', self::ALPHA3 => 'UMI'],
+        [self::COUNTRYNAME => 'United States of America', self::ALPHA2 => 'US', self::ALPHA3 => 'USA'],
+        [self::COUNTRYNAME => 'Uruguay', self::ALPHA2 => 'UY', self::ALPHA3 => 'URY'],
+        [self::COUNTRYNAME => 'Uzbekistan', self::ALPHA2 => 'UZ', self::ALPHA3 => 'UZB'],
+        [self::COUNTRYNAME => 'Vanuatu', self::ALPHA2 => 'VU', self::ALPHA3 => 'VUT'],
+        [self::COUNTRYNAME => 'Venezuela', self::ALPHA2 => 'VE', self::ALPHA3 => 'VEN'],
+        [self::COUNTRYNAME => 'Viet Nam', self::ALPHA2 => 'VN', self::ALPHA3 => 'VNM'],
+        [self::COUNTRYNAME => 'Virgin Islands (British)', self::ALPHA2 => 'VG', self::ALPHA3 => 'VGB'],
+        [self::COUNTRYNAME => 'Virgin Islands (U.S.)', self::ALPHA2 => 'VI', self::ALPHA3 => 'VIR'],
+        [self::COUNTRYNAME => 'Wallis and Futuna', self::ALPHA2 => 'WF', self::ALPHA3 => 'WLF'],
+        [self::COUNTRYNAME => 'Western Sahara', self::ALPHA2 => 'EH', self::ALPHA3 => 'ESH'],
+        [self::COUNTRYNAME => 'Yemen', self::ALPHA2 => 'YE', self::ALPHA3 => 'YEM'],
+        [self::COUNTRYNAME => 'Zambia', self::ALPHA2 => 'ZM', self::ALPHA3 => 'ZMB'],
+        [self::COUNTRYNAME => 'Zimbabwe', self::ALPHA2 => 'ZW', self::ALPHA3 => 'ZWE'],
     ];
 
     public function alpha2(string $needle): ?array

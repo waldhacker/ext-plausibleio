@@ -18,8 +18,10 @@ declare(strict_types=1);
 
 namespace Waldhacker\Plausibleio\Dashboard\Widget;
 
+use TYPO3\CMS\Core\Localization\LanguageService;
 use TYPO3\CMS\Core\Page\PageRenderer;
 use TYPO3\CMS\Dashboard\Widgets\AdditionalCssInterface;
+use TYPO3\CMS\Dashboard\Widgets\EventDataInterface;
 use TYPO3\CMS\Dashboard\Widgets\RequireJsModuleInterface;
 use TYPO3\CMS\Dashboard\Widgets\WidgetConfigurationInterface;
 use TYPO3\CMS\Dashboard\Widgets\WidgetInterface;
@@ -28,7 +30,7 @@ use Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider;
 use Waldhacker\Plausibleio\Services\ConfigurationService;
 use Waldhacker\Plausibleio\Services\PlausibleService;
 
-class PageDataWidget implements WidgetInterface, AdditionalCssInterface, RequireJsModuleInterface
+class PageDataWidget implements WidgetInterface, EventDataInterface, AdditionalCssInterface, RequireJsModuleInterface
 {
     private PageRenderer $pageRenderer;
     private StandaloneView $view;
@@ -59,7 +61,8 @@ class PageDataWidget implements WidgetInterface, AdditionalCssInterface, Require
 
     public function renderWidgetContent(): string
     {
-        $plausibleSiteId = $this->configurationService->getPlausibleSiteIdFromUserConfiguration();
+        $dashBoardId = $this->plausibleService->getCurrentDashboardId();
+        $plausibleSiteId = $this->configurationService->getPlausibleSiteIdFromUserConfiguration($dashBoardId);
 
         $this->view->setTemplate('BaseTabs');
         $this->view->assignMultiple([
@@ -69,7 +72,7 @@ class PageDataWidget implements WidgetInterface, AdditionalCssInterface, Require
             'validConfiguration' => $this->configurationService->isValidConfiguration($plausibleSiteId),
             'timeSelectorConfig' => [
                 'items' => $this->configurationService->getTimeFrames(),
-                'selected' => $this->configurationService->getTimeFrameValueFromUserConfiguration(),
+                'selected' => $this->configurationService->getTimeFrameValueFromUserConfiguration($dashBoardId),
             ],
             'siteSelectorConfig' => [
                 'items' => $this->configurationService->getAvailablePlausibleSiteIds(),
@@ -82,31 +85,28 @@ class PageDataWidget implements WidgetInterface, AdditionalCssInterface, Require
                 [
                     'label' => 'widget.pageData.tabs.toppage',
                     'id' => 'toppage',
-                    'header' => [
-                        'barChart.labels.pageUrl',
-                        'barChart.labels.visitors',
-                    ],
                 ],
                 [
                     'label' => 'widget.pageData.tabs.entrypage',
                     'id' => 'entrypage',
-                    'header' => [
-                        'barChart.labels.pageUrl',
-                        'barChart.labels.uniqueEntrances',
-                    ],
                 ],
                 [
                     'label' => 'widget.pageData.tabs.exitpage',
                     'id' => 'exitpage',
-                    'header' => [
-                        'barChart.labels.pageUrl',
-                        'barChart.labels.uniqueExits',
-                    ],
                 ],
             ],
         ]);
 
         return $this->view->render();
+    }
+
+    public function getEventData(): array
+    {
+        $dashBoardId = $this->plausibleService->getCurrentDashboardId();
+
+        return [
+            'filters' => $this->configurationService->getFiltersFromUserConfiguration($dashBoardId)->getFiltersAsArray(),
+        ];
     }
 
     public function getCssFiles(): array
@@ -127,6 +127,13 @@ class PageDataWidget implements WidgetInterface, AdditionalCssInterface, Require
     private function preparePageRenderer(): void
     {
         $this->pageRenderer->addRequireJsConfiguration([
+            'config' => [
+                'TYPO3/CMS/Plausibleio/WidgetService' => [
+                    'lang' => [
+                        'noDataAvailable' => $this->getLanguageService()->getLL('noDataAvailable'),
+                    ],
+                ],
+            ],
             'shim' => [
                 'TYPO3/CMS/Dashboard/WidgetContentCollector' => [
                     'deps' => [
@@ -140,5 +147,10 @@ class PageDataWidget implements WidgetInterface, AdditionalCssInterface, Require
     public function getOptions(): array
     {
         return $this->options;
+    }
+
+    private function getLanguageService(): LanguageService
+    {
+        return $GLOBALS['LANG'];
     }
 }

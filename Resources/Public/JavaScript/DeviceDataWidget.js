@@ -35,16 +35,24 @@ define([
     }
 
     requestUpdatedData(evt, chartDiv) {
+      WidgetService.checkDataForRequest(evt);
+
       new AjaxRequest(this.options.pageEndpoint)
         .withQueryArguments({
+          dashboard: evt.detail.dashboard,
           timeFrame: evt.detail.timeFrame,
-          siteId: evt.detail.siteId
+          siteId: evt.detail.siteId,
+          filter: evt.detail.filter
         })
         .get()
         .then(async (response) => {
           const data = await response.resolve();
           this.renderChart(chartDiv, data);
-        });
+        }).catch(error => {
+            let msg = error.response ? error.response.status + ' ' + error.response.statusText : 'unknown';
+            console.error('Device data controller request failed because of error: ' + msg);
+          }
+        );
     }
 
     renderChart(chartDiv, data) {
@@ -53,8 +61,8 @@ define([
       if (typeof(chartDiv) !== 'undefined' && chartDiv !== null && data && data.length > 0) {
         data.forEach(function (tabData) {
           let tab = chartDiv.querySelector(that.options.tabSelector.replace('${tabId}', tabData.tab));
-          if (typeof(tab) !== 'undefined' && tab !== null) {
-            WidgetService.renderBarChart(tab, tabData.data, true);
+          if (tab != null) {
+            WidgetService.renderBarChartToElement(tab, tabData.data, true);
           }
         });
       }
@@ -66,30 +74,43 @@ define([
       new RegularEvent('widgetContentRendered', function (evt) {
         evt.preventDefault();
         let widget = evt.target;
+        let dashBoardId = WidgetService.getDashboardIdFromSubElement(widget);
+        let filterBar = widget.querySelector(WidgetService.options.filterBarSelector);
 
-        let pageChartElement = widget.querySelector(that.options.widgetContainerSelector);
-        if (typeof(pageChartElement) !== 'undefined' && pageChartElement !== null) {
+        let deviceChartElement = widget.querySelector(that.options.widgetContainerSelector);
+        if (deviceChartElement != null) {
           widget.addEventListener('plausible:timeframechange', function (evt) {
-            that.requestUpdatedData(evt, pageChartElement);
+            that.requestUpdatedData(evt, deviceChartElement);
           });
 
           widget.addEventListener('plausible:sitechange', function (evt) {
-            that.requestUpdatedData(evt, pageChartElement);
+            that.requestUpdatedData(evt, deviceChartElement);
+          });
+
+          // Set filters from BE user configuration
+          WidgetService.setFilters(evt.detail.filters);
+          widget.addEventListener('plausible:filterchange', function (evt) {
+            if (filterBar) {
+              WidgetService.renderFilterBar(filterBar);
+            }
+            that.requestUpdatedData(evt, deviceChartElement);
           });
 
           let timeFrameSelect = widget.querySelector(that.options.timeframeSelectSelector);
-          if (typeof(timeFrameSelect) !== 'undefined' && timeFrameSelect !== null) {
+          if (timeFrameSelect != null) {
             WidgetService.registerTimeSelector(timeFrameSelect);
           }
 
           let siteSelect = widget.querySelector(that.options.siteSelector);
-          if (typeof(siteSelect) !== 'undefined' && siteSelect !== null) {
+          if (siteSelect != null) {
             WidgetService.registerSiteSelector(siteSelect);
           }
 
           // request and render data
           let configuration = WidgetService.getSiteAndTimeFrameFromDashboardItem(widget);
-          WidgetService.dispatchTimeFrameChange(widget, configuration.site, configuration.timeFrame);
+          WidgetService.dispatchTimeFrameChange(widget, configuration.site, configuration.timeFrame, WidgetService.getFilters());
+
+          WidgetService.renderFilterBar(filterBar);
 
           Tabs.registerTabsForSessionHandling(widget);
         }

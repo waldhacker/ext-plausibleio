@@ -77,12 +77,23 @@ call_user_func(static function () {
         ],
     ];
 
+    $GLOBALS['SiteConfiguration']['site_language']['columns']['plausible_auto404Tracking'] = [
+        'label' => 'LLL:EXT:plausibleio/Resources/Private/Language/locallang_tca.xlf:auto404Tracking.title',
+        'description' => 'LLL:EXT:plausibleio/Resources/Private/Language/locallang_tca.xlf:auto404Tracking.description',
+        'config' => [
+            'type' => 'check',
+            'renderType' => 'checkboxToggle',
+            'default' => 0,
+        ],
+    ];
+
     $GLOBALS['SiteConfiguration']['site_language']['types']['1']['showitem'] .= '
         ,--div--;LLL:EXT:plausibleio/Resources/Private/Language/locallang_tca.xlf:site.tab,
             plausible_baseUrl,
             plausible_apiKey,
             plausible_siteId,
             --palette--;;plausible_trackingScript,
+            plausible_auto404Tracking,
     ';
 
     $GLOBALS['SiteConfiguration']['site_language']['palettes']['plausible_trackingScript']['showitem'] .= '

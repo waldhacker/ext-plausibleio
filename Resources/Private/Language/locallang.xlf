@@ -43,6 +43,12 @@
 			<trans-unit id="widget.sourceData.tabs.campaignsource">
 				<source>Campaign</source>
 			</trans-unit>
+			<trans-unit id="widget.sourceData.tabs.termsource">
+				<source>Term</source>
+			</trans-unit>
+			<trans-unit id="widget.sourceData.tabs.contentsource">
+				<source>Content</source>
+			</trans-unit>
 
 			<trans-unit id="widget.deviceData.label">
 				<source>Device usage and visitors (Plausible Analytics)</source>
@@ -92,6 +98,12 @@
 			<trans-unit id="widget.countryMapData.description">
 				<source>Shows the countries of origin of the page views.</source>
 			</trans-unit>
+			<trans-unit id="widget.countryMapData.tabs.map">
+				<source>Map</source>
+			</trans-unit>
+			<trans-unit id="widget.countryMapData.tabs.countries">
+				<source>Countries</source>
+			</trans-unit>
 
 			<trans-unit id="widget.general.invalidConfiguration">
 				<source>Invalid configuration. Please check the settings.</source>
@@ -112,6 +124,12 @@
 			<trans-unit id="barChart.labels.UTMCampaign">
 				<source>UTM Campaign</source>
 			</trans-unit>
+			<trans-unit id="barChart.labels.UTMTerm">
+				<source>UTM Term</source>
+			</trans-unit>
+			<trans-unit id="barChart.labels.UTMContent">
+				<source>UTM Content</source>
+			</trans-unit>
 			<trans-unit id="barChart.labels.pageUrl">
 				<source>Page url</source>
 			</trans-unit>
@@ -124,14 +142,118 @@
 			<trans-unit id="barChart.labels.browser">
 				<source>Browser</source>
 			</trans-unit>
+			<trans-unit id="barChart.labels.browserVersion">
+				<source>${browser} version</source>
+			</trans-unit>
 			<trans-unit id="barChart.labels.screenSize">
 				<source>Screen Size</source>
 			</trans-unit>
 			<trans-unit id="barChart.labels.os">
 				<source>Operating system</source>
 			</trans-unit>
-			<trans-unit id="barChart.labels.">
-				<source></source>
+			<trans-unit id="barChart.labels.osVersion">
+				<source>${os} version</source>
+			</trans-unit>
+			<trans-unit id="barChart.labels.goal">
+				<source>Goals</source>
+			</trans-unit>
+			<trans-unit id="barChart.labels.country">
+				<source>Country</source>
+			</trans-unit>
+			<trans-unit id="barChart.labels.region">
+				<source>Region</source>
+			</trans-unit>
+			<trans-unit id="barChart.labels.city">
+				<source>City</source>
+			</trans-unit>
+			<trans-unit id="barChart.labels.uniques">
+				<source>Uniques</source>
+			</trans-unit>
+			<trans-unit id="barChart.labels.total">
+				<source>Total</source>
+			</trans-unit>
+			<trans-unit id="barChart.labels.cr">
+				<source>CR</source>
+			</trans-unit>
+			<trans-unit id="barChart.labels.unknown">
+				<source>Unknown</source>
+			</trans-unit>
+			<trans-unit id="barChart.labels.breakdown">
+				<source>Breakdown by:</source>
+			</trans-unit>
+
+			<trans-unit id="barChart.labels.convertedVisitors">
+				<source>Converted visitors</source>
+			</trans-unit>
+			<trans-unit id="barChart.labels.uniqueConversions">
+				<source>Unique conversions</source>
+			</trans-unit>
+			<trans-unit id="barChart.labels.totalConversions">
+				<source>Total conversions</source>
+			</trans-unit>
+			<trans-unit id="barChart.labels.conversionRate">
+				<source>Conversion rate</source>
+			</trans-unit>
+			<trans-unit id="barChart.labels.conversions">
+				<source>Conversions</source>
+			</trans-unit>
+
+			<trans-unit id="filter.pageData.pageIs">
+				<source>Page is</source>
+			</trans-unit>
+			<trans-unit id="filter.pageData.entryPageIs">
+				<source>Entry page is</source>
+			</trans-unit>
+			<trans-unit id="filter.pageData.exitPageIs">
+				<source>Exit page is</source>
+			</trans-unit>
+			<trans-unit id="filter.deviceData.browserIs">
+				<source>Browser is</source>
+			</trans-unit>
+			<trans-unit id="filter.deviceData.browserVersionIs">
+				<source>${browser} version is</source>
+			</trans-unit>
+			<trans-unit id="filter.deviceData.screenSizeIs">
+				<source>Screen size is</source>
+			</trans-unit>
+			<trans-unit id="filter.deviceData.osIs">
+				<source>Operating system is</source>
+			</trans-unit>
+			<trans-unit id="filter.deviceData.osVersionIs">
+				<source>${os} version is</source>
+			</trans-unit>
+			<trans-unit id="filter.locationData.countryIs">
+				<source>Country is</source>
+			</trans-unit>
+			<trans-unit id="filter.locationData.regionIs">
+				<source>Region is</source>
+			</trans-unit>
+			<trans-unit id="filter.locationData.cityIs">
+				<source>City is</source>
+			</trans-unit>
+			<trans-unit id="filter.sourceData.sourceIs">
+				<source>Source is</source>
+			</trans-unit>
+			<trans-unit id="filter.sourceData.UTMMediumIs">
+				<source>UTM Medium is</source>
+			</trans-unit>
+			<trans-unit id="filter.sourceData.UTMSourceIs">
+				<source>UTM Source is</source>
+			</trans-unit>
+			<trans-unit id="filter.sourceData.UTMCampaignIs">
+				<source>UTM Campaign is</source>
+			</trans-unit>
+			<trans-unit id="filter.sourceData.UTMTermIs">
+				<source>UTM Term is</source>
+			</trans-unit>
+			<trans-unit id="filter.sourceData.UTMContentIs">
+				<source>UTM Content is</source>
+			</trans-unit>
+			<trans-unit id="filter.goalData.goalIs">
+				<source>Completed goal is</source>
+			</trans-unit>
+			<trans-unit id="filter.goalData.goalPropertyIs">
+				<source>Goal property is</source>
 			</trans-unit>
 
 			<trans-unit id="timeframes.d">
@@ -163,6 +285,10 @@
 
 			<trans-unit id="visitors">
 				<source>Visitors</source>
+			</trans-unit>
+
+			<trans-unit id="noDataAvailable">
+				<source>Unfortunately no further data are available</source>
 			</trans-unit>
 		</body>
 	</file>

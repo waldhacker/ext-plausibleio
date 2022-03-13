@@ -2,7 +2,7 @@
 <div class="widget-content-title noborder">
         <span><f:translate key="LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:{label}" /></span>
 </div>
-<div class="widget-content-title widget-content-selectors">
+<div class="widget-content-title widget-content-selectors noborder">
     <f:if condition="{predefinedSiteId}">
         <f:then>
             <div>
@@ -53,7 +53,7 @@
         </f:else>
     </f:if>
 </div>
-
+<div class="widget-content-title widget-content-filter p-0"></div>
 
 <f:if condition="!{validConfiguration}">
     <div class="alert alert-warning">

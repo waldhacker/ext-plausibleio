@@ -18,8 +18,10 @@ declare(strict_types=1);
 
 namespace Waldhacker\Plausibleio\Dashboard\Widget;
 
+use TYPO3\CMS\Core\Localization\LanguageService;
 use TYPO3\CMS\Core\Page\PageRenderer;
 use TYPO3\CMS\Dashboard\Widgets\AdditionalCssInterface;
+use TYPO3\CMS\Dashboard\Widgets\EventDataInterface;
 use TYPO3\CMS\Dashboard\Widgets\RequireJsModuleInterface;
 use TYPO3\CMS\Dashboard\Widgets\WidgetConfigurationInterface;
 use TYPO3\CMS\Dashboard\Widgets\WidgetInterface;
@@ -27,7 +29,7 @@ use TYPO3\CMS\Fluid\View\StandaloneView;
 use Waldhacker\Plausibleio\Services\ConfigurationService;
 use Waldhacker\Plausibleio\Services\PlausibleService;
 
-class SourceDataWidget implements WidgetInterface, AdditionalCssInterface, RequireJsModuleInterface
+class SourceDataWidget implements WidgetInterface, EventDataInterface, AdditionalCssInterface, RequireJsModuleInterface
 {
     private PageRenderer $pageRenderer;
     private StandaloneView $view;
@@ -55,7 +57,8 @@ class SourceDataWidget implements WidgetInterface, AdditionalCssInterface, Requi
 
     public function renderWidgetContent(): string
     {
-        $plausibleSiteId = $this->configurationService->getPlausibleSiteIdFromUserConfiguration();
+        $dashBoardId = $this->plausibleService->getCurrentDashboardId();
+        $plausibleSiteId = $this->configurationService->getPlausibleSiteIdFromUserConfiguration($dashBoardId);
 
         $this->view->setTemplate('BaseTabs');
         $this->view->assignMultiple([
@@ -65,7 +68,7 @@ class SourceDataWidget implements WidgetInterface, AdditionalCssInterface, Requi
             'validConfiguration' => $this->configurationService->isValidConfiguration($plausibleSiteId),
             'timeSelectorConfig' => [
                 'items' => $this->configurationService->getTimeFrames(),
-                'selected' => $this->configurationService->getTimeFrameValueFromUserConfiguration(),
+                'selected' => $this->configurationService->getTimeFrameValueFromUserConfiguration($dashBoardId),
             ],
             'siteSelectorConfig' => [
                 'items' => $this->configurationService->getAvailablePlausibleSiteIds(),
@@ -78,39 +81,40 @@ class SourceDataWidget implements WidgetInterface, AdditionalCssInterface, Requi
                 [
                     'label' => 'widget.sourceData.tabs.allsources',
                     'id' => 'allsources',
-                    'header' => [
-                        'barChart.labels.source',
-                        'barChart.labels.visitors',
-                    ],
                 ],
                 [
                     'label' => 'widget.sourceData.tabs.mediumsource',
                     'id' => 'mediumsource',
-                    'header' => [
-                        'barChart.labels.UTMMedium',
-                        'barChart.labels.visitors',
-                    ],
                 ],
                 [
                     'label' => 'widget.sourceData.tabs.sourcesource',
                     'id' => 'sourcesource',
-                    'header' => [
-                        'barChart.labels.UTMSource',
-                        'barChart.labels.visitors',
-                    ],
                 ],
                 [
                     'label' => 'widget.sourceData.tabs.campaignsource',
                     'id' => 'campaignsource',
-                    'header' => [
-                        'barChart.labels.UTMCampaign',
-                        'barChart.labels.visitors',
-                    ],
+                ],
+                [
+                    'label' => 'widget.sourceData.tabs.termsource',
+                    'id' => 'termsource',
+                ],
+                [
+                    'label' => 'widget.sourceData.tabs.contentsource',
+                    'id' => 'contentsource',
                 ],
             ],
         ]);
 
         return $this->view->render();
+    }
+
+    public function getEventData(): array
+    {
+        $dashBoardId = $this->plausibleService->getCurrentDashboardId();
+
+        return [
+            'filters' => $this->configurationService->getFiltersFromUserConfiguration($dashBoardId)->getFiltersAsArray(),
+        ];
     }
 
     public function getCssFiles(): array
@@ -131,6 +135,13 @@ class SourceDataWidget implements WidgetInterface, AdditionalCssInterface, Requi
     private function preparePageRenderer(): void
     {
         $this->pageRenderer->addRequireJsConfiguration([
+            'config' => [
+                'TYPO3/CMS/Plausibleio/WidgetService' => [
+                    'lang' => [
+                        'noDataAvailable' => $this->getLanguageService()->getLL('noDataAvailable'),
+                    ],
+                ],
+            ],
             'shim' => [
                 'TYPO3/CMS/Dashboard/WidgetContentCollector' => [
                     'deps' => [
@@ -144,5 +155,10 @@ class SourceDataWidget implements WidgetInterface, AdditionalCssInterface, Requi
     public function getOptions(): array
     {
         return $this->options;
+    }
+
+    private function getLanguageService(): LanguageService
+    {
+        return $GLOBALS['LANG'];
     }
 }

@@ -18,10 +18,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 define([
   'TYPO3/CMS/Core/Ajax/AjaxRequest',
   'TYPO3/CMS/Core/Event/RegularEvent',
+  'lit',
   'TYPO3/CMS/Dashboard/Contrib/chartjs',
-  'TYPO3/CMS/Plausibleio/Contrib/d3-format',
   'TYPO3/CMS/Plausibleio/WidgetService',
-], function (AjaxRequest, RegularEvent, chartjs_1, D3Format, WidgetService) {
+], function (AjaxRequest, RegularEvent, lit, chartjs_1, WidgetService) {
   'use strict';
   chartjs_1 = __importDefault(chartjs_1);
 
@@ -32,19 +32,20 @@ define([
         widgetContainerSelector: '[data-widget-type="visitorsChart"]',
         timeframeSelectSelector: '[data-widget-plausible-timeframe-select]',
         siteSelector: '[data-widget-plausible-sites-select]',
-        uniqueVisitorsOverviewItemSelector: '[data-widget-chart-overview-item="uniqueVisitors"]',
-        totalPageviewsOverviewItemSelector: '[data-widget-chart-overview-item="totalPageviews"]',
-        currentVisitorsOverviewItemSelector: '[data-widget-chart-overview-item="currentVisitors"]',
-        visitDurationOverviewItemSelector: '[data-widget-chart-overview-item="visitDuration"]',
+        overviewContainerSelector: '.chartOverviewContainer',
         visitorTimeSeriesEndpoint: TYPO3.settings.ajaxUrls.plausible_visitorsovertime
       };
       this.initialize();
     }
 
     requestUpdatedData(evt, widget, chart) {
+      WidgetService.checkDataForRequest(evt);
+
       new AjaxRequest(this.options.visitorTimeSeriesEndpoint).withQueryArguments({
+        dashboard: evt.detail.dashboard,
         timeFrame: evt.detail.timeFrame,
-        siteId: evt.detail.siteId
+        siteId: evt.detail.siteId,
+        filter: evt.detail.filter,
       })
       .get()
       .then(async (response) => {
@@ -56,11 +57,16 @@ define([
         }
 
         this.renderOverviewData(widget, data.overViewData);
-      });
+      }).catch(error => {
+            let msg = error.response ? error.response.status + ' ' + error.response.statusText : 'unknown';
+            console.error('Visitors over time controller request failed because of error: ' + msg);
+          }
+        );
     }
 
     initialize() {
       let that = this;
+
       new RegularEvent('widgetContentRendered', function (evt) {
         evt.preventDefault();
 
@@ -81,6 +87,7 @@ define([
         }
 
         let widget = visitorsWidgetChart.canvas.closest(that.options.dashboardItemSelector);
+        let filterBar = widget.querySelector(WidgetService.options.filterBarSelector);
 
         widget.addEventListener('plausible:timeframechange', function (evt) {
           that.requestUpdatedData(evt, widget, visitorsWidgetChart);
@@ -90,39 +97,70 @@ define([
           that.requestUpdatedData(evt, widget, visitorsWidgetChart);
         });
 
+        // Set filters from BE user configuration
+        WidgetService.setFilters(evt.detail.filters);
+        widget.addEventListener('plausible:filterchange', function (evt) {
+          if (filterBar) {
+            WidgetService.renderFilterBar(filterBar);
+          }
+          that.requestUpdatedData(evt, widget, visitorsWidgetChart);
+          // Adjust the size of the chart when a filter is added or removed,
+          // as the available height may change in such a case.
+          visitorsWidgetChart.resize(true);
+        });
+
         let timeFrameSelect = widget.querySelector(that.options.timeframeSelectSelector);
-        if (typeof(timeFrameSelect) !== 'undefined' && timeFrameSelect !== null) {
+        if (timeFrameSelect != null) {
           WidgetService.registerTimeSelector(timeFrameSelect);
         }
 
         let siteSelect = widget.querySelector(that.options.siteSelector);
-        if (typeof(siteSelect) !== 'undefined' && siteSelect !== null) {
+        if (siteSelect != null) {
           WidgetService.registerSiteSelector(siteSelect);
         }
 
         // request and render data
         let configuration = WidgetService.getSiteAndTimeFrameFromDashboardItem(widget);
-        WidgetService.dispatchTimeFrameChange(widget, configuration.site, configuration.timeFrame);
-      }).delegateTo(document, this.options.dashboardItemSelector);
-    }
+        WidgetService.dispatchTimeFrameChange(widget, configuration.site, configuration.timeFrame, WidgetService.getFilters());
 
-    formatSIPrefix(n) {
-      // 2400 -> 2.4k
-      n = D3Format.format('.2~s')(n);
-      return n;
+        WidgetService.renderFilterBar(filterBar);
+      }).delegateTo(document, this.options.dashboardItemSelector);
     }
 
     renderOverviewData(widget, data) {
       if (typeof(widget) !== 'undefined' && widget !== null && data) {
-        widget.querySelector(this.options.uniqueVisitorsOverviewItemSelector).innerHTML = this.formatSIPrefix(data.visitors);
-        widget.querySelector(this.options.totalPageviewsOverviewItemSelector).innerHTML = this.formatSIPrefix(data.pageviews);
-        widget.querySelector(this.options.currentVisitorsOverviewItemSelector).innerHTML = this.formatSIPrefix(data.current_visitors);
+        if (data.columns === undefined) {
+          return;
+        }
 
-        // full minutes
-        let minutes = Math.floor(data.visit_duration / 60);
-        // remaining seconds
-        let seconds = data.visit_duration - minutes * 60;
-        widget.querySelector(this.options.visitDurationOverviewItemSelector).innerHTML = (minutes > 0 ? minutes + 'm ' : '') + (seconds > 0 ? seconds + 's' : '');
+        const chartOverviewItemTemplate = (label, value) =>
+          lit.html`
+            <div class="chartOverviewItem">
+              <div class="chartOverviewItemCaption">${label}</div>
+              <div class="chartOverviewItemValue">${value !== '' && value != null ? WidgetService.formatSIPrefix(value) : '0'}</div>
+            </div>
+        `;
+
+        let template = lit.html`
+            ${data.columns.map((column) => {
+              return lit.html`
+              ${chartOverviewItemTemplate(column.label, data.data[column.name])}
+            `
+        })}
+        `;
+
+        let parentElement = widget.querySelector(this.options.overviewContainerSelector);
+        if (parentElement == null) {
+          return;
+        }
+
+        parentElement.innerHTML = '';
+
+        let newChild = document.createElement('div');
+        newChild.classList.add('chartOverview');
+        let targetElement = parentElement.appendChild(newChild);
+
+        lit.render(template, targetElement, {eventContext: this});
       }
     }
   }

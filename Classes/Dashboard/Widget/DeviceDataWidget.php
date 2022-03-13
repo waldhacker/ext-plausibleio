@@ -19,7 +19,9 @@ declare(strict_types=1);
 namespace Waldhacker\Plausibleio\Dashboard\Widget;
 
 use TYPO3\CMS\Core\Page\PageRenderer;
+use TYPO3\CMS\Core\Localization\LanguageService;
 use TYPO3\CMS\Dashboard\Widgets\AdditionalCssInterface;
+use TYPO3\CMS\Dashboard\Widgets\EventDataInterface;
 use TYPO3\CMS\Dashboard\Widgets\RequireJsModuleInterface;
 use TYPO3\CMS\Dashboard\Widgets\WidgetConfigurationInterface;
 use TYPO3\CMS\Dashboard\Widgets\WidgetInterface;
@@ -27,7 +29,7 @@ use TYPO3\CMS\Fluid\View\StandaloneView;
 use Waldhacker\Plausibleio\Services\ConfigurationService;
 use Waldhacker\Plausibleio\Services\PlausibleService;
 
-class DeviceDataWidget implements WidgetInterface, AdditionalCssInterface, RequireJsModuleInterface
+class DeviceDataWidget implements WidgetInterface, EventDataInterface, AdditionalCssInterface, RequireJsModuleInterface
 {
     private PageRenderer $pageRenderer;
     private StandaloneView $view;
@@ -55,7 +57,8 @@ class DeviceDataWidget implements WidgetInterface, AdditionalCssInterface, Requi
 
     public function renderWidgetContent(): string
     {
-        $plausibleSiteId = $this->configurationService->getPlausibleSiteIdFromUserConfiguration();
+        $dashBoardId = $this->plausibleService->getCurrentDashboardId();
+        $plausibleSiteId = $this->configurationService->getPlausibleSiteIdFromUserConfiguration($dashBoardId);
 
         $this->view->setTemplate('BaseTabs');
         $this->view->assignMultiple([
@@ -65,7 +68,7 @@ class DeviceDataWidget implements WidgetInterface, AdditionalCssInterface, Requi
             'validConfiguration' => $this->configurationService->isValidConfiguration($plausibleSiteId),
             'timeSelectorConfig' => [
                 'items' => $this->configurationService->getTimeFrames(),
-                'selected' => $this->configurationService->getTimeFrameValueFromUserConfiguration(),
+                'selected' => $this->configurationService->getTimeFrameValueFromUserConfiguration($dashBoardId),
             ],
             'siteSelectorConfig' => [
                 'items' => $this->configurationService->getAvailablePlausibleSiteIds(),
@@ -78,31 +81,28 @@ class DeviceDataWidget implements WidgetInterface, AdditionalCssInterface, Requi
                 [
                     'label' => 'widget.deviceData.tabs.browser',
                     'id' => 'browser',
-                    'header' => [
-                        'barChart.labels.browser',
-                        'barChart.labels.visitors',
-                    ],
                 ],
                 [
                     'label' => 'widget.deviceData.tabs.device',
                     'id' => 'device',
-                    'header' => [
-                        'barChart.labels.screenSize',
-                        'barChart.labels.visitors',
-                    ],
                 ],
                 [
                     'label' => 'widget.deviceData.tabs.operatingsystem',
                     'id' => 'operatingsystem',
-                    'header' => [
-                        'barChart.labels.os',
-                        'barChart.labels.visitors',
-                    ],
                 ],
             ],
         ]);
 
         return $this->view->render();
+    }
+
+    public function getEventData(): array
+    {
+        $dashBoardId = $this->plausibleService->getCurrentDashboardId();
+
+        return [
+            'filters' => $this->configurationService->getFiltersFromUserConfiguration($dashBoardId)->getFiltersAsArray(),
+        ];
     }
 
     public function getCssFiles(): array
@@ -123,6 +123,16 @@ class DeviceDataWidget implements WidgetInterface, AdditionalCssInterface, Requi
     private function preparePageRenderer(): void
     {
         $this->pageRenderer->addRequireJsConfiguration([
+            'config' => [
+                'TYPO3/CMS/Plausibleio/WidgetService' => [
+                    'lang' => [
+                        'barChart.labels.os' => $this->getLanguageService()->getLL('barChart.labels.os'),
+                        'barChart.labels.browser' => $this->getLanguageService()->getLL('barChart.labels.browser'),
+                        'barChart.labels.unknown' => $this->getLanguageService()->getLL('barChart.labels.unknown'),
+                        'noDataAvailable' => $this->getLanguageService()->getLL('noDataAvailable'),
+                    ],
+                ],
+            ],
             'shim' => [
                 'TYPO3/CMS/Dashboard/WidgetContentCollector' => [
                     'deps' => [
@@ -136,5 +146,10 @@ class DeviceDataWidget implements WidgetInterface, AdditionalCssInterface, Requi
     public function getOptions(): array
     {
         return $this->options;
+    }
+
+    private function getLanguageService(): LanguageService
+    {
+        return $GLOBALS['LANG'];
     }
 }

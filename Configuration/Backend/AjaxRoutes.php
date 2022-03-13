@@ -21,4 +21,8 @@ return [
         'path' => '/plausibleio/sourcedata',
         'target' => \Waldhacker\Plausibleio\Controller\SourceDataWidgetController::class,
     ],
+    'plausible_goaldata' => [
+        'path' => '/plausibleio/goaldata',
+        'target' => \Waldhacker\Plausibleio\Controller\GoalDataWidgetController::class,
+    ],
 ];

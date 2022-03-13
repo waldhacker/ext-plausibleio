@@ -12,6 +12,8 @@ Site Language
 The extension is mainly configured within the site language `Site Management` / `Sites` / `<site configuration>` / `Languages` / `<site language>` / `Plausible Analytics`
 
 .. image:: ../Images/site-language-configuration.png
+   :width: 100%
+   :class: mb-3
 
 The following settings are available:
 
@@ -29,6 +31,7 @@ A Plausible API Token.
 If you don't have one yet, you can create one in your Plausible instance at `Settings` / `API keys`
 
 .. image:: ../Images/plausible-api-key.png
+   :width: 80%
 
 Site
 ----
@@ -38,6 +41,7 @@ This is typically your domain or subdomain without `www` (like `waldhacker.dev` 
 The Site ID is also the one you entered in your Plausible instance when you created a new site using the `+ Add a website` button.
 
 .. image:: ../Images/plausible-new-site.png
+   :width: 80%
 
 Auto-Include Plausible tracking snippet
 ---------------------------------------
@@ -67,19 +71,31 @@ Plausible tracking snippet Type
 Plausible `offers different tracking scripts <https://plausible.io/docs/script-extensions>`__ for various use cases.
 One of these scripts can be selected here (the default ist `plausible.js`).
 
+Server side automatic 404 error tracking
+----------------------------------------
+
+If this option is activated, all page not found errors (404) are recorded in Plausible as a custom event. The tracking of the 404 error includes the entire page for which the corresponding language configuration with the corresponding Plausible Analytics configuration was created. The tracking is independent of the settings made under `Site Management` / `Sites` / `<site configuration>` / `Error Handling`. With this option, 404 errors can therefore be registered without further configuration or script integration.
+
+The 404 errors are displayed via the Goal widget. For this to work, a 404 custom event must be created in the Plausible backend. How this is done is described in the `Plausible documentation <https://plausible.io/docs/error-pages-tracking-404#step-3-create-a-custom-event-goal-in-your-plausible-analytics-account>`__ (only step 3 of the instructions is needed for this).
+If you want to see which non-existent pages were called up, you have to click on the 404 bar in the Goal widget, if it is present. If there is no such entry in the Goal list, there has not yet been a 404 error.
+
+.. image:: ../Images/goal-widget-404.png
+   :width: 80%
+
 Extension configuration
 =======================
 
 Some options are configured within the extension configuration at `Admin Tools` / `Extension Configuration` / `plausibleio`
 
 .. image:: ../Images/extension-configuration.png
+   :width: 100%
 
-Time Frames 
+Time Frames
 -----------
 
 Comma-separated list of available selectable time frames within the dashboard widgets - see `https://plausible.io/docs/stats-api#time-periods <https://plausible.io/docs/stats-api#time-periods>`__ for possible options (`custom` is currently not available).
 
-Default Time Frame 
+Default Time Frame
 ------------------
 
 The time frame to use initially when rendering the widgets.

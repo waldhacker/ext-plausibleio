@@ -2,11 +2,63 @@ Changelog
 =========
 
 
+2.1.0 (2022-12-01)
+------------------
+
+Tasks
+~~~~~
+- Version bump. [waldhacker1]
+- V12 compatibility. [waldhacker1]
+- Fix license. [Ralf Zimmermann]
+- Compatibility with Typo3 12. [waldhacker-joerg]
+- Revert usage of browser session for site / timeframe selection.
+  [waldhacker1]
+- Bump TYPO3 version. [waldhacker1]
+- Headers for bar charts. [waldhacker-joerg]
+- Restore the last value of Tabs when reloading widgets. [waldhacker-
+  joerg]
+- Restore the last value of TimeFrame and Site when reloading the
+  widgets. [waldhacker-joerg]
+
+Features
+~~~~~~~~
+- Add class. [waldhacker-joerg]
+
+Bugfixes
+~~~~~~~~
+- Fix javascript regarding preconfigured widgets. [waldhacker1]
+- Solve Lint error for empty block. [waldhacker-joerg]
+- Bug in SCSS. [waldhacker-joerg]
+
+Other
+~~~~~
+- Merge pull request #19 from waldhacker/feature/fix-multi-static-
+  configs. [Ralf Zimmermann]
+
+  [BUGFIX] Fix javascript regarding preconfigured widgets
+- Merge pull request #16 from waldhacker/feature/add-new-widgets. [Ralf
+  Zimmermann]
+
+  [TASK] Compatibility with TYPO3 v12
+- Merge pull request #15 from waldhacker/feature/add-new-widgets. [Ralf
+  Zimmermann]
+
+  [TASK] Revert usage of browser session for site / timeframe selection
+- Merge pull request #12 from waldhacker/feature/add-new-widgets. [Ralf
+  Zimmermann]
+
+  Feature/add new widgets
+- Merge tag '2.0.0' into develop. [waldhacker1]
+
+  [TASK] Release 2.0.0
+
+
 2.0.0 (2021-11-17)
 ------------------
 
 Tasks
 ~~~~~
+- Prepare release. [waldhacker1]
 - Add new dashboard image. [waldhacker1]
 - CSS styling of the fixed site and time frame display. [waldhacker-
   joerg]
@@ -95,6 +147,7 @@ Bugfixes
 
 Other
 ~~~~~
+- Merge branch 'release/2.0.0' into main. [waldhacker1]
 - Merge pull request #10 from waldhacker/feature/add-new-widgets. [Ralf
   Zimmermann]
 

@@ -18,34 +18,33 @@
     "prefer-stable": true,
     "minimum-stability": "dev",
     "require": {
+        "php": "^7.4 | ^8.0 | ^8.1",
         "ext-json": "*",
         "psr/http-message": "*",
         "psr/http-factory": "*",
         "psr/http-client": "*",
         "psr/log": "*",
-        "typo3/cms-backend": "^11.5@dev || ^12.0.x-dev",
-        "typo3/cms-core": "^11.5@dev || ^12.0.x-dev",
-        "typo3/cms-dashboard":  "^11.5@dev || ^12.0.x-dev",
-        "typo3/cms-fluid": "^11.5@dev || ^12.0.x-dev",
-        "typo3/cms-frontend": "^11.5@dev || ^12.0.x-dev"
+        "typo3/cms-backend": "^11.5@dev | ^12.0@dev",
+        "typo3/cms-core": "^11.5@dev | ^12.0@dev",
+        "typo3/cms-dashboard":  "^11.5@dev | ^12.0@dev",
+        "typo3/cms-fluid": "^11.5@dev | ^12.0@dev",
+        "typo3/cms-frontend": "^11.5@dev | ^12.0@dev"
     },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^3.0",
-        "helmich/typo3-typoscript-lint": "^2.3",
-        "overtrue/phplint": "^2.0",
+        "helmich/typo3-typoscript-lint": "^2.3 | ^3.0",
+        "overtrue/phplint": "^2.0 | ^5.3",
         "phpspec/prophecy-phpunit": "^2.0",
         "phpstan/extension-installer": "^1.0",
-        "phpstan/phpstan": "^0.12.50",
         "phpunit/phpunit": "^9.4",
         "roave/security-advisories": "dev-latest",
-        "saschaegerer/phpstan-typo3": "@dev",
-        "symfony/console": "^5.1",
-        "symfony/yaml": "^5.1",
+        "saschaegerer/phpstan-typo3": "^1.8",
         "typo3/cms-extensionmanager": "@dev",
+        "typo3/cms-fluid-styled-content": "^11.5@dev | ^12.0@dev",
         "typo3/cms-install": "@dev",
-        "typo3/coding-standards": "^0.4.0",
-        "typo3/testing-framework": "^6.8",
-        "vimeo/psalm": "^3.0 | ^4.0"
+        "typo3/coding-standards": "^0.4 | ^0.5",
+        "typo3/testing-framework": "^6.14 | ^7.x-dev",
+        "vimeo/psalm": "^3.0 | ^4.0 | ^5.0"
     },
     "autoload": {
         "psr-4": {
@@ -56,10 +55,12 @@
     "config": {
         "bin-dir": ".build/bin",
         "sort-packages": true,
-        "platform": {
-            "php": "7.4.2"
-        },
-        "vendor-dir": ".build/vendor"
+        "vendor-dir": ".build/vendor",
+        "allow-plugins": {
+            "typo3/cms-composer-installers": true,
+            "typo3/class-alias-loader": true,
+            "phpstan/extension-installer": true
+        }
     },
     "scripts": {
         "post-autoload-dump": [
@@ -74,14 +75,18 @@
         "ci:lint:assets": [
             "cd build && yarn install && yarn lint"
         ],
+
+        "ci:psalm": [
+            "psalm --config=build/psalm.xml"
+        ],
+        "ci:psalm:gen-baseline": [
+            "psalm -c build/psalm.xml --set-baseline=build/psalm-baseline.xml"
+        ],
         "ci:stan": [
             "phpstan analyze --configuration build/phpstan.neon"
         ],
-        "ci:stan:baseline": [
-            "phpstan analyze --configuration build/phpstan.neon"
-        ],
-        "ci:psalm": [
-            "psalm -c build/psalm.xml"
+        "ci:stan:gen-baseline": [
+            "phpstan analyze --configuration build/phpstan.neon --generate-baseline build/phpstan.baseline.neon"
         ],
         "ci:cgl:check": [
             "php-cs-fixer fix --config build/phpcs.dist -v --dry-run"

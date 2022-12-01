@@ -50,7 +50,7 @@ class VisitorsOverTimeDataProviderTest extends UnitTestCase
                 'bounce_rate' => 1,
                 'pageviews' => 2,
                 'visit_duration' => 3,
-                'visitors' => 4
+                'visitors' => 4,
             ],
         ];
 
@@ -218,7 +218,7 @@ class VisitorsOverTimeDataProviderTest extends UnitTestCase
             'expected' => [
                 'labels' => [
                     '2021-04-16',
-                    ''
+                    '',
                 ],
                 'datasets' => [
                     [

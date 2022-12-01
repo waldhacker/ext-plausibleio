@@ -207,7 +207,7 @@ class BeforeJavaScriptsRenderingEventListenerTest extends UnitTestCase
             'includeTrackingScript' => true,
             'trackingScriptBaseUrl' => 'https://plausible.io/',
             'trackingScriptType' => 'plausible.outbound-links.js',
-            'siteId' => 'waldhacker.dev'
+            'siteId' => 'waldhacker.dev',
         ]);
 
         $assetCollectorProphecy->addJavaScript(
@@ -216,7 +216,7 @@ class BeforeJavaScriptsRenderingEventListenerTest extends UnitTestCase
             [
                 'async' => 'async',
                 'defer' => 'defer',
-                'data-domain' => 'waldhacker.dev'
+                'data-domain' => 'waldhacker.dev',
             ],
             ['priority' => true]
         )->shouldBeCalled();

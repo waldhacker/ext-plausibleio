@@ -286,7 +286,7 @@ class ConfigurationServiceTest extends UnitTestCase
             ->onlyMethods(['getFirstAvailablePlausibleSiteId'])
             ->setConstructorArgs([
                 $this->extensionConfigurationProphecy->reveal(),
-                $this->siteFinderProphecy->reveal()
+                $this->siteFinderProphecy->reveal(),
             ])
             ->getMock();
 
@@ -341,7 +341,7 @@ class ConfigurationServiceTest extends UnitTestCase
             ->onlyMethods(['getAvailablePlausibleSiteIds'])
             ->setConstructorArgs([
                 $this->extensionConfigurationProphecy->reveal(),
-                $this->siteFinderProphecy->reveal()
+                $this->siteFinderProphecy->reveal(),
             ])
             ->getMock();
 
@@ -363,7 +363,7 @@ class ConfigurationServiceTest extends UnitTestCase
             ->onlyMethods(['getAvailablePlausibleSiteIds', 'getLegacyPlausibleSiteIdConfiguration'])
             ->setConstructorArgs([
                 $this->extensionConfigurationProphecy->reveal(),
-                $this->siteFinderProphecy->reveal()
+                $this->siteFinderProphecy->reveal(),
             ])
             ->getMock();
 
@@ -386,7 +386,7 @@ class ConfigurationServiceTest extends UnitTestCase
             ->onlyMethods(['getAvailablePlausibleSiteIds', 'getLegacyPlausibleSiteIdConfiguration'])
             ->setConstructorArgs([
                 $this->extensionConfigurationProphecy->reveal(),
-                $this->siteFinderProphecy->reveal()
+                $this->siteFinderProphecy->reveal(),
             ])
             ->getMock();
 
@@ -410,7 +410,7 @@ class ConfigurationServiceTest extends UnitTestCase
             ->onlyMethods(['getAvailablePlausibleSiteIdConfigurations'])
             ->setConstructorArgs([
                 $this->extensionConfigurationProphecy->reveal(),
-                $this->siteFinderProphecy->reveal()
+                $this->siteFinderProphecy->reveal(),
             ])
             ->getMock();
 
@@ -497,7 +497,7 @@ class ConfigurationServiceTest extends UnitTestCase
             $siteLanguage1Prophecy->reveal(),
             $siteLanguage2Prophecy->reveal(),
             $siteLanguage3Prophecy->reveal(),
-            $siteLanguage4Prophecy->reveal()
+            $siteLanguage4Prophecy->reveal(),
         ]);
         $site2Prophecy->getLanguages()->willReturn([$siteLanguage4Prophecy->reveal()]);
 
@@ -510,7 +510,7 @@ class ConfigurationServiceTest extends UnitTestCase
             ->onlyMethods(['isPageAccessible'])
             ->setConstructorArgs([
                 $this->extensionConfigurationProphecy->reveal(),
-                $this->siteFinderProphecy->reveal()
+                $this->siteFinderProphecy->reveal(),
             ])
             ->getMock();
 
@@ -568,7 +568,7 @@ class ConfigurationServiceTest extends UnitTestCase
             ->onlyMethods(['getLegacyPlausibleSiteIdConfiguration', 'getLegacyApiBaseUrlConfiguration', 'getLegacyApiKeyConfiguration'])
             ->setConstructorArgs([
                 $this->extensionConfigurationProphecy->reveal(),
-                $this->siteFinderProphecy->reveal()
+                $this->siteFinderProphecy->reveal(),
             ])
             ->getMock();
 
@@ -609,7 +609,7 @@ class ConfigurationServiceTest extends UnitTestCase
             ->onlyMethods(['getLegacyPlausibleSiteIdConfiguration'])
             ->setConstructorArgs([
                 $this->extensionConfigurationProphecy->reveal(),
-                $this->siteFinderProphecy->reveal()
+                $this->siteFinderProphecy->reveal(),
             ])
             ->getMock();
 
@@ -684,7 +684,7 @@ class ConfigurationServiceTest extends UnitTestCase
             ->onlyMethods(['getAvailablePlausibleSiteIdConfigurations'])
             ->setConstructorArgs([
                 $this->extensionConfigurationProphecy->reveal(),
-                $this->siteFinderProphecy->reveal()
+                $this->siteFinderProphecy->reveal(),
             ])
             ->getMock();
 
@@ -708,7 +708,7 @@ class ConfigurationServiceTest extends UnitTestCase
             ->onlyMethods(['getAvailablePlausibleSiteIdConfigurations', 'getLegacyApiBaseUrlConfiguration'])
             ->setConstructorArgs([
                 $this->extensionConfigurationProphecy->reveal(),
-                $this->siteFinderProphecy->reveal()
+                $this->siteFinderProphecy->reveal(),
             ])
             ->getMock();
 
@@ -736,7 +736,7 @@ class ConfigurationServiceTest extends UnitTestCase
             ->onlyMethods(['getAvailablePlausibleSiteIdConfigurations', 'getLegacyApiBaseUrlConfiguration'])
             ->setConstructorArgs([
                 $this->extensionConfigurationProphecy->reveal(),
-                $this->siteFinderProphecy->reveal()
+                $this->siteFinderProphecy->reveal(),
             ])
             ->getMock();
 
@@ -765,7 +765,7 @@ class ConfigurationServiceTest extends UnitTestCase
             ->onlyMethods(['getAvailablePlausibleSiteIdConfigurations'])
             ->setConstructorArgs([
                 $this->extensionConfigurationProphecy->reveal(),
-                $this->siteFinderProphecy->reveal()
+                $this->siteFinderProphecy->reveal(),
             ])
             ->getMock();
 
@@ -789,7 +789,7 @@ class ConfigurationServiceTest extends UnitTestCase
             ->onlyMethods(['getAvailablePlausibleSiteIdConfigurations', 'getLegacyApiKeyConfiguration'])
             ->setConstructorArgs([
                 $this->extensionConfigurationProphecy->reveal(),
-                $this->siteFinderProphecy->reveal()
+                $this->siteFinderProphecy->reveal(),
             ])
             ->getMock();
 
@@ -817,7 +817,7 @@ class ConfigurationServiceTest extends UnitTestCase
             ->onlyMethods(['getAvailablePlausibleSiteIdConfigurations', 'getLegacyApiKeyConfiguration'])
             ->setConstructorArgs([
                 $this->extensionConfigurationProphecy->reveal(),
-                $this->siteFinderProphecy->reveal()
+                $this->siteFinderProphecy->reveal(),
             ])
             ->getMock();
 
@@ -846,7 +846,7 @@ class ConfigurationServiceTest extends UnitTestCase
             ->onlyMethods(['getAvailablePlausibleSiteIdConfigurations'])
             ->setConstructorArgs([
                 $this->extensionConfigurationProphecy->reveal(),
-                $this->siteFinderProphecy->reveal()
+                $this->siteFinderProphecy->reveal(),
             ])
             ->getMock();
 
@@ -858,7 +858,7 @@ class ConfigurationServiceTest extends UnitTestCase
                     'apiUrl' => 'https://example.com/',
                     'apiKey' => 'super-secret-key',
                     'siteId' => 'example.com',
-                ]
+                ],
             ]
             );
 
@@ -877,7 +877,7 @@ class ConfigurationServiceTest extends UnitTestCase
             ->onlyMethods(['getAvailablePlausibleSiteIdConfigurations'])
             ->setConstructorArgs([
                 $this->extensionConfigurationProphecy->reveal(),
-                $this->siteFinderProphecy->reveal()
+                $this->siteFinderProphecy->reveal(),
             ])
             ->getMock();
 
@@ -889,7 +889,7 @@ class ConfigurationServiceTest extends UnitTestCase
                     'apiUrl' => 'https://example.com/',
                     'apiKey' => 'super-secret-key',
                     'siteId' => 'example.com',
-                ]
+                ],
             ]
             );
 
@@ -903,7 +903,7 @@ class ConfigurationServiceTest extends UnitTestCase
                 'apiUrl' => '',
                 'apiKey' => 'super-secret-key',
                 'siteId' => 'example.com',
-            ]
+            ],
         ];
 
         yield 'apiKey is empty' => [
@@ -911,7 +911,7 @@ class ConfigurationServiceTest extends UnitTestCase
                 'apiUrl' => 'https://example.com/',
                 'apiKey' => '',
                 'siteId' => 'example.com',
-            ]
+            ],
         ];
 
         yield 'siteId is empty' => [
@@ -919,7 +919,7 @@ class ConfigurationServiceTest extends UnitTestCase
                 'apiUrl' => 'https://example.com/',
                 'apiKey' => 'super-secret-key',
                 'siteId' => '',
-            ]
+            ],
         ];
     }
 
@@ -936,7 +936,7 @@ class ConfigurationServiceTest extends UnitTestCase
             ->onlyMethods(['getAvailablePlausibleSiteIdConfigurations'])
             ->setConstructorArgs([
                 $this->extensionConfigurationProphecy->reveal(),
-                $this->siteFinderProphecy->reveal()
+                $this->siteFinderProphecy->reveal(),
             ])
             ->getMock();
 
@@ -944,7 +944,7 @@ class ConfigurationServiceTest extends UnitTestCase
             ->method('getAvailablePlausibleSiteIdConfigurations')
             ->willReturn(
                 [
-                'example.com' => $configuration
+                'example.com' => $configuration,
             ]
             );
 

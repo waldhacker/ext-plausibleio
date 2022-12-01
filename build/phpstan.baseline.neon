@@ -1,0 +1,46 @@
+parameters:
+	ignoreErrors:
+		-
+			message: "#^Property Waldhacker\\\\Plausibleio\\\\Dashboard\\\\Widget\\\\PageDataWidget\\:\\:\\$dataProvider is never read, only written\\.$#"
+			count: 1
+			path: ../Classes/Dashboard/Widget/PageDataWidget.php
+
+		-
+			message: "#^Method Waldhacker\\\\Plausibleio\\\\Services\\\\ConfigurationService\\:\\:getDefaultTimeFrameValue\\(\\) should return string but returns mixed\\.$#"
+			count: 1
+			path: ../Classes/Services/ConfigurationService.php
+
+		-
+			message: "#^Method Waldhacker\\\\Plausibleio\\\\Services\\\\ConfigurationService\\:\\:getLegacyApiBaseUrlConfiguration\\(\\) should return string\\|null but returns mixed\\.$#"
+			count: 1
+			path: ../Classes/Services/ConfigurationService.php
+
+		-
+			message: "#^Method Waldhacker\\\\Plausibleio\\\\Services\\\\ConfigurationService\\:\\:getLegacyApiKeyConfiguration\\(\\) should return string\\|null but returns mixed\\.$#"
+			count: 1
+			path: ../Classes/Services/ConfigurationService.php
+
+		-
+			message: "#^Method Waldhacker\\\\Plausibleio\\\\Services\\\\ConfigurationService\\:\\:getLegacyPlausibleSiteIdConfiguration\\(\\) should return string\\|null but returns mixed\\.$#"
+			count: 1
+			path: ../Classes/Services/ConfigurationService.php
+
+		-
+			message: "#^Method Waldhacker\\\\Plausibleio\\\\Services\\\\ConfigurationService\\:\\:getTimeFramesFromConfiguration\\(\\) should return string but returns mixed\\.$#"
+			count: 1
+			path: ../Classes/Services/ConfigurationService.php
+
+		-
+			message: "#^Cannot access offset 'results' on mixed\\.$#"
+			count: 1
+			path: ../Classes/Services/PlausibleService.php
+
+		-
+			message: "#^Method Waldhacker\\\\Plausibleio\\\\Services\\\\PlausibleService\\:\\:sendAuthorizedRequest\\(\\) should return array\\|int\\|null but returns mixed\\.$#"
+			count: 1
+			path: ../Classes/Services/PlausibleService.php
+
+		-
+			message: "#^Method Waldhacker\\\\Plausibleio\\\\ViewHelpers\\\\Format\\\\TimeFrameLabelViewHelper\\:\\:initializeArguments\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../Classes/ViewHelpers/Format/TimeFrameLabelViewHelper.php

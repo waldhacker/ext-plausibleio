@@ -85,6 +85,7 @@ call_user_func(static function () {
             --palette--;;plausible_trackingScript,
     ';
 
+    $GLOBALS['SiteConfiguration']['site_language']['palettes']['plausible_trackingScript']['showitem'] = $GLOBALS['SiteConfiguration']['site_language']['palettes']['plausible_trackingScript']['showitem'] ?? '';
     $GLOBALS['SiteConfiguration']['site_language']['palettes']['plausible_trackingScript']['showitem'] .= '
             plausible_includeTrackingScript,
             --linebreak--,

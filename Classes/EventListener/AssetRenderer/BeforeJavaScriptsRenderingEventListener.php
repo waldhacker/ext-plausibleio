@@ -36,10 +36,10 @@ class BeforeJavaScriptsRenderingEventListener
     public function perform(BeforeJavaScriptsRenderingEvent $event): void
     {
         if (
-          !$event->isInline()
-          || $this->getApplicationType() !== 'FE'
-          || $this->getTypoScriptFrontendController() === null
-      ) {
+            !$event->isInline()
+            || $this->getApplicationType() !== 'FE'
+            || $this->getTypoScriptFrontendController() === null
+        ) {
             return;
         }
 
@@ -70,7 +70,7 @@ class BeforeJavaScriptsRenderingEventListener
             [
                 'async' => 'async',
                 'defer' => 'defer',
-                'data-domain' => $plausibleConfiguration['siteId']
+                'data-domain' => $plausibleConfiguration['siteId'],
             ],
             ['priority' => true]
         );

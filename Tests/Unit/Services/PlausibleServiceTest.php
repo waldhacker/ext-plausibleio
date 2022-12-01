@@ -198,7 +198,7 @@ class PlausibleServiceTest extends UnitTestCase
                 [
                     'browser' => 'Firefox',
                     'visitors' => 263,
-                ]
+                ],
             ],
             $subject->sendAuthorizedRequest('waldhacker.dev', $endpoint, $params)
         );

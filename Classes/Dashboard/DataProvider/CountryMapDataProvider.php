@@ -70,7 +70,7 @@ class CountryMapDataProvider
 
             $result[] = [
                 $iso3166Data[ISO3166Service::ALPHA3],
-                $item['visitors']
+                $item['visitors'],
             ];
         }
 

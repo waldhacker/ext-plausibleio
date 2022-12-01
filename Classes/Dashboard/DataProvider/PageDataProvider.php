@@ -80,7 +80,7 @@ class PageDataProvider
         $params = [
             'site_id' => $plausibleSiteId,
             'period' => $timeFrame,
-            'property' => $property
+            'property' => $property,
         ];
 
         $responseData = $this->plausibleService->sendAuthorizedRequest($plausibleSiteId, $endpoint, $params);

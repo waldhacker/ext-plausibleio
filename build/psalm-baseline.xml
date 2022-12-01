@@ -1,13 +1,64 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<files psalm-version="4.7.0@d4377c0baf3ffbf0b1ec6998e8d1be2a40971005">
+<files psalm-version="5.0.0@4e177bf0c9f03c17d2fbfd83b7cc9c47605274d8">
+  <file src="Classes/Dashboard/Widget/CountryMapDataWidget.php">
+    <InternalMethod occurrences="2">
+      <code>PathUtility::getPublicResourceWebPath('EXT:plausibleio/Resources/Public/')</code>
+      <code>setTemplate</code>
+    </InternalMethod>
+  </file>
+  <file src="Classes/Dashboard/Widget/DeviceDataWidget.php">
+    <InternalMethod occurrences="1">
+      <code>setTemplate</code>
+    </InternalMethod>
+  </file>
+  <file src="Classes/Dashboard/Widget/PageDataWidget.php">
+    <InternalMethod occurrences="1">
+      <code>setTemplate</code>
+    </InternalMethod>
+  </file>
+  <file src="Classes/Dashboard/Widget/SourceDataWidget.php">
+    <InternalMethod occurrences="1">
+      <code>setTemplate</code>
+    </InternalMethod>
+  </file>
   <file src="Classes/Dashboard/Widget/VisitorsOverTimeWidget.php">
     <InternalMethod occurrences="1">
       <code>setTemplate</code>
     </InternalMethod>
   </file>
+  <file src="Classes/EventListener/AssetRenderer/BeforeJavaScriptsRenderingEventListener.php">
+    <PossiblyNullReference occurrences="2">
+      <code>getLanguage</code>
+      <code>getSite</code>
+    </PossiblyNullReference>
+  </file>
   <file src="Classes/Services/ConfigurationService.php">
-    <TypeDoesNotContainType occurrences="1">
-      <code>empty($timeFrames)</code>
-    </TypeDoesNotContainType>
+    <InternalMethod occurrences="1">
+      <code>getPagePermsClause</code>
+    </InternalMethod>
+    <PossiblyInvalidArrayOffset occurrences="2">
+      <code>$this-&gt;getBackendUser()-&gt;uc['plausible']</code>
+      <code>$this-&gt;getBackendUser()-&gt;uc['plausible']</code>
+    </PossiblyInvalidArrayOffset>
+    <PossiblyNullPropertyAssignment occurrences="2">
+      <code>$this-&gt;getBackendUser()</code>
+      <code>$this-&gt;getBackendUser()</code>
+    </PossiblyNullPropertyAssignment>
+    <PossiblyNullPropertyFetch occurrences="8">
+      <code>$this-&gt;getBackendUser()-&gt;uc</code>
+      <code>$this-&gt;getBackendUser()-&gt;uc</code>
+      <code>$this-&gt;getBackendUser()-&gt;uc</code>
+      <code>$this-&gt;getBackendUser()-&gt;uc</code>
+      <code>$this-&gt;getBackendUser()-&gt;uc</code>
+      <code>$this-&gt;getBackendUser()-&gt;uc</code>
+      <code>$this-&gt;getBackendUser()-&gt;uc</code>
+      <code>$this-&gt;getBackendUser()-&gt;uc</code>
+    </PossiblyNullPropertyFetch>
+    <PossiblyNullReference occurrences="4">
+      <code>getLL</code>
+      <code>includeLLFile</code>
+      <code>writeUC</code>
+      <code>writeUC</code>
+    </PossiblyNullReference>
   </file>
 </files>

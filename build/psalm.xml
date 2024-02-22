@@ -7,6 +7,8 @@
     xsi:schemaLocation="https://getpsalm.org/schema/config vendor/vimeo/psalm/config.xsd"
     hideExternalErrors="true"
     errorBaseline="build/psalm-baseline.xml"
+    findUnusedBaselineEntry="true"
+    findUnusedCode="true"
 >
     <projectFiles>
         <directory name="Classes" />

@@ -18,17 +18,17 @@
     "prefer-stable": true,
     "minimum-stability": "dev",
     "require": {
-        "php": "^7.4 | ^8.0 | ^8.1",
+        "php": "^7.4 | ^8.0 | ^8.1 | ^8.2",
         "ext-json": "*",
         "psr/http-message": "*",
         "psr/http-factory": "*",
         "psr/http-client": "*",
         "psr/log": "*",
-        "typo3/cms-backend": "^11.5@dev | ^12.0@dev",
-        "typo3/cms-core": "^11.5@dev | ^12.0@dev",
-        "typo3/cms-dashboard":  "^11.5@dev | ^12.0@dev",
-        "typo3/cms-fluid": "^11.5@dev | ^12.0@dev",
-        "typo3/cms-frontend": "^11.5@dev | ^12.0@dev"
+        "typo3/cms-backend": "^11.5@dev | ^12.4@dev",
+        "typo3/cms-core": "^11.5@dev | ^12.4@dev",
+        "typo3/cms-dashboard":  "^11.5@dev | ^12.4@dev",
+        "typo3/cms-fluid": "^11.5@dev | ^12.4@dev",
+        "typo3/cms-frontend": "^11.5@dev | ^12.4@dev"
     },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^3.0",
@@ -40,7 +40,7 @@
         "roave/security-advisories": "dev-latest",
         "saschaegerer/phpstan-typo3": "^1.8",
         "typo3/cms-extensionmanager": "@dev",
-        "typo3/cms-fluid-styled-content": "^11.5@dev | ^12.0@dev",
+        "typo3/cms-fluid-styled-content": "^11.5@dev | ^12.4@dev",
         "typo3/cms-install": "@dev",
         "typo3/coding-standards": "^0.4 | ^0.5",
         "typo3/testing-framework": "^6.14 | ^7.x-dev",

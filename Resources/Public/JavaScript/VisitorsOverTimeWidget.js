@@ -12,18 +12,14 @@
  * The TYPO3 project - inspiring people to share!
  */
 
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 define([
   'TYPO3/CMS/Core/Ajax/AjaxRequest',
   'TYPO3/CMS/Core/Event/RegularEvent',
   'TYPO3/CMS/Dashboard/Contrib/chartjs',
   'TYPO3/CMS/Plausibleio/Contrib/d3-format',
   'TYPO3/CMS/Plausibleio/WidgetService',
-], function (AjaxRequest, RegularEvent, chartjs_1, D3Format, WidgetService) {
+], function (AjaxRequest, RegularEvent, Chart, D3Format, WidgetService) {
   'use strict';
-  chartjs_1 = __importDefault(chartjs_1);
 
   class VisitorsOverTimeWidget {
     constructor() {
@@ -69,12 +65,13 @@ define([
         }
 
         let visitorsWidgetChart = null;
-        chartjs_1.default.helpers.each(chartjs_1.default.instances, function (instance) {
+
+        for (const [index, instance] of Object.entries(Chart.Chart.instances)) {
           const widgetKey = instance.canvas.closest(that.options.dashboardItemSelector).dataset.widgetKey;
           if (widgetKey.indexOf('plausible.visitorsovertime', 0) === 0) {
             visitorsWidgetChart = instance;
           }
-        });
+        }
 
         if (!visitorsWidgetChart) {
           return;

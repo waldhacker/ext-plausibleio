@@ -94,7 +94,6 @@ class VisitorsOverTimeWidget implements WidgetInterface, EventDataInterface, Add
     public function getCssFiles(): array
     {
         return [
-            'EXT:dashboard/Resources/Public/Css/Contrib/chart.css',
             'EXT:plausibleio/Resources/Public/Css/widget.css',
         ];
     }

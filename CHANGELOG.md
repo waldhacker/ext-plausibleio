@@ -1,9 +1,18 @@
 # Changelog
 
 
+## 2.2.0 (2024-02-22)
+
+### Tasks
+
+* TYPO3 v12 compat. [waldhacker1]
+
+
 ## 2.1.0 (2022-12-01)
 
 ### Tasks
+
+* Generate changelog. [waldhacker1]
 
 * Version bump. [waldhacker1]
 

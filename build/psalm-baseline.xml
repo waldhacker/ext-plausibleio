@@ -151,9 +151,4 @@
       <code><![CDATA[$results]]></code>
     </UnusedVariable>
   </file>
-  <file src="Classes/ViewHelpers/Format/TimeFrameLabelViewHelper.php">
-    <ReservedWord>
-      <code><![CDATA[mixed]]></code>
-    </ReservedWord>
-  </file>
 </files>

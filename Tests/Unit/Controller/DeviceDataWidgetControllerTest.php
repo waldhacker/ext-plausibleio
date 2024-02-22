@@ -32,7 +32,7 @@ class DeviceDataWidgetControllerTest extends UnitTestCase
 {
     use ProphecyTrait;
 
-    public function controllerProcessesValidAndInvalidUserInputCorrectlyDataProvider(): \Generator
+    public static function controllerProcessesValidAndInvalidUserInputCorrectlyDataProvider(): \Generator
     {
         yield 'Valid userinput is processed' => [
             'queryParameters' => ['siteId' => 'site1', 'timeFrame' => 'day'],

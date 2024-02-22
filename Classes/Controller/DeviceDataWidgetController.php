@@ -58,7 +58,7 @@ class DeviceDataWidgetController
         $data = [
             [
                 'tab' => 'browser',
-                'data'=> $this->deviceDataProvider->getBrowserData($plausibleSiteId, $timeFrame),
+                'data' => $this->deviceDataProvider->getBrowserData($plausibleSiteId, $timeFrame),
             ],
             [
                 'tab' => 'device',

@@ -18,6 +18,4 @@ declare(strict_types=1);
 
 namespace Waldhacker\Plausibleio\Services\Exception;
 
-class InvalidConfigurationException extends \TYPO3\CMS\Core\Exception
-{
-}
+class InvalidConfigurationException extends \TYPO3\CMS\Core\Exception {}

@@ -42,9 +42,6 @@ class ConfigurationService
     ) {
         $this->extensionConfiguration = $extensionConfiguration;
         $this->siteFinder = $siteFinder;
-        if ($this->getLanguageService() !== null) {
-            $this->getLanguageService()->includeLLFile('EXT:' . self::EXT_KEY . '/Resources/Private/Language/locallang.xlf');
-        }
     }
 
     public function getTimeFrames(): array
@@ -330,12 +327,8 @@ class ConfigurationService
     {
         preg_match('/(?<number>\d+)?(?<unit>\w+)/', $timeFrame, $matches);
 
-        $label = null;
-        if ($this->getLanguageService() !== null) {
-            $label = $this->getLanguageService()->getLL('timeframes.' . $matches['unit']);
-        }
-
-        return sprintf($label ?? '', $matches['number'] ?? '');
+        $label = $this->getLanguageService()?->sL('LLL:EXT:' . self::EXT_KEY . '/Resources/Private/Language/locallang.xlf:' . 'timeframes.' . $matches['unit']) ?? '';
+        return sprintf($label, $matches['number'] ?? '');
     }
 
     /**

@@ -46,65 +46,43 @@
     </PossiblyUnusedMethod>
   </file>
   <file src="Classes/Dashboard/DataProvider/VisitorsOverTimeDataProvider.php">
-    <InternalMethod>
-      <code><![CDATA[includeLLFile]]></code>
-    </InternalMethod>
     <PossiblyUnusedMethod>
       <code><![CDATA[__construct]]></code>
     </PossiblyUnusedMethod>
   </file>
   <file src="Classes/Dashboard/Widget/CountryMapDataWidget.php">
-    <InternalMethod>
-      <code><![CDATA[PathUtility::getPublicResourceWebPath('EXT:plausibleio/Resources/Public/')]]></code>
-      <code><![CDATA[setTemplate]]></code>
-    </InternalMethod>
     <UnusedClass>
       <code><![CDATA[CountryMapDataWidget]]></code>
     </UnusedClass>
   </file>
   <file src="Classes/Dashboard/Widget/DeviceDataWidget.php">
-    <InternalMethod>
-      <code><![CDATA[setTemplate]]></code>
-    </InternalMethod>
     <UnusedClass>
       <code><![CDATA[DeviceDataWidget]]></code>
     </UnusedClass>
   </file>
   <file src="Classes/Dashboard/Widget/PageDataWidget.php">
-    <InternalMethod>
-      <code><![CDATA[setTemplate]]></code>
-    </InternalMethod>
     <UnusedClass>
       <code><![CDATA[PageDataWidget]]></code>
     </UnusedClass>
   </file>
   <file src="Classes/Dashboard/Widget/SourceDataWidget.php">
-    <InternalMethod>
-      <code><![CDATA[setTemplate]]></code>
-    </InternalMethod>
     <UnusedClass>
       <code><![CDATA[SourceDataWidget]]></code>
     </UnusedClass>
   </file>
   <file src="Classes/Dashboard/Widget/VisitorsOverTimeWidget.php">
-    <InternalMethod>
-      <code><![CDATA[setTemplate]]></code>
-    </InternalMethod>
     <UnusedClass>
       <code><![CDATA[VisitorsOverTimeWidget]]></code>
     </UnusedClass>
   </file>
   <file src="Classes/EventListener/AssetRenderer/BeforeJavaScriptsRenderingEventListener.php">
+    <PossiblyNullArgument>
+      <code><![CDATA[$this->getRequest()]]></code>
+    </PossiblyNullArgument>
     <PossiblyNullReference>
-      <code><![CDATA[getLanguage]]></code>
-      <code><![CDATA[getSite]]></code>
+      <code><![CDATA[getAttribute]]></code>
+      <code><![CDATA[getAttribute]]></code>
     </PossiblyNullReference>
-    <UndefinedClass>
-      <code><![CDATA[$this->getTypoScriptFrontendController()]]></code>
-      <code><![CDATA[$this->getTypoScriptFrontendController()]]></code>
-      <code><![CDATA[?TypoScriptFrontendController]]></code>
-      <code><![CDATA[ApplicationType]]></code>
-    </UndefinedClass>
     <UnusedClass>
       <code><![CDATA[BeforeJavaScriptsRenderingEventListener]]></code>
     </UnusedClass>
@@ -112,7 +90,6 @@
   <file src="Classes/Services/ConfigurationService.php">
     <InternalMethod>
       <code><![CDATA[getPagePermsClause]]></code>
-      <code><![CDATA[includeLLFile]]></code>
     </InternalMethod>
     <PossiblyNullPropertyAssignment>
       <code><![CDATA[$this->getBackendUser()]]></code>
@@ -129,8 +106,6 @@
       <code><![CDATA[$this->getBackendUser()->uc]]></code>
     </PossiblyNullPropertyFetch>
     <PossiblyNullReference>
-      <code><![CDATA[getLL]]></code>
-      <code><![CDATA[includeLLFile]]></code>
       <code><![CDATA[writeUC]]></code>
       <code><![CDATA[writeUC]]></code>
     </PossiblyNullReference>

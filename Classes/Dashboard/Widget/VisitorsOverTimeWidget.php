@@ -18,20 +18,24 @@ declare(strict_types=1);
 
 namespace Waldhacker\Plausibleio\Dashboard\Widget;
 
+use Psr\Http\Message\ServerRequestInterface;
+use TYPO3\CMS\Backend\View\BackendViewFactory;
+use TYPO3\CMS\Core\Page\JavaScriptModuleInstruction;
 use TYPO3\CMS\Core\Page\PageRenderer;
 use TYPO3\CMS\Dashboard\Widgets\AdditionalCssInterface;
 use TYPO3\CMS\Dashboard\Widgets\EventDataInterface;
-use TYPO3\CMS\Dashboard\Widgets\RequireJsModuleInterface;
+use TYPO3\CMS\Dashboard\Widgets\JavaScriptInterface;
+use TYPO3\CMS\Dashboard\Widgets\RequestAwareWidgetInterface;
 use TYPO3\CMS\Dashboard\Widgets\WidgetConfigurationInterface;
 use TYPO3\CMS\Dashboard\Widgets\WidgetInterface;
-use TYPO3\CMS\Fluid\View\StandaloneView;
 use Waldhacker\Plausibleio\Services\ConfigurationService;
 use Waldhacker\Plausibleio\Services\PlausibleService;
 
-class VisitorsOverTimeWidget implements WidgetInterface, EventDataInterface, AdditionalCssInterface, RequireJsModuleInterface
+class VisitorsOverTimeWidget implements WidgetInterface, EventDataInterface, AdditionalCssInterface, JavaScriptInterface, RequestAwareWidgetInterface
 {
+    private ServerRequestInterface $request;
     private PageRenderer $pageRenderer;
-    private StandaloneView $view;
+    private BackendViewFactory $backendViewFactory;
     private WidgetConfigurationInterface $configuration;
     private PlausibleService $plausibleService;
     private ConfigurationService $configurationService;
@@ -39,14 +43,14 @@ class VisitorsOverTimeWidget implements WidgetInterface, EventDataInterface, Add
 
     public function __construct(
         PageRenderer $pageRenderer,
-        StandaloneView $view,
+        BackendViewFactory $backendViewFactory,
         WidgetConfigurationInterface $configuration,
         PlausibleService $plausibleService,
         ConfigurationService $configurationService,
         array $options = []
     ) {
         $this->pageRenderer = $pageRenderer;
-        $this->view = $view;
+        $this->backendViewFactory = $backendViewFactory;
         $this->configuration = $configuration;
         $this->options = $options;
         $this->plausibleService = $plausibleService;
@@ -54,12 +58,17 @@ class VisitorsOverTimeWidget implements WidgetInterface, EventDataInterface, Add
         $this->preparePageRenderer();
     }
 
+    public function setRequest(ServerRequestInterface $request): void
+    {
+        $this->request = $request;
+    }
+
     public function renderWidgetContent(): string
     {
+        $view = $this->backendViewFactory->create($this->request, ['waldhacker/typo3-plausibleio', 'typo3/cms-dashboard']);
         $plausibleSiteId = $this->configurationService->getPlausibleSiteIdFromUserConfiguration();
 
-        $this->view->setTemplate('VisitorsOverTimeWidget');
-        $this->view->assignMultiple([
+        $view->assignMultiple([
             'id' => $this->plausibleService->getRandomId('visitorsOverTimeWidget'),
             'label' => 'widget.visitorsOverTime.label',
             'configuration' => $this->configuration,
@@ -76,7 +85,7 @@ class VisitorsOverTimeWidget implements WidgetInterface, EventDataInterface, Add
             'predefinedTimeFrame' => $this->options['timeFrame'] ?? null,
         ]);
 
-        return $this->view->render();
+        return $view->render('Widgets/VisitorsOverTimeWidget');
     }
 
     public function getEventData(): array
@@ -98,29 +107,20 @@ class VisitorsOverTimeWidget implements WidgetInterface, EventDataInterface, Add
         ];
     }
 
-    public function getRequireJsModules(): array
+    public function getJavaScriptModuleInstructions(): array
     {
         return [
-            'TYPO3/CMS/Dashboard/Contrib/chartjs',
-            'TYPO3/CMS/Dashboard/ChartInitializer',
-            'TYPO3/CMS/Plausibleio/Contrib/d3-format',
-            'TYPO3/CMS/Plausibleio/VisitorsOverTimeWidget',
-            'TYPO3/CMS/Plausibleio/WidgetService',
+            JavaScriptModuleInstruction::create('@typo3/dashboard/contrib/chartjs.js'),
+            JavaScriptModuleInstruction::create('@typo3/dashboard/chart-initializer.js'),
+            JavaScriptModuleInstruction::create('@typo3/dashboard/widget-content-collector.js'),
+            JavaScriptModuleInstruction::create('@waldhacker/plausibleio/visitors-over-time-widget.js'),
+            JavaScriptModuleInstruction::create('@waldhacker/plausibleio/widget-service.js'),
         ];
     }
 
     private function preparePageRenderer(): void
     {
         $this->pageRenderer->addInlineLanguageLabelFile('EXT:plausibleio/Resources/Private/Language/locallang.xlf');
-        $this->pageRenderer->addRequireJsConfiguration([
-            'shim' => [
-                'TYPO3/CMS/Dashboard/WidgetContentCollector' => [
-                    'deps' => [
-                        'TYPO3/CMS/Plausibleio/VisitorsOverTimeWidget',
-                    ],
-                ],
-            ],
-        ]);
     }
 
     public function getOptions(): array

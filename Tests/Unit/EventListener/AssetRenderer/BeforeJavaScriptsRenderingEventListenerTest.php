@@ -26,7 +26,6 @@ use TYPO3\CMS\Core\Page\AssetCollector;
 use TYPO3\CMS\Core\Page\Event\BeforeJavaScriptsRenderingEvent;
 use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
-use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 use Waldhacker\Plausibleio\EventListener\AssetRenderer\BeforeJavaScriptsRenderingEventListener;
 use Waldhacker\Plausibleio\Services\ConfigurationService;
@@ -80,32 +79,7 @@ class BeforeJavaScriptsRenderingEventListenerTest extends UnitTestCase
         $subject->perform($beforeJavaScriptsRenderingEvent);
     }
 
-    /**
-     * @test
-     * @covers \Waldhacker\Plausibleio\EventListener\AssetRenderer\BeforeJavaScriptsRenderingEventListener::__construct
-     * @covers \Waldhacker\Plausibleio\EventListener\AssetRenderer\BeforeJavaScriptsRenderingEventListener::perform
-     * @covers \Waldhacker\Plausibleio\EventListener\AssetRenderer\BeforeJavaScriptsRenderingEventListener::getApplicationType
-     * @covers \Waldhacker\Plausibleio\EventListener\AssetRenderer\BeforeJavaScriptsRenderingEventListener::getTypoScriptFrontendController
-     */
-    public function doNothingIfTheEventIsAnInlineEventAndThereIsAFrontendRequestButNoTSFE(): void
-    {
-        $configurationServiceProphecy = $this->prophesize(ConfigurationService::class);
-        $assetCollectorProphecy = $this->prophesize(AssetCollector::class);
-        $serverRequestInterfaceProphecy = $this->prophesize(ServerRequestInterface::class);
-        $beforeJavaScriptsRenderingEvent = new BeforeJavaScriptsRenderingEvent($assetCollectorProphecy->reveal(), true, false);
-
-        $GLOBALS['TYPO3_REQUEST'] = $serverRequestInterfaceProphecy->reveal();
-        $GLOBALS['TSFE'] = null;
-
-        $serverRequestInterfaceProphecy->getAttribute('applicationType')->willReturn(SystemEnvironmentBuilder::REQUESTTYPE_FE);
-
-        $assetCollectorProphecy->addJavaScript(Argument::cetera())->shouldNotBeCalled();
-
-        $subject = new BeforeJavaScriptsRenderingEventListener($configurationServiceProphecy->reveal());
-        $subject->perform($beforeJavaScriptsRenderingEvent);
-    }
-
-    public function doNothingIfThereIsNoOrInvalidPlausibleConfigurationDataProvider(): \Generator
+    public static function doNothingIfThereIsNoOrInvalidPlausibleConfigurationDataProvider(): \Generator
     {
         yield 'includeTrackingScript is false and all options are empty' => [
             'plausibleConfiguration' => ['includeTrackingScript' => false, 'trackingScriptBaseUrl' => '', 'trackingScriptType' => '', 'siteId' => ''],
@@ -150,24 +124,22 @@ class BeforeJavaScriptsRenderingEventListenerTest extends UnitTestCase
      * @covers \Waldhacker\Plausibleio\EventListener\AssetRenderer\BeforeJavaScriptsRenderingEventListener::__construct
      * @covers \Waldhacker\Plausibleio\EventListener\AssetRenderer\BeforeJavaScriptsRenderingEventListener::perform
      * @covers \Waldhacker\Plausibleio\EventListener\AssetRenderer\BeforeJavaScriptsRenderingEventListener::getApplicationType
-     * @covers \Waldhacker\Plausibleio\EventListener\AssetRenderer\BeforeJavaScriptsRenderingEventListener::getTypoScriptFrontendController
      */
     public function doNothingIfThereIsNoOrInvalidPlausibleConfiguration(array $plausibleConfiguration): void
     {
         $configurationServiceProphecy = $this->prophesize(ConfigurationService::class);
         $assetCollectorProphecy = $this->prophesize(AssetCollector::class);
         $serverRequestInterfaceProphecy = $this->prophesize(ServerRequestInterface::class);
-        $typoScriptFrontendControllerProphecy = $this->prophesize(TypoScriptFrontendController::class);
+
         $siteProphecy = $this->prophesize(Site::class);
         $siteLanguageProphecy = $this->prophesize(SiteLanguage::class);
         $beforeJavaScriptsRenderingEvent = new BeforeJavaScriptsRenderingEvent($assetCollectorProphecy->reveal(), true, false);
 
         $GLOBALS['TYPO3_REQUEST'] = $serverRequestInterfaceProphecy->reveal();
-        $GLOBALS['TSFE'] = $typoScriptFrontendControllerProphecy->reveal();
 
         $serverRequestInterfaceProphecy->getAttribute('applicationType')->willReturn(SystemEnvironmentBuilder::REQUESTTYPE_FE);
-        $typoScriptFrontendControllerProphecy->getSite()->willReturn($siteProphecy->reveal());
-        $typoScriptFrontendControllerProphecy->getLanguage()->willReturn($siteLanguageProphecy->reveal());
+        $serverRequestInterfaceProphecy->getAttribute('site')->willReturn($siteProphecy->reveal());
+        $serverRequestInterfaceProphecy->getAttribute('language')->willReturn($siteLanguageProphecy->reveal());
 
         $configurationServiceProphecy->getPlausibleConfigurationFromSiteLanguage($siteLanguageProphecy->reveal())->willReturn($plausibleConfiguration);
 
@@ -182,25 +154,23 @@ class BeforeJavaScriptsRenderingEventListenerTest extends UnitTestCase
      * @covers \Waldhacker\Plausibleio\EventListener\AssetRenderer\BeforeJavaScriptsRenderingEventListener::__construct
      * @covers \Waldhacker\Plausibleio\EventListener\AssetRenderer\BeforeJavaScriptsRenderingEventListener::perform
      * @covers \Waldhacker\Plausibleio\EventListener\AssetRenderer\BeforeJavaScriptsRenderingEventListener::getApplicationType
-     * @covers \Waldhacker\Plausibleio\EventListener\AssetRenderer\BeforeJavaScriptsRenderingEventListener::getTypoScriptFrontendController
      */
     public function addJavaScriptIfPlausibleConfigurationIsValid(): void
     {
         $configurationServiceProphecy = $this->prophesize(ConfigurationService::class);
         $assetCollectorProphecy = $this->prophesize(AssetCollector::class);
         $serverRequestInterfaceProphecy = $this->prophesize(ServerRequestInterface::class);
-        $typoScriptFrontendControllerProphecy = $this->prophesize(TypoScriptFrontendController::class);
+
         $siteProphecy = $this->prophesize(Site::class);
         $siteLanguageProphecy = $this->prophesize(SiteLanguage::class);
         $beforeJavaScriptsRenderingEvent = new BeforeJavaScriptsRenderingEvent($assetCollectorProphecy->reveal(), true, false);
 
         $GLOBALS['TYPO3_REQUEST'] = $serverRequestInterfaceProphecy->reveal();
-        $GLOBALS['TSFE'] = $typoScriptFrontendControllerProphecy->reveal();
 
         $siteLanguageProphecy->getLanguageId()->willReturn(23);
         $serverRequestInterfaceProphecy->getAttribute('applicationType')->willReturn(SystemEnvironmentBuilder::REQUESTTYPE_FE);
-        $typoScriptFrontendControllerProphecy->getSite()->willReturn($siteProphecy->reveal());
-        $typoScriptFrontendControllerProphecy->getLanguage()->willReturn($siteLanguageProphecy->reveal());
+        $serverRequestInterfaceProphecy->getAttribute('site')->willReturn($siteProphecy->reveal());
+        $serverRequestInterfaceProphecy->getAttribute('language')->willReturn($siteLanguageProphecy->reveal());
         $siteProphecy->getRootPageId()->willReturn(42);
 
         $configurationServiceProphecy->getPlausibleConfigurationFromSiteLanguage($siteLanguageProphecy->reveal())->willReturn([

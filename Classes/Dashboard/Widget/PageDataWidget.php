@@ -18,20 +18,22 @@ declare(strict_types=1);
 
 namespace Waldhacker\Plausibleio\Dashboard\Widget;
 
-use TYPO3\CMS\Core\Page\PageRenderer;
+use Psr\Http\Message\ServerRequestInterface;
+use TYPO3\CMS\Backend\View\BackendViewFactory;
+use TYPO3\CMS\Core\Page\JavaScriptModuleInstruction;
 use TYPO3\CMS\Dashboard\Widgets\AdditionalCssInterface;
-use TYPO3\CMS\Dashboard\Widgets\RequireJsModuleInterface;
+use TYPO3\CMS\Dashboard\Widgets\JavaScriptInterface;
+use TYPO3\CMS\Dashboard\Widgets\RequestAwareWidgetInterface;
 use TYPO3\CMS\Dashboard\Widgets\WidgetConfigurationInterface;
 use TYPO3\CMS\Dashboard\Widgets\WidgetInterface;
-use TYPO3\CMS\Fluid\View\StandaloneView;
 use Waldhacker\Plausibleio\Dashboard\DataProvider\PageDataProvider;
 use Waldhacker\Plausibleio\Services\ConfigurationService;
 use Waldhacker\Plausibleio\Services\PlausibleService;
 
-class PageDataWidget implements WidgetInterface, AdditionalCssInterface, RequireJsModuleInterface
+class PageDataWidget implements WidgetInterface, AdditionalCssInterface, JavaScriptInterface, RequestAwareWidgetInterface
 {
-    private PageRenderer $pageRenderer;
-    private StandaloneView $view;
+    private ServerRequestInterface $request;
+    private BackendViewFactory $backendViewFactory;
     private WidgetConfigurationInterface $configuration;
     private PageDataProvider $dataProvider;
     private PlausibleService $plausibleService;
@@ -39,30 +41,32 @@ class PageDataWidget implements WidgetInterface, AdditionalCssInterface, Require
     private array $options;
 
     public function __construct(
-        PageRenderer $pageRenderer,
-        StandaloneView $view,
+        BackendViewFactory $backendViewFactory,
         WidgetConfigurationInterface $configuration,
         PageDataProvider $dataProvider,
         PlausibleService $plausibleService,
         ConfigurationService $configurationService,
         array $options = []
     ) {
-        $this->pageRenderer = $pageRenderer;
-        $this->view = $view;
+        $this->backendViewFactory = $backendViewFactory;
         $this->configuration = $configuration;
         $this->options = $options;
         $this->dataProvider = $dataProvider;
         $this->plausibleService = $plausibleService;
         $this->configurationService = $configurationService;
-        $this->preparePageRenderer();
+    }
+
+    public function setRequest(ServerRequestInterface $request): void
+    {
+        $this->request = $request;
     }
 
     public function renderWidgetContent(): string
     {
+        $view = $this->backendViewFactory->create($this->request, ['waldhacker/typo3-plausibleio', 'typo3/cms-dashboard']);
         $plausibleSiteId = $this->configurationService->getPlausibleSiteIdFromUserConfiguration();
 
-        $this->view->setTemplate('BaseTabs');
-        $this->view->assignMultiple([
+        $view->assignMultiple([
             'id' => $this->plausibleService->getRandomId('pageDataWidget'),
             'label' => 'widget.pageData.label',
             'configuration' => $this->configuration,
@@ -106,7 +110,7 @@ class PageDataWidget implements WidgetInterface, AdditionalCssInterface, Require
             ],
         ]);
 
-        return $this->view->render();
+        return $view->render('Widgets/BaseTabs');
     }
 
     public function getCssFiles(): array
@@ -116,25 +120,15 @@ class PageDataWidget implements WidgetInterface, AdditionalCssInterface, Require
         ];
     }
 
-    public function getRequireJsModules(): array
+    public function getJavaScriptModuleInstructions(): array
     {
         return [
-            'TYPO3/CMS/Plausibleio/PageDataWidget',
-            'TYPO3/CMS/Plausibleio/WidgetService',
+            JavaScriptModuleInstruction::create('@typo3/dashboard/contrib/chartjs.js'),
+            JavaScriptModuleInstruction::create('@typo3/dashboard/chart-initializer.js'),
+            JavaScriptModuleInstruction::create('@typo3/dashboard/widget-content-collector.js'),
+            JavaScriptModuleInstruction::create('@waldhacker/plausibleio/page-data-widget.js'),
+            JavaScriptModuleInstruction::create('@waldhacker/plausibleio/widget-service.js'),
         ];
-    }
-
-    private function preparePageRenderer(): void
-    {
-        $this->pageRenderer->addRequireJsConfiguration([
-            'shim' => [
-                'TYPO3/CMS/Dashboard/WidgetContentCollector' => [
-                    'deps' => [
-                        'TYPO3/CMS/Plausibleio/PageDataWidget',
-                    ],
-                ],
-            ],
-        ]);
     }
 
     public function getOptions(): array

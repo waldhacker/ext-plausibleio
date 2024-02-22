@@ -27,7 +27,7 @@ class PageDataProviderTest extends UnitTestCase
 {
     use ProphecyTrait;
 
-    public function getTopPageDataReturnsProperValuesDataProvider(): \Generator
+    public static function getTopPageDataReturnsProperValuesDataProvider(): \Generator
     {
         yield 'all items are transformed' => [
             'plausibleSiteId' => 'waldhacker.dev',
@@ -37,8 +37,8 @@ class PageDataProviderTest extends UnitTestCase
                 ['page' => '/en', 'visitors' => 4],
             ],
             'expected' => [
-                ['label' => '/de',  'visitors' => 3],
-                ['label' => '/en',  'visitors' => 4],
+                ['label' => '/de', 'visitors' => 3],
+                ['label' => '/en', 'visitors' => 4],
             ],
         ];
 
@@ -51,8 +51,8 @@ class PageDataProviderTest extends UnitTestCase
                 ['visitors' => 4],
             ],
             'expected' => [
-                ['label' => '/de',  'visitors' => 3],
-                ['label' => '',  'visitors' => 4],
+                ['label' => '/de', 'visitors' => 3],
+                ['label' => '', 'visitors' => 4],
             ],
         ];
 
@@ -65,7 +65,7 @@ class PageDataProviderTest extends UnitTestCase
                 ['page' => '/en'],
             ],
             'expected' => [
-                ['label' => '/de',  'visitors' => 3],
+                ['label' => '/de', 'visitors' => 3],
             ],
         ];
     }
@@ -101,7 +101,7 @@ class PageDataProviderTest extends UnitTestCase
         self::assertSame($expected, $subject->getTopPageData($plausibleSiteId, $timeFrame));
     }
 
-    public function getEntryPageDataReturnsProperValuesDataProvider(): \Generator
+    public static function getEntryPageDataReturnsProperValuesDataProvider(): \Generator
     {
         yield 'all items are transformed' => [
             'plausibleSiteId' => 'waldhacker.dev',
@@ -111,8 +111,8 @@ class PageDataProviderTest extends UnitTestCase
                 ['entry_page' => '/en', 'visitors' => 4],
             ],
             'expected' => [
-                ['label' => '/de',  'visitors' => 3],
-                ['label' => '/en',  'visitors' => 4],
+                ['label' => '/de', 'visitors' => 3],
+                ['label' => '/en', 'visitors' => 4],
             ],
         ];
 
@@ -125,8 +125,8 @@ class PageDataProviderTest extends UnitTestCase
                 ['visitors' => 4],
             ],
             'expected' => [
-                ['label' => '/de',  'visitors' => 3],
-                ['label' => '',  'visitors' => 4],
+                ['label' => '/de', 'visitors' => 3],
+                ['label' => '', 'visitors' => 4],
             ],
         ];
 
@@ -139,7 +139,7 @@ class PageDataProviderTest extends UnitTestCase
                 ['entry_page' => '/en'],
             ],
             'expected' => [
-                ['label' => '/de',  'visitors' => 3],
+                ['label' => '/de', 'visitors' => 3],
             ],
         ];
     }
@@ -175,7 +175,7 @@ class PageDataProviderTest extends UnitTestCase
         self::assertSame($expected, $subject->getEntryPageData($plausibleSiteId, $timeFrame));
     }
 
-    public function getExitPageDataReturnsProperValuesDataProvider(): \Generator
+    public static function getExitPageDataReturnsProperValuesDataProvider(): \Generator
     {
         yield 'all items are transformed' => [
             'plausibleSiteId' => 'waldhacker.dev',
@@ -185,8 +185,8 @@ class PageDataProviderTest extends UnitTestCase
                 ['exit_page' => '/en', 'visitors' => 4],
             ],
             'expected' => [
-                ['label' => '/de',  'visitors' => 3],
-                ['label' => '/en',  'visitors' => 4],
+                ['label' => '/de', 'visitors' => 3],
+                ['label' => '/en', 'visitors' => 4],
             ],
         ];
 
@@ -199,8 +199,8 @@ class PageDataProviderTest extends UnitTestCase
                 ['visitors' => 4],
             ],
             'expected' => [
-                ['label' => '/de',  'visitors' => 3],
-                ['label' => '',  'visitors' => 4],
+                ['label' => '/de', 'visitors' => 3],
+                ['label' => '', 'visitors' => 4],
             ],
         ];
 
@@ -213,7 +213,7 @@ class PageDataProviderTest extends UnitTestCase
                 ['exit_page' => '/en'],
             ],
             'expected' => [
-                ['label' => '/de',  'visitors' => 3],
+                ['label' => '/de', 'visitors' => 3],
             ],
         ];
     }

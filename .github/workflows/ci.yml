@@ -9,19 +9,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        typo3: [ '^11.5', '^12.4' ]
-        php: [ '7.4', '8.0', '8.1', '8.2' ]
+        typo3: [ '^12.4', '^13.0' ]
+        php: [ '8.1', '8.2', '8.3' ]
         mysql: ['5.7']
         exclude:
-          - typo3: '^11.5'
+          - typo3: '^13.0'
             php: '8.1'
-          - typo3: '^11.5'
-            php: '8.2'
-
-          - typo3: '^12.4'
-            php: '7.4'
-          - typo3: '^12.4'
-            php: '8.0'
 
     steps:
       - name: Checkout Code
@@ -32,6 +25,7 @@ jobs:
         with:
           php-version: ${{ matrix.php }}
           tools: composer:v2, php-cs-fixer
+          # coverage: xdebug
 
       - uses: actions/setup-node@v4
         with:
@@ -61,16 +55,13 @@ jobs:
 
       - name: CGL
         run: composer run ci:cgl:check
-        if: matrix.typo3 == '^12.4'
+        if: matrix.typo3 == '^13.0'
 
       - name: Psalm
         run: composer run ci:psalm
-        if: matrix.typo3 == '^12.4'
 
       - name: PHPStan
         run: composer run ci:stan
-        if: matrix.typo3 == '^12.4'
 
-      #- name: Unit Tests with coverage
-      #  run: composer run ci:tests:unit:cover
-      #  if: matrix.typo3 == '^12.4'
+      # - name: Unit Tests with coverage
+      #   run: composer run ci:tests:unit:cover

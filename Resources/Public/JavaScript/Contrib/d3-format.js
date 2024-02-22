@@ -1,2 +1,229 @@
-// https://d3js.org/d3-format/ v3.0.1 Copyright 2010-2021 Mike Bostock
-!function(t,i){"object"==typeof exports&&"undefined"!=typeof module?i(exports):"function"==typeof define&&define.amd?define(["exports"],i):i((t="undefined"!=typeof globalThis?globalThis:t||self).d3=t.d3||{})}(this,(function(t){"use strict";function i(t,i){if((r=(t=i?t.toExponential(i-1):t.toExponential()).indexOf("e"))<0)return null;var r,n=t.slice(0,r);return[n.length>1?n[0]+n.slice(2):n,+t.slice(r+1)]}function r(t){return(t=i(Math.abs(t)))?t[1]:NaN}var n,e=/^(?:(.)?([<>=^]))?([+\-( ])?([$#])?(0)?(\d+)?(,)?(\.\d+)?(~)?([a-z%])?$/i;function o(t){if(!(i=e.exec(t)))throw new Error("invalid format: "+t);var i;return new a({fill:i[1],align:i[2],sign:i[3],symbol:i[4],zero:i[5],width:i[6],comma:i[7],precision:i[8]&&i[8].slice(1),trim:i[9],type:i[10]})}function a(t){this.fill=void 0===t.fill?" ":t.fill+"",this.align=void 0===t.align?">":t.align+"",this.sign=void 0===t.sign?"-":t.sign+"",this.symbol=void 0===t.symbol?"":t.symbol+"",this.zero=!!t.zero,this.width=void 0===t.width?void 0:+t.width,this.comma=!!t.comma,this.precision=void 0===t.precision?void 0:+t.precision,this.trim=!!t.trim,this.type=void 0===t.type?"":t.type+""}function s(t,r){var n=i(t,r);if(!n)return t+"";var e=n[0],o=n[1];return o<0?"0."+new Array(-o).join("0")+e:e.length>o+1?e.slice(0,o+1)+"."+e.slice(o+1):e+new Array(o-e.length+2).join("0")}o.prototype=a.prototype,a.prototype.toString=function(){return this.fill+this.align+this.sign+this.symbol+(this.zero?"0":"")+(void 0===this.width?"":Math.max(1,0|this.width))+(this.comma?",":"")+(void 0===this.precision?"":"."+Math.max(0,0|this.precision))+(this.trim?"~":"")+this.type};var c={"%":(t,i)=>(100*t).toFixed(i),b:t=>Math.round(t).toString(2),c:t=>t+"",d:function(t){return Math.abs(t=Math.round(t))>=1e21?t.toLocaleString("en").replace(/,/g,""):t.toString(10)},e:(t,i)=>t.toExponential(i),f:(t,i)=>t.toFixed(i),g:(t,i)=>t.toPrecision(i),o:t=>Math.round(t).toString(8),p:(t,i)=>s(100*t,i),r:s,s:function(t,r){var e=i(t,r);if(!e)return t+"";var o=e[0],a=e[1],s=a-(n=3*Math.max(-8,Math.min(8,Math.floor(a/3))))+1,c=o.length;return s===c?o:s>c?o+new Array(s-c+1).join("0"):s>0?o.slice(0,s)+"."+o.slice(s):"0."+new Array(1-s).join("0")+i(t,Math.max(0,r+s-1))[0]},X:t=>Math.round(t).toString(16).toUpperCase(),x:t=>Math.round(t).toString(16)};function h(t){return t}var l,u=Array.prototype.map,f=["y","z","a","f","p","n","µ","m","","k","M","G","T","P","E","Z","Y"];function d(t){var i,e,a=void 0===t.grouping||void 0===t.thousands?h:(i=u.call(t.grouping,Number),e=t.thousands+"",function(t,r){for(var n=t.length,o=[],a=0,s=i[0],c=0;n>0&&s>0&&(c+s+1>r&&(s=Math.max(1,r-c)),o.push(t.substring(n-=s,n+s)),!((c+=s+1)>r));)s=i[a=(a+1)%i.length];return o.reverse().join(e)}),s=void 0===t.currency?"":t.currency[0]+"",l=void 0===t.currency?"":t.currency[1]+"",d=void 0===t.decimal?".":t.decimal+"",m=void 0===t.numerals?h:function(t){return function(i){return i.replace(/[0-9]/g,(function(i){return t[+i]}))}}(u.call(t.numerals,String)),p=void 0===t.percent?"%":t.percent+"",g=void 0===t.minus?"−":t.minus+"",v=void 0===t.nan?"NaN":t.nan+"";function M(t){var i=(t=o(t)).fill,r=t.align,e=t.sign,h=t.symbol,u=t.zero,M=t.width,y=t.comma,x=t.precision,b=t.trim,w=t.type;"n"===w?(y=!0,w="g"):c[w]||(void 0===x&&(x=12),b=!0,w="g"),(u||"0"===i&&"="===r)&&(u=!0,i="0",r="=");var S="$"===h?s:"#"===h&&/[boxX]/.test(w)?"0"+w.toLowerCase():"",j="$"===h?l:/[%p]/.test(w)?p:"",k=c[w],P=/[defgprs%]/.test(w);function z(t){var o,s,c,h=S,l=j;if("c"===w)l=k(t)+l,t="";else{var p=(t=+t)<0||1/t<0;if(t=isNaN(t)?v:k(Math.abs(t),x),b&&(t=function(t){t:for(var i,r=t.length,n=1,e=-1;n<r;++n)switch(t[n]){case".":e=i=n;break;case"0":0===e&&(e=n),i=n;break;default:if(!+t[n])break t;e>0&&(e=0)}return e>0?t.slice(0,e)+t.slice(i+1):t}(t)),p&&0==+t&&"+"!==e&&(p=!1),h=(p?"("===e?e:g:"-"===e||"("===e?"":e)+h,l=("s"===w?f[8+n/3]:"")+l+(p&&"("===e?")":""),P)for(o=-1,s=t.length;++o<s;)if(48>(c=t.charCodeAt(o))||c>57){l=(46===c?d+t.slice(o+1):t.slice(o))+l,t=t.slice(0,o);break}}y&&!u&&(t=a(t,1/0));var z=h.length+t.length+l.length,A=z<M?new Array(M-z+1).join(i):"";switch(y&&u&&(t=a(A+t,A.length?M-l.length:1/0),A=""),r){case"<":t=h+t+l+A;break;case"=":t=h+A+t+l;break;case"^":t=A.slice(0,z=A.length>>1)+h+t+l+A.slice(z);break;default:t=A+h+t+l}return m(t)}return x=void 0===x?6:/[gprs]/.test(w)?Math.max(1,Math.min(21,x)):Math.max(0,Math.min(20,x)),z.toString=function(){return t+""},z}return{format:M,formatPrefix:function(t,i){var n=M(((t=o(t)).type="f",t)),e=3*Math.max(-8,Math.min(8,Math.floor(r(i)/3))),a=Math.pow(10,-e),s=f[8+e/3];return function(t){return n(a*t)+s}}}}function m(i){return l=d(i),t.format=l.format,t.formatPrefix=l.formatPrefix,l}t.format=void 0,t.formatPrefix=void 0,m({thousands:",",grouping:[3],currency:["$",""]}),t.FormatSpecifier=a,t.formatDefaultLocale=m,t.formatLocale=d,t.formatSpecifier=o,t.precisionFixed=function(t){return Math.max(0,-r(Math.abs(t)))},t.precisionPrefix=function(t,i){return Math.max(0,3*Math.max(-8,Math.min(8,Math.floor(r(i)/3)))-r(Math.abs(t)))},t.precisionRound=function(t,i){return t=Math.abs(t),i=Math.abs(i)-t,Math.max(0,r(i)-r(t))+1},Object.defineProperty(t,"__esModule",{value:!0})}));
+function formatDecimal(x) {
+  return Math.abs(x = Math.round(x)) >= 1e21 ? x.toLocaleString("en").replace(/,/g, "") : x.toString(10);
+}
+function formatDecimalParts(x, p) {
+  if ((i = (x = p ? x.toExponential(p - 1) : x.toExponential()).indexOf("e")) < 0)
+    return null;
+  var i, coefficient = x.slice(0, i);
+  return [
+    coefficient.length > 1 ? coefficient[0] + coefficient.slice(2) : coefficient,
+    +x.slice(i + 1)
+  ];
+}
+function exponent(x) {
+  return x = formatDecimalParts(Math.abs(x)), x ? x[1] : NaN;
+}
+function formatGroup(grouping, thousands) {
+  return function(value, width) {
+    var i = value.length, t = [], j = 0, g = grouping[0], length = 0;
+    while (i > 0 && g > 0) {
+      if (length + g + 1 > width)
+        g = Math.max(1, width - length);
+      t.push(value.substring(i -= g, i + g));
+      if ((length += g + 1) > width)
+        break;
+      g = grouping[j = (j + 1) % grouping.length];
+    }
+    return t.reverse().join(thousands);
+  };
+}
+function formatNumerals(numerals) {
+  return function(value) {
+    return value.replace(/[0-9]/g, function(i) {
+      return numerals[+i];
+    });
+  };
+}
+var re = /^(?:(.)?([<>=^]))?([+\-( ])?([$#])?(0)?(\d+)?(,)?(\.\d+)?(~)?([a-z%])?$/i;
+function formatSpecifier(specifier) {
+  if (!(match = re.exec(specifier)))
+    throw new Error("invalid format: " + specifier);
+  var match;
+  return new FormatSpecifier({
+    fill: match[1],
+    align: match[2],
+    sign: match[3],
+    symbol: match[4],
+    zero: match[5],
+    width: match[6],
+    comma: match[7],
+    precision: match[8] && match[8].slice(1),
+    trim: match[9],
+    type: match[10]
+  });
+}
+formatSpecifier.prototype = FormatSpecifier.prototype;
+function FormatSpecifier(specifier) {
+  this.fill = specifier.fill === void 0 ? " " : specifier.fill + "";
+  this.align = specifier.align === void 0 ? ">" : specifier.align + "";
+  this.sign = specifier.sign === void 0 ? "-" : specifier.sign + "";
+  this.symbol = specifier.symbol === void 0 ? "" : specifier.symbol + "";
+  this.zero = !!specifier.zero;
+  this.width = specifier.width === void 0 ? void 0 : +specifier.width;
+  this.comma = !!specifier.comma;
+  this.precision = specifier.precision === void 0 ? void 0 : +specifier.precision;
+  this.trim = !!specifier.trim;
+  this.type = specifier.type === void 0 ? "" : specifier.type + "";
+}
+FormatSpecifier.prototype.toString = function() {
+  return this.fill + this.align + this.sign + this.symbol + (this.zero ? "0" : "") + (this.width === void 0 ? "" : Math.max(1, this.width | 0)) + (this.comma ? "," : "") + (this.precision === void 0 ? "" : "." + Math.max(0, this.precision | 0)) + (this.trim ? "~" : "") + this.type;
+};
+function formatTrim(s) {
+  out:
+    for (var n = s.length, i = 1, i0 = -1, i1; i < n; ++i) {
+      switch (s[i]) {
+        case ".":
+          i0 = i1 = i;
+          break;
+        case "0":
+          if (i0 === 0)
+            i0 = i;
+          i1 = i;
+          break;
+        default:
+          if (!+s[i])
+            break out;
+          if (i0 > 0)
+            i0 = 0;
+          break;
+      }
+    }
+  return i0 > 0 ? s.slice(0, i0) + s.slice(i1 + 1) : s;
+}
+var prefixExponent;
+function formatPrefixAuto(x, p) {
+  var d = formatDecimalParts(x, p);
+  if (!d)
+    return x + "";
+  var coefficient = d[0], exponent2 = d[1], i = exponent2 - (prefixExponent = Math.max(-8, Math.min(8, Math.floor(exponent2 / 3))) * 3) + 1, n = coefficient.length;
+  return i === n ? coefficient : i > n ? coefficient + new Array(i - n + 1).join("0") : i > 0 ? coefficient.slice(0, i) + "." + coefficient.slice(i) : "0." + new Array(1 - i).join("0") + formatDecimalParts(x, Math.max(0, p + i - 1))[0];
+}
+function formatRounded(x, p) {
+  var d = formatDecimalParts(x, p);
+  if (!d)
+    return x + "";
+  var coefficient = d[0], exponent2 = d[1];
+  return exponent2 < 0 ? "0." + new Array(-exponent2).join("0") + coefficient : coefficient.length > exponent2 + 1 ? coefficient.slice(0, exponent2 + 1) + "." + coefficient.slice(exponent2 + 1) : coefficient + new Array(exponent2 - coefficient.length + 2).join("0");
+}
+var formatTypes = {
+  "%": (x, p) => (x * 100).toFixed(p),
+  b: (x) => Math.round(x).toString(2),
+  c: (x) => x + "",
+  d: formatDecimal,
+  e: (x, p) => x.toExponential(p),
+  f: (x, p) => x.toFixed(p),
+  g: (x, p) => x.toPrecision(p),
+  o: (x) => Math.round(x).toString(8),
+  p: (x, p) => formatRounded(x * 100, p),
+  r: formatRounded,
+  s: formatPrefixAuto,
+  X: (x) => Math.round(x).toString(16).toUpperCase(),
+  x: (x) => Math.round(x).toString(16)
+};
+function identity(x) {
+  return x;
+}
+var map = Array.prototype.map, prefixes = ["y", "z", "a", "f", "p", "n", "\xB5", "m", "", "k", "M", "G", "T", "P", "E", "Z", "Y"];
+function formatLocale(locale2) {
+  var group = locale2.grouping === void 0 || locale2.thousands === void 0 ? identity : formatGroup(map.call(locale2.grouping, Number), locale2.thousands + ""), currencyPrefix = locale2.currency === void 0 ? "" : locale2.currency[0] + "", currencySuffix = locale2.currency === void 0 ? "" : locale2.currency[1] + "", decimal = locale2.decimal === void 0 ? "." : locale2.decimal + "", numerals = locale2.numerals === void 0 ? identity : formatNumerals(map.call(locale2.numerals, String)), percent = locale2.percent === void 0 ? "%" : locale2.percent + "", minus = locale2.minus === void 0 ? "\u2212" : locale2.minus + "", nan = locale2.nan === void 0 ? "NaN" : locale2.nan + "";
+  function newFormat(specifier) {
+    specifier = formatSpecifier(specifier);
+    var fill = specifier.fill, align = specifier.align, sign = specifier.sign, symbol = specifier.symbol, zero = specifier.zero, width = specifier.width, comma = specifier.comma, precision = specifier.precision, trim = specifier.trim, type = specifier.type;
+    if (type === "n")
+      comma = true, type = "g";
+    else if (!formatTypes[type])
+      precision === void 0 && (precision = 12), trim = true, type = "g";
+    if (zero || fill === "0" && align === "=")
+      zero = true, fill = "0", align = "=";
+    var prefix = symbol === "$" ? currencyPrefix : symbol === "#" && /[boxX]/.test(type) ? "0" + type.toLowerCase() : "", suffix = symbol === "$" ? currencySuffix : /[%p]/.test(type) ? percent : "";
+    var formatType = formatTypes[type], maybeSuffix = /[defgprs%]/.test(type);
+    precision = precision === void 0 ? 6 : /[gprs]/.test(type) ? Math.max(1, Math.min(21, precision)) : Math.max(0, Math.min(20, precision));
+    function format2(value) {
+      var valuePrefix = prefix, valueSuffix = suffix, i, n, c;
+      if (type === "c") {
+        valueSuffix = formatType(value) + valueSuffix;
+        value = "";
+      } else {
+        value = +value;
+        var valueNegative = value < 0 || 1 / value < 0;
+        value = isNaN(value) ? nan : formatType(Math.abs(value), precision);
+        if (trim)
+          value = formatTrim(value);
+        if (valueNegative && +value === 0 && sign !== "+")
+          valueNegative = false;
+        valuePrefix = (valueNegative ? sign === "(" ? sign : minus : sign === "-" || sign === "(" ? "" : sign) + valuePrefix;
+        valueSuffix = (type === "s" ? prefixes[8 + prefixExponent / 3] : "") + valueSuffix + (valueNegative && sign === "(" ? ")" : "");
+        if (maybeSuffix) {
+          i = -1, n = value.length;
+          while (++i < n) {
+            if (c = value.charCodeAt(i), 48 > c || c > 57) {
+              valueSuffix = (c === 46 ? decimal + value.slice(i + 1) : value.slice(i)) + valueSuffix;
+              value = value.slice(0, i);
+              break;
+            }
+          }
+        }
+      }
+      if (comma && !zero)
+        value = group(value, Infinity);
+      var length = valuePrefix.length + value.length + valueSuffix.length, padding = length < width ? new Array(width - length + 1).join(fill) : "";
+      if (comma && zero)
+        value = group(padding + value, padding.length ? width - valueSuffix.length : Infinity), padding = "";
+      switch (align) {
+        case "<":
+          value = valuePrefix + value + valueSuffix + padding;
+          break;
+        case "=":
+          value = valuePrefix + padding + value + valueSuffix;
+          break;
+        case "^":
+          value = padding.slice(0, length = padding.length >> 1) + valuePrefix + value + valueSuffix + padding.slice(length);
+          break;
+        default:
+          value = padding + valuePrefix + value + valueSuffix;
+          break;
+      }
+      return numerals(value);
+    }
+    format2.toString = function() {
+      return specifier + "";
+    };
+    return format2;
+  }
+  function formatPrefix2(specifier, value) {
+    var f = newFormat((specifier = formatSpecifier(specifier), specifier.type = "f", specifier)), e = Math.max(-8, Math.min(8, Math.floor(exponent(value) / 3))) * 3, k = Math.pow(10, -e), prefix = prefixes[8 + e / 3];
+    return function(value2) {
+      return f(k * value2) + prefix;
+    };
+  }
+  return {
+    format: newFormat,
+    formatPrefix: formatPrefix2
+  };
+}
+var locale;
+var format;
+var formatPrefix;
+defaultLocale({
+  thousands: ",",
+  grouping: [3],
+  currency: ["$", ""]
+});
+function defaultLocale(definition) {
+  locale = formatLocale(definition);
+  format = locale.format;
+  formatPrefix = locale.formatPrefix;
+  return locale;
+}
+function precisionFixed(step) {
+  return Math.max(0, -exponent(Math.abs(step)));
+}
+function precisionPrefix(step, value) {
+  return Math.max(0, Math.max(-8, Math.min(8, Math.floor(exponent(value) / 3))) * 3 - exponent(Math.abs(step)));
+}
+function precisionRound(step, max) {
+  step = Math.abs(step), max = Math.abs(max) - step;
+  return Math.max(0, exponent(max) - exponent(step)) + 1;
+}
+export {FormatSpecifier, format, defaultLocale as formatDefaultLocale, formatLocale, formatPrefix, formatSpecifier, precisionFixed, precisionPrefix, precisionRound};
+export default null;

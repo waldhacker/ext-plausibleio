@@ -58,7 +58,7 @@ class SourceDataWidgetController
         $data = [
             [
                 'tab' => 'allsources',
-                'data'=> $this->dataProvider->getAllSourcesData($plausibleSiteId, $timeFrame),
+                'data' => $this->dataProvider->getAllSourcesData($plausibleSiteId, $timeFrame),
             ],
             [
                 'tab' => 'mediumsource',

@@ -205,7 +205,7 @@ class ConfigurationServiceTest extends UnitTestCase
     public function persistTimeFrameValueInUserConfigurationDoesNothingOnInvalidBackendUserConfiguration(): void
     {
         $backendUserProphecy = $this->prophesize(BackendUserAuthentication::class);
-        $GLOBALS['BE_USER'] = $backendUserProphecy->reveal();
+        $GLOBALS['BE_USER'] = null;
 
         $backendUserProphecy->writeUC()->shouldNotBeCalled();
         self::assertNull($this->subject->persistTimeFrameValueInUserConfiguration('7d'));
@@ -305,7 +305,7 @@ class ConfigurationServiceTest extends UnitTestCase
     public function persistPlausibleSiteIdInUserConfigurationDoesNothingOnInvalidBackendUserConfiguration(): void
     {
         $backendUserProphecy = $this->prophesize(BackendUserAuthentication::class);
-        $GLOBALS['BE_USER'] = $backendUserProphecy->reveal();
+        $GLOBALS['BE_USER'] = null;
 
         $backendUserProphecy->writeUC()->shouldNotBeCalled();
         self::assertNull($this->subject->persistPlausibleSiteIdInUserConfiguration('waldhacker.dev'));

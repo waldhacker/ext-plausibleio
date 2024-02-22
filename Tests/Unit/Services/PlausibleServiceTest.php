@@ -26,6 +26,7 @@ use GuzzleHttp\Psr7\Response;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\Log\LoggerInterface;
+use TYPO3\CMS\Core\Http\Client\GuzzleClientFactory;
 use TYPO3\CMS\Core\Http\RequestFactory;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 use Waldhacker\Plausibleio\Services\ConfigurationService;
@@ -43,7 +44,7 @@ class PlausibleServiceTest extends UnitTestCase
     public function getRandomIdReturnsRandomWithPrefix(): void
     {
         $configurationServiceProphecy = $this->prophesize(ConfigurationService::class);
-        $subject = new PlausibleService(new RequestFactory(), new Client(), $configurationServiceProphecy->reveal());
+        $subject = new PlausibleService(new RequestFactory(new GuzzleClientFactory()), new Client(), $configurationServiceProphecy->reveal());
         self::assertMatchesRegularExpression('/foo-[0-9a-f]{16}/i', $subject->getRandomId('foo'));
     }
 
@@ -70,7 +71,7 @@ class PlausibleServiceTest extends UnitTestCase
             'metrics' => 'visitors',
         ];
 
-        $subject = new PlausibleService(new RequestFactory(), $client, $this->setupConfigurationServiceProphecy('waldhacker.dev')->reveal());
+        $subject = new PlausibleService(new RequestFactory(new GuzzleClientFactory()), $client, $this->setupConfigurationServiceProphecy('waldhacker.dev')->reveal());
         $subject->setLogger($loggerProphecy->reveal());
 
         self::assertNull($subject->sendAuthorizedRequest('waldhacker.dev', $endpoint, $params));
@@ -96,7 +97,7 @@ class PlausibleServiceTest extends UnitTestCase
             'site_id' => 'waldhacker.dev',
         ];
 
-        $subject = new PlausibleService(new RequestFactory(), $client, $this->setupConfigurationServiceProphecy('waldhacker.dev')->reveal());
+        $subject = new PlausibleService(new RequestFactory(new GuzzleClientFactory()), $client, $this->setupConfigurationServiceProphecy('waldhacker.dev')->reveal());
 
         self::assertSame(42, $subject->sendAuthorizedRequest('waldhacker.dev', $endpoint, $params));
         self::assertCount(1, $historyContainer);
@@ -126,7 +127,7 @@ class PlausibleServiceTest extends UnitTestCase
             'metrics' => 'visitors',
         ];
 
-        $subject = new PlausibleService(new RequestFactory(), $client, $this->setupConfigurationServiceProphecy('waldhacker.dev')->reveal());
+        $subject = new PlausibleService(new RequestFactory(new GuzzleClientFactory()), $client, $this->setupConfigurationServiceProphecy('waldhacker.dev')->reveal());
         $subject->setLogger($loggerProphecy->reveal());
 
         self::assertNull($subject->sendAuthorizedRequest('waldhacker.dev', $endpoint, $params));
@@ -156,7 +157,7 @@ class PlausibleServiceTest extends UnitTestCase
             'metrics' => 'visitors',
         ];
 
-        $subject = new PlausibleService(new RequestFactory(), $client, $this->setupConfigurationServiceProphecy('waldhacker.dev')->reveal());
+        $subject = new PlausibleService(new RequestFactory(new GuzzleClientFactory()), $client, $this->setupConfigurationServiceProphecy('waldhacker.dev')->reveal());
         $subject->setLogger($loggerProphecy->reveal());
 
         self::assertNull($subject->sendAuthorizedRequest('waldhacker.dev', $endpoint, $params));
@@ -186,7 +187,7 @@ class PlausibleServiceTest extends UnitTestCase
             'metrics' => 'visitors',
         ];
 
-        $subject = new PlausibleService(new RequestFactory(), $client, $this->setupConfigurationServiceProphecy('waldhacker.dev')->reveal());
+        $subject = new PlausibleService(new RequestFactory(new GuzzleClientFactory()), $client, $this->setupConfigurationServiceProphecy('waldhacker.dev')->reveal());
         $subject->setLogger($loggerProphecy->reveal());
 
         self::assertSame(

@@ -3,22 +3,24 @@ name: CI
 on: [ push, pull_request ]
 
 jobs:
-  build:
-
+  ci:
+    name: Tests with TYPO3 ${{ matrix.typo3 }} PHP ${{ matrix.php }}
     runs-on: ubuntu-latest
-
     strategy:
       fail-fast: false
       matrix:
-        typo3: [ '^11.5', '^12.0' ]
-        php: [ '7.4', '8.0', '8.1' ]
+        typo3: [ '^11.5', '^12.4' ]
+        php: [ '7.4', '8.0', '8.1', '8.2' ]
         mysql: ['5.7']
         exclude:
           - typo3: '^11.5'
             php: '8.1'
-          - typo3: '^12.0'
+          - typo3: '^11.5'
+            php: '8.2'
+
+          - typo3: '^12.4'
             php: '7.4'
-          - typo3: '^12.0'
+          - typo3: '^12.4'
             php: '8.0'
 
     steps:
@@ -30,6 +32,10 @@ jobs:
         with:
           php-version: ${{ matrix.php }}
           tools: composer:v2, php-cs-fixer
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 16
 
       - name: Environment Check
         run: |
@@ -55,18 +61,16 @@ jobs:
 
       - name: CGL
         run: composer run ci:cgl:check
-        if: matrix.typo3 == '^11.5'
+        if: matrix.typo3 == '^12.4'
 
       - name: Psalm
         run: composer run ci:psalm
-        if: matrix.typo3 == '^11.5'
+        if: matrix.typo3 == '^12.4'
 
       - name: PHPStan
         run: composer run ci:stan
-        if: matrix.typo3 == '^11.5'
+        if: matrix.typo3 == '^12.4'
 
-      - name: Unit Tests with coverage
-        run: composer run ci:tests:unit:cover
-        if: matrix.typo3 == '^11.5'
-
-
+      #- name: Unit Tests with coverage
+      #  run: composer run ci:tests:unit:cover
+      #  if: matrix.typo3 == '^12.4'

@@ -32,7 +32,7 @@ class TimeFrameLabelViewHelper extends AbstractViewHelper
         $this->registerArgument('value', 'string', '', true);
     }
 
-    public static function renderStatic(array $arguments, \Closure $renderChildrenClosure, RenderingContextInterface $renderingContext): string
+    public static function renderStatic(array $arguments, \Closure $renderChildrenClosure, RenderingContextInterface $renderingContext): mixed
     {
         $value = $arguments['value'];
         $configurationService = GeneralUtility::makeInstance(ConfigurationService::class);

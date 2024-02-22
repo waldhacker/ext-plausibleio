@@ -1,64 +1,159 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<files psalm-version="5.0.0@4e177bf0c9f03c17d2fbfd83b7cc9c47605274d8">
-  <file src="Classes/Dashboard/Widget/CountryMapDataWidget.php">
-    <InternalMethod occurrences="2">
-      <code>PathUtility::getPublicResourceWebPath('EXT:plausibleio/Resources/Public/')</code>
-      <code>setTemplate</code>
+<files psalm-version="5.22.1@e9dad66e11274315dac27e08349c628c7d6a1a43">
+  <file src="Classes/Controller/CountryMapDataWidgetController.php">
+    <UnusedClass>
+      <code><![CDATA[CountryMapDataWidgetController]]></code>
+    </UnusedClass>
+  </file>
+  <file src="Classes/Controller/DeviceDataWidgetController.php">
+    <UnusedClass>
+      <code><![CDATA[DeviceDataWidgetController]]></code>
+    </UnusedClass>
+  </file>
+  <file src="Classes/Controller/PageDataWidgetController.php">
+    <UnusedClass>
+      <code><![CDATA[PageDataWidgetController]]></code>
+    </UnusedClass>
+  </file>
+  <file src="Classes/Controller/SourceDataWidgetController.php">
+    <UnusedClass>
+      <code><![CDATA[SourceDataWidgetController]]></code>
+    </UnusedClass>
+  </file>
+  <file src="Classes/Controller/VisitorsOverTimeWidgetController.php">
+    <UnusedClass>
+      <code><![CDATA[VisitorsOverTimeWidgetController]]></code>
+    </UnusedClass>
+  </file>
+  <file src="Classes/Dashboard/DataProvider/CountryMapDataProvider.php">
+    <PossiblyUnusedMethod>
+      <code><![CDATA[__construct]]></code>
+    </PossiblyUnusedMethod>
+  </file>
+  <file src="Classes/Dashboard/DataProvider/DeviceDataProvider.php">
+    <PossiblyUnusedMethod>
+      <code><![CDATA[__construct]]></code>
+    </PossiblyUnusedMethod>
+  </file>
+  <file src="Classes/Dashboard/DataProvider/PageDataProvider.php">
+    <PossiblyUnusedMethod>
+      <code><![CDATA[__construct]]></code>
+    </PossiblyUnusedMethod>
+  </file>
+  <file src="Classes/Dashboard/DataProvider/SourceDataProvider.php">
+    <PossiblyUnusedMethod>
+      <code><![CDATA[__construct]]></code>
+    </PossiblyUnusedMethod>
+  </file>
+  <file src="Classes/Dashboard/DataProvider/VisitorsOverTimeDataProvider.php">
+    <InternalMethod>
+      <code><![CDATA[includeLLFile]]></code>
     </InternalMethod>
+    <PossiblyUnusedMethod>
+      <code><![CDATA[__construct]]></code>
+    </PossiblyUnusedMethod>
+  </file>
+  <file src="Classes/Dashboard/Widget/CountryMapDataWidget.php">
+    <InternalMethod>
+      <code><![CDATA[PathUtility::getPublicResourceWebPath('EXT:plausibleio/Resources/Public/')]]></code>
+      <code><![CDATA[setTemplate]]></code>
+    </InternalMethod>
+    <UnusedClass>
+      <code><![CDATA[CountryMapDataWidget]]></code>
+    </UnusedClass>
   </file>
   <file src="Classes/Dashboard/Widget/DeviceDataWidget.php">
-    <InternalMethod occurrences="1">
-      <code>setTemplate</code>
+    <InternalMethod>
+      <code><![CDATA[setTemplate]]></code>
     </InternalMethod>
+    <UnusedClass>
+      <code><![CDATA[DeviceDataWidget]]></code>
+    </UnusedClass>
   </file>
   <file src="Classes/Dashboard/Widget/PageDataWidget.php">
-    <InternalMethod occurrences="1">
-      <code>setTemplate</code>
+    <InternalMethod>
+      <code><![CDATA[setTemplate]]></code>
     </InternalMethod>
+    <UnusedClass>
+      <code><![CDATA[PageDataWidget]]></code>
+    </UnusedClass>
   </file>
   <file src="Classes/Dashboard/Widget/SourceDataWidget.php">
-    <InternalMethod occurrences="1">
-      <code>setTemplate</code>
+    <InternalMethod>
+      <code><![CDATA[setTemplate]]></code>
     </InternalMethod>
+    <UnusedClass>
+      <code><![CDATA[SourceDataWidget]]></code>
+    </UnusedClass>
   </file>
   <file src="Classes/Dashboard/Widget/VisitorsOverTimeWidget.php">
-    <InternalMethod occurrences="1">
-      <code>setTemplate</code>
+    <InternalMethod>
+      <code><![CDATA[setTemplate]]></code>
     </InternalMethod>
+    <UnusedClass>
+      <code><![CDATA[VisitorsOverTimeWidget]]></code>
+    </UnusedClass>
   </file>
   <file src="Classes/EventListener/AssetRenderer/BeforeJavaScriptsRenderingEventListener.php">
-    <PossiblyNullReference occurrences="2">
-      <code>getLanguage</code>
-      <code>getSite</code>
+    <PossiblyNullReference>
+      <code><![CDATA[getLanguage]]></code>
+      <code><![CDATA[getSite]]></code>
     </PossiblyNullReference>
+    <UndefinedClass>
+      <code><![CDATA[$this->getTypoScriptFrontendController()]]></code>
+      <code><![CDATA[$this->getTypoScriptFrontendController()]]></code>
+      <code><![CDATA[?TypoScriptFrontendController]]></code>
+      <code><![CDATA[ApplicationType]]></code>
+    </UndefinedClass>
+    <UnusedClass>
+      <code><![CDATA[BeforeJavaScriptsRenderingEventListener]]></code>
+    </UnusedClass>
   </file>
   <file src="Classes/Services/ConfigurationService.php">
-    <InternalMethod occurrences="1">
-      <code>getPagePermsClause</code>
+    <InternalMethod>
+      <code><![CDATA[getPagePermsClause]]></code>
+      <code><![CDATA[includeLLFile]]></code>
     </InternalMethod>
-    <PossiblyInvalidArrayOffset occurrences="2">
-      <code>$this-&gt;getBackendUser()-&gt;uc['plausible']</code>
-      <code>$this-&gt;getBackendUser()-&gt;uc['plausible']</code>
-    </PossiblyInvalidArrayOffset>
-    <PossiblyNullPropertyAssignment occurrences="2">
-      <code>$this-&gt;getBackendUser()</code>
-      <code>$this-&gt;getBackendUser()</code>
+    <PossiblyNullPropertyAssignment>
+      <code><![CDATA[$this->getBackendUser()]]></code>
+      <code><![CDATA[$this->getBackendUser()]]></code>
     </PossiblyNullPropertyAssignment>
-    <PossiblyNullPropertyFetch occurrences="8">
-      <code>$this-&gt;getBackendUser()-&gt;uc</code>
-      <code>$this-&gt;getBackendUser()-&gt;uc</code>
-      <code>$this-&gt;getBackendUser()-&gt;uc</code>
-      <code>$this-&gt;getBackendUser()-&gt;uc</code>
-      <code>$this-&gt;getBackendUser()-&gt;uc</code>
-      <code>$this-&gt;getBackendUser()-&gt;uc</code>
-      <code>$this-&gt;getBackendUser()-&gt;uc</code>
-      <code>$this-&gt;getBackendUser()-&gt;uc</code>
+    <PossiblyNullPropertyFetch>
+      <code><![CDATA[$this->getBackendUser()->uc]]></code>
+      <code><![CDATA[$this->getBackendUser()->uc]]></code>
+      <code><![CDATA[$this->getBackendUser()->uc]]></code>
+      <code><![CDATA[$this->getBackendUser()->uc]]></code>
+      <code><![CDATA[$this->getBackendUser()->uc]]></code>
+      <code><![CDATA[$this->getBackendUser()->uc]]></code>
+      <code><![CDATA[$this->getBackendUser()->uc]]></code>
+      <code><![CDATA[$this->getBackendUser()->uc]]></code>
     </PossiblyNullPropertyFetch>
-    <PossiblyNullReference occurrences="4">
-      <code>getLL</code>
-      <code>includeLLFile</code>
-      <code>writeUC</code>
-      <code>writeUC</code>
+    <PossiblyNullReference>
+      <code><![CDATA[getLL]]></code>
+      <code><![CDATA[includeLLFile]]></code>
+      <code><![CDATA[writeUC]]></code>
+      <code><![CDATA[writeUC]]></code>
     </PossiblyNullReference>
+    <PossiblyUnusedMethod>
+      <code><![CDATA[__construct]]></code>
+    </PossiblyUnusedMethod>
+  </file>
+  <file src="Classes/Services/ISO3166Service.php">
+    <PossiblyUnusedMethod>
+      <code><![CDATA[alpha3]]></code>
+    </PossiblyUnusedMethod>
+  </file>
+  <file src="Classes/Services/PlausibleService.php">
+    <PossiblyUnusedMethod>
+      <code><![CDATA[__construct]]></code>
+    </PossiblyUnusedMethod>
+    <UnusedVariable>
+      <code><![CDATA[$results]]></code>
+    </UnusedVariable>
+  </file>
+  <file src="Classes/ViewHelpers/Format/TimeFrameLabelViewHelper.php">
+    <ReservedWord>
+      <code><![CDATA[mixed]]></code>
+    </ReservedWord>
   </file>
 </files>

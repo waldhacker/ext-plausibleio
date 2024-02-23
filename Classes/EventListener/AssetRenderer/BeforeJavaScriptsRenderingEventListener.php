@@ -21,7 +21,8 @@ namespace Waldhacker\Plausibleio\EventListener\AssetRenderer;
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Http\ApplicationType;
 use TYPO3\CMS\Core\Page\Event\BeforeJavaScriptsRenderingEvent;
-use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
+use TYPO3\CMS\Core\Site\Entity\SiteInterface;
+use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use Waldhacker\Plausibleio\Services\ConfigurationService;
 
 class BeforeJavaScriptsRenderingEventListener
@@ -38,13 +39,18 @@ class BeforeJavaScriptsRenderingEventListener
         if (
             !$event->isInline()
             || $this->getApplicationType() !== 'FE'
-            || $this->getTypoScriptFrontendController() === null
+            || $this->getRequest() === null
         ) {
             return;
         }
 
-        $site = $this->getTypoScriptFrontendController()->getSite();
-        $siteLanguage = $this->getTypoScriptFrontendController()->getLanguage();
+        $site = $this->getSite();
+        $siteLanguage = $this->getLanguage();
+
+        if (!$site || !$siteLanguage) {
+            return;
+        }
+
         $plausibleConfiguration = $this->configurationService->getPlausibleConfigurationFromSiteLanguage($siteLanguage);
 
         if (
@@ -76,20 +82,30 @@ class BeforeJavaScriptsRenderingEventListener
         );
     }
 
+    private function getSite(): ?SiteInterface
+    {
+        return $this->getRequest() ? $this->getRequest()->getAttribute('site') : null;
+    }
+
+    private function getLanguage(): ?SiteLanguage
+    {
+        return $this->getRequest() ? $this->getRequest()->getAttribute('language') : null;
+    }
+
+    private function getRequest(): ?ServerRequestInterface
+    {
+        return $GLOBALS['TYPO3_REQUEST'];
+    }
+
     private function getApplicationType(): string
     {
         if (
-            ($GLOBALS['TYPO3_REQUEST'] ?? null) instanceof ServerRequestInterface
-            && ApplicationType::fromRequest($GLOBALS['TYPO3_REQUEST'])->isFrontend()
+            $this->getRequest() instanceof ServerRequestInterface
+            && ApplicationType::fromRequest($this->getRequest())->isFrontend()
         ) {
             return 'FE';
         }
 
         return 'BE';
-    }
-
-    private function getTypoScriptFrontendController(): ?TypoScriptFrontendController
-    {
-        return $GLOBALS['TSFE'] ?? null;
     }
 }

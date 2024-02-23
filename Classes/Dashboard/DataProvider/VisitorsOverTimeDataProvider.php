@@ -29,7 +29,6 @@ class VisitorsOverTimeDataProvider
     public function __construct(PlausibleService $plausibleService)
     {
         $this->plausibleService = $plausibleService;
-        $this->getLanguageService()->includeLLFile('EXT:' . self::EXT_KEY . '/Resources/Private/Language/locallang.xlf');
     }
 
     public function getOverview(string $plausibleSiteId, string $timeFrame): array
@@ -91,7 +90,7 @@ class VisitorsOverTimeDataProvider
             'labels' => $labels,
             'datasets' => [
                 [
-                    'label' => $this->getLanguageService()->getLL('visitors'),
+                    'label' => $this->getLanguageService()?->sL('LLL:EXT:' . self::EXT_KEY . '/Resources/Private/Language/locallang.xlf:visitors') ?? 'visitors',
                     'data' => $data,
                     'fill' => false,
                     'borderColor' => '#85bcee',
@@ -113,8 +112,8 @@ class VisitorsOverTimeDataProvider
         return is_array($responseData) ? $responseData : [];
     }
 
-    private function getLanguageService(): LanguageService
+    private function getLanguageService(): ?LanguageService
     {
-        return $GLOBALS['LANG'];
+        return $GLOBALS['LANG'] ?? null;
     }
 }

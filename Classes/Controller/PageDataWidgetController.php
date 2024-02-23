@@ -58,7 +58,7 @@ class PageDataWidgetController
         $data = [
             [
                 'tab' => 'toppage',
-                'data'=> $this->pageDataProvider->getTopPageData($plausibleSiteId, $timeFrame),
+                'data' => $this->pageDataProvider->getTopPageData($plausibleSiteId, $timeFrame),
             ],
             [
                 'tab' => 'entrypage',

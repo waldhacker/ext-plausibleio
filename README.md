@@ -101,7 +101,6 @@ Copy the `waldhacker.plausibleio.widget.country` widget from the file `EXT:plaus
   waldhacker.plausibleio.widget.country:
     class: 'Waldhacker\Plausibleio\Dashboard\Widget\CountryMapDataWidget'
     arguments:
-      $view: '@dashboard.views.widget'
       $configurationService: '@Waldhacker\Plausibleio\Services\ConfigurationService'
       $options:
         siteId: null
@@ -124,7 +123,6 @@ into your site package `Configuration/Services.yaml` file and adjust the configu
   yourname.plausibleio.widget.country.site1:
     class: 'Waldhacker\Plausibleio\Dashboard\Widget\CountryMapDataWidget'
     arguments:
-      $view: '@dashboard.views.widget'
       $configurationService: '@Waldhacker\Plausibleio\Services\ConfigurationService'
     $options:
       siteId: site1.example.com
@@ -143,7 +141,6 @@ into your site package `Configuration/Services.yaml` file and adjust the configu
   yourname.plausibleio.widget.country.site2:
     class: 'Waldhacker\Plausibleio\Dashboard\Widget\CountryMapDataWidget'
     arguments:
-      $view: '@dashboard.views.widget'
       $configurationService: '@Waldhacker\Plausibleio\Services\ConfigurationService'
     $options:
       siteId: site2.example.com
@@ -168,3 +165,8 @@ However, this only allowed the configuration of one Plausible site ID within the
 
 These 3 configuration options have been moved to the site language configurations with version 2.x.
 You have to manually transfer the values you entered in the extension configuration (version 1.x) to the site language configuration, there is no automated migration script.
+
+### Migration from version 2.x to 3.x
+
+Because of [Breaking-96812-NoFrontendTypoScriptBasedTemplateOverridesInTheBackend](https://docs.typo3.org/c/typo3/cms-core/main/en-us/Changelog/12.0/Breaking-96812-NoFrontendTypoScriptBasedTemplateOverridesInTheBackend.html#widget-registration-using-services-yaml) you need to remove 
+the lines `$view: '@dashboard.views.widget'` from the widget configuration within the file `Configuration/Services.yaml`.

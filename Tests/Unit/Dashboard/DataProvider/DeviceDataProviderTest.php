@@ -27,7 +27,7 @@ class DeviceDataProviderTest extends UnitTestCase
 {
     use ProphecyTrait;
 
-    public function getBrowserDataReturnsProperValuesDataProvider(): \Generator
+    public static function getBrowserDataReturnsProperValuesDataProvider(): \Generator
     {
         yield 'all items are transformed' => [
             'plausibleSiteId' => 'waldhacker.dev',
@@ -37,8 +37,8 @@ class DeviceDataProviderTest extends UnitTestCase
                 ['browser' => 'Chrome', 'visitors' => 4],
             ],
             'expected' => [
-                ['label' => 'Firefox',  'visitors' => 3],
-                ['label' => 'Chrome',  'visitors' => 4],
+                ['label' => 'Firefox', 'visitors' => 3],
+                ['label' => 'Chrome', 'visitors' => 4],
             ],
         ];
 
@@ -51,8 +51,8 @@ class DeviceDataProviderTest extends UnitTestCase
                 ['visitors' => 4],
             ],
             'expected' => [
-                ['label' => 'Firefox',  'visitors' => 3],
-                ['label' => '',  'visitors' => 4],
+                ['label' => 'Firefox', 'visitors' => 3],
+                ['label' => '', 'visitors' => 4],
             ],
         ];
 
@@ -65,7 +65,7 @@ class DeviceDataProviderTest extends UnitTestCase
                 ['browser' => 'Chrome'],
             ],
             'expected' => [
-                ['label' => 'Firefox',  'visitors' => 3],
+                ['label' => 'Firefox', 'visitors' => 3],
             ],
         ];
     }
@@ -102,7 +102,7 @@ class DeviceDataProviderTest extends UnitTestCase
         self::assertSame($expected, $subject->getBrowserData($plausibleSiteId, $timeFrame));
     }
 
-    public function getOSDataReturnsProperValuesDataProvider(): \Generator
+    public static function getOSDataReturnsProperValuesDataProvider(): \Generator
     {
         yield 'all items are transformed' => [
             'plausibleSiteId' => 'waldhacker.dev',
@@ -112,8 +112,8 @@ class DeviceDataProviderTest extends UnitTestCase
                 ['os' => 'Linux', 'visitors' => 4],
             ],
             'expected' => [
-                ['label' => 'Windows',  'visitors' => 3],
-                ['label' => 'Linux',  'visitors' => 4],
+                ['label' => 'Windows', 'visitors' => 3],
+                ['label' => 'Linux', 'visitors' => 4],
             ],
         ];
 
@@ -126,8 +126,8 @@ class DeviceDataProviderTest extends UnitTestCase
                 ['visitors' => 4],
             ],
             'expected' => [
-                ['label' => 'Windows',  'visitors' => 3],
-                ['label' => '',  'visitors' => 4],
+                ['label' => 'Windows', 'visitors' => 3],
+                ['label' => '', 'visitors' => 4],
             ],
         ];
 
@@ -140,7 +140,7 @@ class DeviceDataProviderTest extends UnitTestCase
                 ['os' => 'Linux'],
             ],
             'expected' => [
-                ['label' => 'Windows',  'visitors' => 3],
+                ['label' => 'Windows', 'visitors' => 3],
             ],
         ];
     }
@@ -177,7 +177,7 @@ class DeviceDataProviderTest extends UnitTestCase
         self::assertSame($expected, $subject->getOSData($plausibleSiteId, $timeFrame));
     }
 
-    public function getDeviceDataReturnsProperValuesDataProvider(): \Generator
+    public static function getDeviceDataReturnsProperValuesDataProvider(): \Generator
     {
         yield 'all items are transformed' => [
             'plausibleSiteId' => 'waldhacker.dev',
@@ -187,8 +187,8 @@ class DeviceDataProviderTest extends UnitTestCase
                 ['device' => 'Desktop', 'visitors' => 4],
             ],
             'expected' => [
-                ['label' => 'Tablet',  'visitors' => 3],
-                ['label' => 'Desktop',  'visitors' => 4],
+                ['label' => 'Tablet', 'visitors' => 3],
+                ['label' => 'Desktop', 'visitors' => 4],
             ],
         ];
 
@@ -201,8 +201,8 @@ class DeviceDataProviderTest extends UnitTestCase
                 ['visitors' => 4],
             ],
             'expected' => [
-                ['label' => 'Tablet',  'visitors' => 3],
-                ['label' => '',  'visitors' => 4],
+                ['label' => 'Tablet', 'visitors' => 3],
+                ['label' => '', 'visitors' => 4],
             ],
         ];
 
@@ -215,7 +215,7 @@ class DeviceDataProviderTest extends UnitTestCase
                 ['device' => 'Desktop'],
             ],
             'expected' => [
-                ['label' => 'Tablet',  'visitors' => 3],
+                ['label' => 'Tablet', 'visitors' => 3],
             ],
         ];
     }

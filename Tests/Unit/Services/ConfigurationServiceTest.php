@@ -30,6 +30,7 @@ use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 use Waldhacker\Plausibleio\Services\ConfigurationService;
 use Waldhacker\Plausibleio\Services\Exception\InvalidConfigurationException;
+use Waldhacker\Plausibleio\Tests\Unit\WithConsecutive;
 
 class ConfigurationServiceTest extends UnitTestCase
 {
@@ -48,8 +49,6 @@ class ConfigurationServiceTest extends UnitTestCase
         $this->extensionConfigurationProphecy = $this->prophesize(ExtensionConfiguration::class);
         $this->siteFinderProphecy = $this->prophesize(SiteFinder::class);
         $GLOBALS['LANG'] = $this->languageServiceProphecy->reveal();
-
-        $this->languageServiceProphecy->includeLLFile('EXT:plausibleio/Resources/Private/Language/locallang.xlf')->shouldBeCalled();
 
         $this->subject = new ConfigurationService(
             $this->extensionConfigurationProphecy->reveal(),
@@ -78,8 +77,8 @@ class ConfigurationServiceTest extends UnitTestCase
     {
         $this->extensionConfigurationProphecy->get('plausibleio', 'timeFrames')->willReturn('30d,3mo');
 
-        $this->languageServiceProphecy->getLL('timeframes.d')->willReturn('%s days');
-        $this->languageServiceProphecy->getLL('timeframes.mo')->willReturn('%s months');
+        $this->languageServiceProphecy->sL('LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:timeframes.d')->willReturn('%s days');
+        $this->languageServiceProphecy->sL('LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:timeframes.mo')->willReturn('%s months');
 
         self::assertSame(
             [
@@ -108,10 +107,10 @@ class ConfigurationServiceTest extends UnitTestCase
     {
         $this->extensionConfigurationProphecy->get('plausibleio', 'timeFrames')->willThrow(ExtensionConfigurationPathDoesNotExistException::class);
 
-        $this->languageServiceProphecy->getLL('timeframes.day')->willReturn('Today');
-        $this->languageServiceProphecy->getLL('timeframes.month')->willReturn('This month');
-        $this->languageServiceProphecy->getLL('timeframes.d')->willReturn('%s days');
-        $this->languageServiceProphecy->getLL('timeframes.mo')->willReturn('%s months');
+        $this->languageServiceProphecy->sL('LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:timeframes.day')->willReturn('Today');
+        $this->languageServiceProphecy->sL('LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:timeframes.month')->willReturn('This month');
+        $this->languageServiceProphecy->sL('LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:timeframes.d')->willReturn('%s days');
+        $this->languageServiceProphecy->sL('LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:timeframes.mo')->willReturn('%s months');
 
         self::assertSame(
             [
@@ -156,7 +155,7 @@ class ConfigurationServiceTest extends UnitTestCase
     public function getTimeFrameValuesReturnsValues(): void
     {
         $this->extensionConfigurationProphecy->get('plausibleio', 'timeFrames')->willReturn('7d,30d');
-        $this->languageServiceProphecy->getLL('timeframes.d')->willReturn('%s days');
+        $this->languageServiceProphecy->sL('LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:timeframes.d')->willReturn('%s days');
 
         self::assertSame(['7d', '30d'], $this->subject->getTimeFrameValues());
     }
@@ -419,7 +418,7 @@ class ConfigurationServiceTest extends UnitTestCase
             ->method('getAvailablePlausibleSiteIdConfigurations')
             ->willReturn(['waldhacker.dev' => [], 'example.com' => []]);
 
-        self::assertSame(['waldhacker.dev',  'example.com'], $subject->getAvailablePlausibleSiteIds());
+        self::assertSame(['waldhacker.dev', 'example.com'], $subject->getAvailablePlausibleSiteIds());
     }
 
     /**
@@ -516,8 +515,16 @@ class ConfigurationServiceTest extends UnitTestCase
 
         $subject
             ->method('isPageAccessible')
-            ->withConsecutive([1], [2])
-            ->willReturnOnConsecutiveCalls(true, false);
+            ->with(...WithConsecutive::create([1], [2]))
+            ->willReturnCallback(function($name) use (&$userCallCount) {
+                $userCallCount++;
+                switch ($userCallCount) {
+                    case 1:
+                        return true;
+                    case 2:
+                        return false;
+                }
+            });
 
         $backendUserProphecy->checkLanguageAccess(10)->willReturn(true);
         $backendUserProphecy->checkLanguageAccess(11)->willReturn(true);
@@ -896,7 +903,7 @@ class ConfigurationServiceTest extends UnitTestCase
         self::assertFalse($subject->isValidConfiguration('waldhacker.dev'));
     }
 
-    public function isValidConfigurationReturnsFalseIfConfigurationIsNotValidDataProvider(): \Generator
+    public static function isValidConfigurationReturnsFalseIfConfigurationIsNotValidDataProvider(): \Generator
     {
         yield 'apiUrl is empty' => [
             [

@@ -35,7 +35,7 @@ class VisitorsOverTimeDataProviderTest extends UnitTestCase
         parent::tearDown();
     }
 
-    public function getAllSourcesDataReturnsProperValuesDataProvider(): \Generator
+    public static function getAllSourcesDataReturnsProperValuesDataProvider(): \Generator
     {
         yield 'all items are transformed' => [
             'plausibleSiteId' => 'waldhacker.dev',
@@ -116,7 +116,6 @@ class VisitorsOverTimeDataProviderTest extends UnitTestCase
         $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
 
         $GLOBALS['LANG'] = $languageServiceProphecy->reveal();
-        $languageServiceProphecy->includeLLFile('EXT:plausibleio/Resources/Private/Language/locallang.xlf')->shouldBeCalled();
 
         $plausibleServiceProphecy->sendAuthorizedRequest(
             $plausibleSiteId,
@@ -134,7 +133,7 @@ class VisitorsOverTimeDataProviderTest extends UnitTestCase
         self::assertSame($expected, $subject->getOverview($plausibleSiteId, $timeFrame));
     }
 
-    public function getCurrentVisitorsReturnsVisitorsDataProvider(): \Generator
+    public static function getCurrentVisitorsReturnsVisitorsDataProvider(): \Generator
     {
         yield 'integers from API will be returned' => [
             'plausibleSiteId' => 'waldhacker.dev',
@@ -165,7 +164,6 @@ class VisitorsOverTimeDataProviderTest extends UnitTestCase
         $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
 
         $GLOBALS['LANG'] = $languageServiceProphecy->reveal();
-        $languageServiceProphecy->includeLLFile('EXT:plausibleio/Resources/Private/Language/locallang.xlf')->shouldBeCalled();
 
         $plausibleServiceProphecy->sendAuthorizedRequest(
             $plausibleSiteId,
@@ -181,7 +179,7 @@ class VisitorsOverTimeDataProviderTest extends UnitTestCase
         self::assertSame($expected, $subject->getCurrentVisitors($plausibleSiteId));
     }
 
-    public function getChartDataReturnsProperValuesDataProvider(): \Generator
+    public static function getChartDataReturnsProperValuesDataProvider(): \Generator
     {
         yield 'all items are transformed' => [
             'plausibleSiteId' => 'waldhacker.dev',
@@ -275,8 +273,7 @@ class VisitorsOverTimeDataProviderTest extends UnitTestCase
         $plausibleServiceProphecy = $this->prophesize(PlausibleService::class);
 
         $GLOBALS['LANG'] = $languageServiceProphecy->reveal();
-        $languageServiceProphecy->includeLLFile('EXT:plausibleio/Resources/Private/Language/locallang.xlf')->shouldBeCalled();
-        $languageServiceProphecy->getLL('visitors')->willReturn('Visitors');
+        $languageServiceProphecy->sL('LLL:EXT:plausibleio/Resources/Private/Language/locallang.xlf:visitors')->willReturn('Visitors');
 
         $plausibleServiceProphecy->sendAuthorizedRequest(
             $plausibleSiteId,

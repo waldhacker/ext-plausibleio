@@ -2,7 +2,7 @@
 
 defined('TYPO3') or die();
 
-call_user_func(static function () {
+call_user_func(static function() {
     $configurationService = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\Waldhacker\Plausibleio\Services\ConfigurationService::class);
 
     $GLOBALS['SiteConfiguration']['site_language']['columns']['plausible_baseUrl'] = [

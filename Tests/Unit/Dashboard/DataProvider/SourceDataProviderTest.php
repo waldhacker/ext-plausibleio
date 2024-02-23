@@ -27,7 +27,7 @@ class SourceDataProviderTest extends UnitTestCase
 {
     use ProphecyTrait;
 
-    public function getAllSourcesDataReturnsProperValuesDataProvider(): \Generator
+    public static function getAllSourcesDataReturnsProperValuesDataProvider(): \Generator
     {
         yield 'all items are transformed' => [
             'plausibleSiteId' => 'waldhacker.dev',
@@ -37,8 +37,8 @@ class SourceDataProviderTest extends UnitTestCase
                 ['source' => 'source2', 'visitors' => 4],
             ],
             'expected' => [
-                ['label' => 'source1',  'visitors' => 3],
-                ['label' => 'source2',  'visitors' => 4],
+                ['label' => 'source1', 'visitors' => 3],
+                ['label' => 'source2', 'visitors' => 4],
             ],
         ];
 
@@ -51,8 +51,8 @@ class SourceDataProviderTest extends UnitTestCase
                 ['visitors' => 4],
             ],
             'expected' => [
-                ['label' => 'source1',  'visitors' => 3],
-                ['label' => '',  'visitors' => 4],
+                ['label' => 'source1', 'visitors' => 3],
+                ['label' => '', 'visitors' => 4],
             ],
         ];
 
@@ -65,7 +65,7 @@ class SourceDataProviderTest extends UnitTestCase
                 ['source' => 'source2'],
             ],
             'expected' => [
-                ['label' => 'source1',  'visitors' => 3],
+                ['label' => 'source1', 'visitors' => 3],
             ],
         ];
     }
@@ -102,7 +102,7 @@ class SourceDataProviderTest extends UnitTestCase
         self::assertSame($expected, $subject->getAllSourcesData($plausibleSiteId, $timeFrame));
     }
 
-    public function getMediumDataReturnsProperValuesDataProvider(): \Generator
+    public static function getMediumDataReturnsProperValuesDataProvider(): \Generator
     {
         yield 'all items are transformed' => [
             'plausibleSiteId' => 'waldhacker.dev',
@@ -112,8 +112,8 @@ class SourceDataProviderTest extends UnitTestCase
                 ['utm_medium' => 'source2', 'visitors' => 4],
             ],
             'expected' => [
-                ['label' => 'source1',  'visitors' => 3],
-                ['label' => 'source2',  'visitors' => 4],
+                ['label' => 'source1', 'visitors' => 3],
+                ['label' => 'source2', 'visitors' => 4],
             ],
         ];
 
@@ -126,8 +126,8 @@ class SourceDataProviderTest extends UnitTestCase
                 ['visitors' => 4],
             ],
             'expected' => [
-                ['label' => 'source1',  'visitors' => 3],
-                ['label' => '',  'visitors' => 4],
+                ['label' => 'source1', 'visitors' => 3],
+                ['label' => '', 'visitors' => 4],
             ],
         ];
 
@@ -140,7 +140,7 @@ class SourceDataProviderTest extends UnitTestCase
                 ['utm_medium' => 'source2'],
             ],
             'expected' => [
-                ['label' => 'source1',  'visitors' => 3],
+                ['label' => 'source1', 'visitors' => 3],
             ],
         ];
     }
@@ -177,7 +177,7 @@ class SourceDataProviderTest extends UnitTestCase
         self::assertSame($expected, $subject->getMediumData($plausibleSiteId, $timeFrame));
     }
 
-    public function getSourceDataReturnsProperValuesDataProvider(): \Generator
+    public static function getSourceDataReturnsProperValuesDataProvider(): \Generator
     {
         yield 'all items are transformed' => [
             'plausibleSiteId' => 'waldhacker.dev',
@@ -187,8 +187,8 @@ class SourceDataProviderTest extends UnitTestCase
                 ['utm_source' => 'source2', 'visitors' => 4],
             ],
             'expected' => [
-                ['label' => 'source1',  'visitors' => 3],
-                ['label' => 'source2',  'visitors' => 4],
+                ['label' => 'source1', 'visitors' => 3],
+                ['label' => 'source2', 'visitors' => 4],
             ],
         ];
 
@@ -201,8 +201,8 @@ class SourceDataProviderTest extends UnitTestCase
                 ['visitors' => 4],
             ],
             'expected' => [
-                ['label' => 'source1',  'visitors' => 3],
-                ['label' => '',  'visitors' => 4],
+                ['label' => 'source1', 'visitors' => 3],
+                ['label' => '', 'visitors' => 4],
             ],
         ];
 
@@ -215,7 +215,7 @@ class SourceDataProviderTest extends UnitTestCase
                 ['utm_source' => 'source2'],
             ],
             'expected' => [
-                ['label' => 'source1',  'visitors' => 3],
+                ['label' => 'source1', 'visitors' => 3],
             ],
         ];
     }
@@ -252,7 +252,7 @@ class SourceDataProviderTest extends UnitTestCase
         self::assertSame($expected, $subject->getSourceData($plausibleSiteId, $timeFrame));
     }
 
-    public function getCampaignDataReturnsProperValuesDataProvider(): \Generator
+    public static function getCampaignDataReturnsProperValuesDataProvider(): \Generator
     {
         yield 'all items are transformed' => [
             'plausibleSiteId' => 'waldhacker.dev',
@@ -262,8 +262,8 @@ class SourceDataProviderTest extends UnitTestCase
                 ['utm_campaign' => 'source2', 'visitors' => 4],
             ],
             'expected' => [
-                ['label' => 'source1',  'visitors' => 3],
-                ['label' => 'source2',  'visitors' => 4],
+                ['label' => 'source1', 'visitors' => 3],
+                ['label' => 'source2', 'visitors' => 4],
             ],
         ];
 
@@ -276,8 +276,8 @@ class SourceDataProviderTest extends UnitTestCase
                 ['visitors' => 4],
             ],
             'expected' => [
-                ['label' => 'source1',  'visitors' => 3],
-                ['label' => '',  'visitors' => 4],
+                ['label' => 'source1', 'visitors' => 3],
+                ['label' => '', 'visitors' => 4],
             ],
         ];
 
@@ -290,7 +290,7 @@ class SourceDataProviderTest extends UnitTestCase
                 ['utm_campaign' => 'source2'],
             ],
             'expected' => [
-                ['label' => 'source1',  'visitors' => 3],
+                ['label' => 'source1', 'visitors' => 3],
             ],
         ];
     }

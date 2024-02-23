@@ -30,7 +30,6 @@ services:
   waldhacker.plausibleio.widget.visitorsovertime:
     class: 'Waldhacker\Plausibleio\Dashboard\Widget\VisitorsOverTimeWidget'
     arguments:
-      $view: '@dashboard.views.widget'
       $configurationService: '@Waldhacker\Plausibleio\Services\ConfigurationService'
       $options:
         siteId: null
@@ -48,7 +47,6 @@ services:
   waldhacker.plausibleio.widget.country:
     class: 'Waldhacker\Plausibleio\Dashboard\Widget\CountryMapDataWidget'
     arguments:
-      $view: '@dashboard.views.widget'
       $configurationService: '@Waldhacker\Plausibleio\Services\ConfigurationService'
       $options:
         siteId: null
@@ -66,7 +64,6 @@ services:
   waldhacker.plausibleio.widget.page:
     class: 'Waldhacker\Plausibleio\Dashboard\Widget\PageDataWidget'
     arguments:
-      $view: '@dashboard.views.widget'
       $configurationService: '@Waldhacker\Plausibleio\Services\ConfigurationService'
       $options:
         siteId: null
@@ -84,7 +81,6 @@ services:
   waldhacker.plausibleio.widget.source:
     class: 'Waldhacker\Plausibleio\Dashboard\Widget\SourceDataWidget'
     arguments:
-      $view: '@dashboard.views.widget'
       $configurationService: '@Waldhacker\Plausibleio\Services\ConfigurationService'
       $options:
         siteId: null
@@ -103,7 +99,6 @@ services:
   waldhacker.plausibleio.widget.device:
     class: 'Waldhacker\Plausibleio\Dashboard\Widget\DeviceDataWidget'
     arguments:
-      $view: '@dashboard.views.widget'
       $configurationService: '@Waldhacker\Plausibleio\Services\ConfigurationService'
       $options:
         siteId: null

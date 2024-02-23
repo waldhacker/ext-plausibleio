@@ -23,7 +23,7 @@ use Waldhacker\Plausibleio\Services\ISO3166Service;
 
 class ISO3166ServiceTest extends UnitTestCase
 {
-    public function alpha2ReturnsProperValuesDataProvider(): \Generator
+    public static function alpha2ReturnsProperValuesDataProvider(): \Generator
     {
         yield 'existing alpha2 returns related dataset' => [
             'input' => 'DE', 'expected' => ['alpha2' => 'DE', 'alpha3' => 'DEU'],
@@ -46,7 +46,7 @@ class ISO3166ServiceTest extends UnitTestCase
         self::assertSame($expected, $subject->alpha2($input));
     }
 
-    public function alpha3ReturnsProperValuesDataProvider(): \Generator
+    public static function alpha3ReturnsProperValuesDataProvider(): \Generator
     {
         yield 'existing alpha3 returns related dataset' => [
             'input' => 'DEU', 'expected' => ['alpha2' => 'DE', 'alpha3' => 'DEU'],

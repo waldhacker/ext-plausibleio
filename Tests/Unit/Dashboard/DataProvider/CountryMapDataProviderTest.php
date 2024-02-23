@@ -28,7 +28,7 @@ class CountryMapDataProviderTest extends UnitTestCase
 {
     use ProphecyTrait;
 
-    public function getCountryDataForDataMapReturnsProperValuesDataProvider(): \Generator
+    public static function getCountryDataForDataMapReturnsProperValuesDataProvider(): \Generator
     {
         yield 'all items are transformed' => [
             'plausibleSiteId' => 'waldhacker.dev',
@@ -38,7 +38,7 @@ class CountryMapDataProviderTest extends UnitTestCase
                 ['country' => 'US', 'visitors' => 4],
             ],
             'expected' => [
-                ['DEU',  3],
+                ['DEU', 3],
                 ['USA', 4],
             ],
         ];
@@ -52,7 +52,7 @@ class CountryMapDataProviderTest extends UnitTestCase
                 ['visitors' => 4],
             ],
             'expected' => [
-                ['DEU',  3],
+                ['DEU', 3],
             ],
         ];
 
@@ -65,7 +65,7 @@ class CountryMapDataProviderTest extends UnitTestCase
                 ['country' => 'US'],
             ],
             'expected' => [
-                ['DEU',  3],
+                ['DEU', 3],
             ],
         ];
 
@@ -77,7 +77,7 @@ class CountryMapDataProviderTest extends UnitTestCase
                 ['country' => '_', 'visitors' => 4],
             ],
             'expected' => [
-                ['DEU',  3],
+                ['DEU', 3],
             ],
         ];
     }

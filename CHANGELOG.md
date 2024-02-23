@@ -1,13 +1,32 @@
 # Changelog
 
 
+## 3.0.0 (2024-02-22)
+
+### Tasks
+
+* TYPO3 v13 compat. [waldhacker1]
+
+### Other
+
+* Merge tag '2.2.1' into develop. [waldhacker1]
+
+  2.2.1
+
+
 ## 2.2.1 (2024-02-22)
+
+### Tasks
+
+* Version 2.2.1. [waldhacker1]
 
 ### Bugfixes
 
 * Chart v4 compat. [waldhacker1]
 
 ### Other
+
+* Merge branch 'release/2.2.1' [waldhacker1]
 
 * Merge tag '2.2.0' into develop. [waldhacker1]
 

@@ -58,13 +58,13 @@ If switched on, then the [Plausible tracking script](https://plausible.io/docs/p
 If you don't want automatic integration, you can also insert the script manually using the asset collector within your templates like this:
 
 ```
-<f:asset.script identifier="analytics" src="https://plausible.io/js/plausible.js" data="{'domain':'waldhacker.dev'}" priority="1" async="async" defer="defer" />
+<f:asset.script identifier="analytics" src="https://plausible.io/js/script.js" data="{'domain':'waldhacker.dev'}" priority="1" async="async" defer="defer" />
 ```
 
 #### Plausible tracking snippet Base URL
 
 The base URL where the Plausible Plausible tracking scripts are accessible.  
-It must be the part before `js/plausible.js`. So if your Plausible tracking scripts are available at `https://analytics.example.com/js/plausible.js` then put `https://analytics.example.com/` here.  
+It must be the part before `js/script.js`. So if your Plausible tracking scripts are available at `https://analytics.example.com/js/script.js` then put `https://analytics.example.com/` here.  
 If you use the plausible.io service it is `https://plausible.io/`.  
 
 The URL is most likely the same as the "Plausible API base url". However, it may happen that the tracking script should be loaded from another domain [because of adblockers](https://plausible.io/docs/proxy/introduction). Therefore the Plausible tracking scripts base URL must be configured separately here.
@@ -72,7 +72,7 @@ The URL is most likely the same as the "Plausible API base url". However, it may
 #### Plausible tracking snippet Type
 
 Plausible [offers different tracking scripts](https://plausible.io/docs/script-extensions) for various use cases.  
-One of these scripts can be selected here (the default ist `plausible.js`).
+One of these scripts can be selected here (the default ist `script.js`).
 
 ### Extension configuration
 
